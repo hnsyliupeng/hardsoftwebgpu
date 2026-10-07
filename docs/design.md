@@ -31,7 +31,32 @@ chord model, the same `trunc_state`/`trunc_task_state` scratch layout and the
 same MLP arithmetic; `tools/check-rust.mjs` compiles lib + bin + tests with the
 WASI toolchain and `tests/*.test.mjs` asserts the JS side matches those numbers.
 
-## 2. Tasks
+## 2. Arm geometry (what is actually drawn)
+
+The joint is a **nested TRUNC truss**, and three geometry bugs had to be fixed
+before the rendering said so:
+
+  * `truncCell()` was built from `y = 0…L` but placed at each cell's *mid*
+    transform, so every instance was half a cell too high — the end rings stacked
+    into what read as a **coil**, which is not the TRUNC arm at all. The mesh is
+    now centred on `y = 0`, matching `Arm.bones()`, and the chain ends exactly on
+    the kinematic tool (asserted by `.check/rig-check.mjs`, 2.5 mm).
+  * the "truss" was a smooth helix. It is now a **diamond lattice** (three
+    right-hand + three left-hand helical runs), six longitudinal spines and a
+    **central flex shaft** — the nested member that carries the torque — closed by
+    end rings at every cell boundary.
+  * the tendons need their **equatorial guide**: each cell now draws the collar
+    and its nine cable bores in the tendon annulus, which is what the paper's
+    rigid-torque transmission uses to hold the cables at a constant radius.
+
+Two scene-level consequences were then fixed as well: the arm is mounted on the
+*floor*, so a solid bench slab passed straight through its lower cells — the
+bench is now a frame with an opening (real rigs have the same cut-out) — and the
+fallback rasteriser's camera and shading were reworked (clamped diffuse term,
+framed on the 0.59 m arm rather than the 1.15 m bench) because the lattice was
+either blown out to white or sub-pixel thin at the old distance.
+
+## 3. Tasks
 
 Five jobs, all validated headlessly by `.check/episode.mjs` (5/5, no damage,
 peak force ≤ 4.1 N, tip deviation < 0.05 mm):
@@ -50,7 +75,7 @@ picked by hand from a sweep. Mirrored bending planes between neighbouring
 segments (S-shapes) are treated as singularities and are excluded by the
 wrinkle penalty and the 0.94·45° soft stop.
 
-## 3. Learners
+## 4. Learners
 
 Both live in `src/workers/trainers.js` and run inside `sim.worker.js`, so the
 page never blocks.
@@ -101,7 +126,7 @@ the **phase supervisor must stay contact-driven** — guessing the phase from th
 plan index reaches 1.31 of 6 turns where the contact state machine completes
 the job.
 
-## 4. App
+## 5. App
 
 ![the bench, the arm at home, and the five jobs](screenshot-1-home.png)
 
@@ -147,7 +172,7 @@ boots the app from it — that is how the bundle is verified without a browser.
 This matters because the preview environment has been observed to stop the dev
 server between sessions; the single file needs no process to survive.
 
-## 5. Verification
+## 6. Verification
 
 ```
 npm run check:rust              # lib ✅ bin ✅ tests ✅ (WASI toolchain, no wasm shipped)

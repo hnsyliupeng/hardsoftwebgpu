@@ -14,7 +14,7 @@
 import { OrbitCamera, rayPlane, raySphere } from '../gpu/camera.js';
 import { Renderer, FallbackRenderer, SceneBuilder, LIGHT } from '../gpu/renderer.js';
 import {
-  truncCell, toolMesh, boltMesh, bulbMesh, valveMesh, pegMesh, fixtureMesh, cube, cylinder,
+  truncCell, toolMesh, boltMesh, bulbMesh, valveMesh, pegMesh, fixtureMesh, benchFrame, cube, cylinder,
 } from '../gpu/meshes.js';
 import { Robot, CONTROL_MODE } from '../engine/robot.js';
 import { TASK_LIBRARY, benchLayout, stagesOf, FIXTURE } from '../engine/tasks.js';
@@ -89,8 +89,10 @@ export async function boot(hooks = {}) {
   // ---------------------------------------------------------------- meshes
   setBoot('uploading meshes…');
   const meshes = {
-    cell_truss: truncCell(0, 0.0789, 0.0244, { struts: 6, rings: 3 }),
-    cell_equa: truncCell(1, 0.0789, 0.0260, { struts: 6, rings: 3, thickness: 0.0012 }),
+    // one printed stage: the nested truss cell (centred on the cell's mid-frame)
+    cell_truss: truncCell(0, 0.0789, 0.0260, { struts: 6, thickness: 0.0016 }),
+    // the equatorial guide sits at the cell's equator, in the tendon annulus
+    cell_equa: truncCell(1, 0.0789, 0.0245, { struts: 6, thickness: 0.0014 }),
     tool: toolMesh(),
     bolt: boltMesh(0.008, 0.05),
     bulb: bulbMesh(0.03, 0.075),
@@ -100,7 +102,8 @@ export async function boot(hooks = {}) {
     bracket: fixtureMesh(FIXTURE.BRACKET, { x: 0.16, y: 0.02, z: 0.16 }),
     lamp: fixtureMesh(FIXTURE.LAMP, { x: 0.075, y: 0.05, z: 0.075 }),
     valve_body: fixtureMesh(FIXTURE.VALVE_BODY, { x: 0.09, y: 0.06, z: 0.09 }),
-    bench: cube(1.15, 0.035, 0.95),
+    // frame, not a slab: the arm is floor-mounted and rises through the opening
+    bench: benchFrame({ halfX: 0.575, halfZ: 0.475, thickness: 0.035, hole: 0.20 }),
     post: cylinder(0.042, 1.0, 16),
     base: cylinder(0.09, 0.05, 24),
   };
@@ -114,9 +117,9 @@ export async function boot(hooks = {}) {
   const camera = renderer.camera;
   const applyPreset = (name) => {
     const a = robot.spec?.anchor ?? V3.new(0, 0.6, 0);
-    if (name === 'iso') { camera.target = V3.new(0, 0.42, 0); camera.yaw = deg(38); camera.pitch = deg(24); camera.dist = 1.5; }
-    else if (name === 'front') { camera.target = V3.new(0, 0.45, 0); camera.yaw = deg(0); camera.pitch = deg(8); camera.dist = 1.7; }
-    else if (name === 'top') { camera.target = V3.new(0, 0.45, 0); camera.yaw = deg(0); camera.pitch = deg(78); camera.dist = 1.6; }
+    if (name === 'iso') { camera.target = V3.new(0, 0.36, 0); camera.yaw = deg(38); camera.pitch = deg(20); camera.dist = 1.15; }
+    else if (name === 'front') { camera.target = V3.new(0, 0.36, 0); camera.yaw = deg(0); camera.pitch = deg(6); camera.dist = 1.25; }
+    else if (name === 'top') { camera.target = V3.new(0, 0.30, 0); camera.yaw = deg(0); camera.pitch = deg(74); camera.dist = 1.15; }
     else if (name === 'task') { camera.target = V3.clone(a); camera.yaw = Math.atan2(a.x, a.z); camera.pitch = deg(14); camera.dist = 0.62; }
   };
   applyPreset('iso');
@@ -398,13 +401,15 @@ export async function boot(hooks = {}) {
     // ---- the arm itself: one TRUNC cell per printed cell, tool on the wrist
     const bones = robot.bones();
     for (const b of bones) {
-      const name = b.kind === 0 ? 'cell_truss' : 'cell_equa';
-      const s = b.length > 0 ? clamp(b.length / 0.0789, 0.2, 2) : 0.35;
-      scene.mesh(name, { p: b.transform.p, q: b.transform.q, scale: s }, [0.72, 0.76, 0.82, 1], [0.15, 0.45, 0.05, 1]);
+      if (b.active === false) continue;                  // the tool joint is drawn separately
+      const cellScale = clamp(b.length / 0.0789, 0.2, 2);
+      // printed resin truss …, darker equatorial guide …, both on the cell's mid-frame
+      scene.mesh('cell_truss', { p: b.transform.p, q: b.transform.q, scale: cellScale }, [0.46, 0.51, 0.58, 1], [0.2, 0.3, 0.35, 1]);
+      scene.mesh('cell_equa', { p: b.transform.p, q: b.transform.q, scale: cellScale }, [0.34, 0.40, 0.50, 1], [0.4, 0.2, 0.15, 1]);
     }
     const tool = bones[bones.length - 1];
     if (tool) {
-      scene.mesh('tool', { p: tool.transform.p, q: tool.transform.q, scale: 1 }, [0.55, 0.58, 0.64, 1], [0.9, 0.25, 0.0, 1]);
+      scene.mesh('tool', { p: tool.transform.p, q: tool.transform.q, scale: 1 }, [0.62, 0.66, 0.72, 1], [0.85, 0.35, 0.05, 1]);
     }
     // ---- base pedestal: the arm stands on the floor, not on the bench
     // (its kinematics start at y = 0 — measured, the drawn chain ends on the tool)

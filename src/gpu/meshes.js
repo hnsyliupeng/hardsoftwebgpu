@@ -225,53 +225,79 @@ export function torus(major, minor, majorSegs = 28, minorSegs = 10) {
  *  • truss      : two end collars + helical lattice struts (the torque channel)
  *  • equatorial : a slotted tube with equatorial rings (the tendon guide)
  */
+/**
+ * One TRUNC stage: a *nested* truss cell with end rings.
+ *
+ * The paper's joint is not a smooth spring — it is two truss layers (an outer
+ * and an inner flexure set) whose struts cross in a diamond lattice, closed by a
+ * ring at each end. The tendons run in the annulus between the two layers, and
+ * the *equatorial guide* (see `truncGuide`) holds them at that radius.
+ *
+ * The mesh is built **centred on y = 0** because `Arm.bones()` reports each cell's
+ * mid transform: building it from 0…L and placing it at the centre offsets every
+ * instance by half a cell, which stacks the rings into what reads as a coil.
+ */
 export function truncCell(kind, length, radius, { struts = 6, rings = 3, thickness = 0.0016 } = {}) {
   const b = new MeshBuilder();
+  const half = length / 2;
+
   if (kind === CELL_TRUSS) {
-    const collarHeight = length * 0.06;
-    for (const y of [0, length - collarHeight]) {
-      b.merge(cylinder(radius, collarHeight, 18), null, V3.new(0, y + collarHeight / 2, 0));
-    }
-    // helical lattice: `struts` helical bands, each a chain of straight struts
-    const turns = 0.42;
-    const steps = 5;
-    const segments = Math.max(4, Math.round(struts * 1.5));
-    for (let s = 0; s < segments; s += 1) {
-      const phase = (s / segments) * TAU;
-      const handed = s % 2 === 0 ? 1 : -1;
-      for (let i = 0; i < steps; i += 1) {
-        const t0 = i / steps;
-        const t1 = (i + 1) / steps;
-        const a0 = phase + handed * t0 * turns * TAU;
-        const a1 = phase + handed * t1 * turns * TAU;
-        const p0 = V3.new(Math.cos(a0) * radius * 0.92, length * (0.07 + t0 * 0.86), Math.sin(a0) * radius * 0.92);
-        const p1 = V3.new(Math.cos(a1) * radius * 0.92, length * (0.07 + t1 * 0.86), Math.sin(a1) * radius * 0.92);
-        b.merge(strut(p0, p1, thickness, 5));
+    const rOuter = radius;
+    const t = Math.max(thickness * 2.1, 0.0032);      // struts must survive the 1-pixel cull
+    const rCore = radius * 0.30;
+    // A helical run between two phases, as a chain of straight struts.
+    const helix = (r, phase0, phase1, steps, rad) => {
+      let prev = null;
+      for (let i = 0; i <= steps; i += 1) {
+        const f = i / steps;
+        const a = phase0 + (phase1 - phase0) * f;
+        const p = V3.new(Math.cos(a) * r, -half + length * f, Math.sin(a) * r);
+        if (prev) b.merge(strut(prev, p, rad, 4));
+        prev = p;
       }
+    };
+    // outer layer: a diamond lattice (three right-hand + three left-hand runs)
+    for (let k = 0; k < 3; k += 1) {
+      const phase = (k / 3) * TAU;
+      helix(rOuter, phase, phase + TAU / 3, 3, t);
+      helix(rOuter, phase + TAU / 3, phase, 3, t);
+    }
+    // the nested flex shaft: the central member that carries the torque
+    b.merge(cylinder(rCore, length * 0.92, 10, true), null, V3.new(0, 0, 0));
+    // end rings (the cell boundaries the next stage keys into)
+    for (const y of [-half, half]) {
+      b.merge(torus(rOuter, Math.max(thickness * 1.15, 0.0019), 14, 5), null, V3.new(0, y, 0));
+      b.merge(torus(rCore * 1.5, Math.max(thickness * 1.0, 0.0016), 10, 4), null, V3.new(0, y, 0));
+    }
+    // longitudinal spines tying the rings together
+    for (let i = 0; i < struts; i += 1) {
+      const a = (i / struts) * TAU + TAU / 12;
+      b.merge(strut(
+        V3.new(Math.cos(a) * rOuter, -half, Math.sin(a) * rOuter),
+        V3.new(Math.cos(a) * rOuter, half, Math.sin(a) * rOuter),
+        t * 0.5, 4,
+      ));
     }
   } else {
-    // slotted shell: rings + vertical spines, gaps between them
-    const spines = struts * 2;
-    const ringCount = Math.max(2, rings);
-    for (let r = 0; r < ringCount; r += 1) {
-      const y = (r / (ringCount - 1)) * (length - thickness);
-      b.merge(torus(radius * 0.98, thickness * 0.9, 26, 8), null, V3.new(0, y + thickness / 2, 0));
+    // ---- equatorial guide: the collar the tendons pass through
+    const collar = radius * 1.04;
+    b.merge(torus(collar, Math.max(thickness * 2.4, 0.0032), 14, 5), null, V3.new(0, 0, 0));
+    b.merge(cylinder(collar * 0.97, 0.008, 14, false), null, V3.new(0, 0, 0));
+    // nine cable bores, evenly spaced, in the tendon annulus
+    const bores = Math.max(3, struts + 3);
+    for (let i = 0; i < bores; i += 1) {
+      const a = (i / bores) * TAU;
+      b.merge(
+        cylinder(Math.max(thickness * 2.6, 0.0036), 0.012, 5, true),
+        null,
+        V3.new(Math.cos(a) * radius * 0.9, 0, Math.sin(a) * radius * 0.9),
+      );
     }
-    for (let s = 0; s < spines; s += 1) {
-      const a = (s / spines) * TAU;
-      const p0 = V3.new(Math.cos(a) * radius * 0.98, 0, Math.sin(a) * radius * 0.98);
-      const p1 = V3.new(Math.cos(a) * radius * 0.98, length, Math.sin(a) * radius * 0.98);
-      b.merge(strut(p0, p1, thickness * 0.8, 5));
-    }
+    void rings;
   }
   return b.build();
 }
 
-// ---------------------------------------------------------------------------
-// Task props
-// ---------------------------------------------------------------------------
-
-/** Hex-head bolt along +Y, head at the origin. */
 export function boltMesh(shank = 0.008, length = 0.05) {
   const b = new MeshBuilder();
   b.merge(cylinder(shank * 1.75, shank * 1.2, 6), null, V3.new(0, shank * 0.6, 0));
@@ -318,16 +344,45 @@ export function pegMesh(r = 0.006, length = 0.045) {
 }
 
 /** Tool cartridge mounted on the wrist: collar + chuck + torque sensor ring. */
+/**
+ * The tool joint: the rigid torque-transmitting section (52× torsion/bending in
+ * the paper) with the hex drive that seats the bolt. Drawn as a stepped housing
+ * so the tip is unmistakable at a glance.
+ */
 export function toolMesh() {
   const b = new MeshBuilder();
-  b.merge(cylinder(0.016, 0.018, 18), null, V3.new(0, 0.009, 0));
-  b.merge(torus(0.017, 0.003, 24, 8), null, V3.new(0, 0.022, 0));
-  b.merge(cylinder(0.011, 0.03, 16), null, V3.new(0, 0.04, 0));
-  b.merge(cylinder(0.0075, 0.022, 6), null, V3.new(0, 0.066, 0));
+  b.merge(cylinder(0.019, 0.026, 18), null, V3.new(0, 0.013, 0));
+  b.merge(torus(0.0205, 0.0032, 18, 6), null, V3.new(0, 0.028, 0));
+  b.merge(cylinder(0.0135, 0.022, 14), null, V3.new(0, 0.041, 0));
+  b.merge(torus(0.016, 0.0026, 16, 5), null, V3.new(0, 0.053, 0));
+  b.merge(cylinder(0.0105, 0.03, 12), null, V3.new(0, 0.068, 0));
+  b.merge(cylinder(0.0072, 0.024, 6), null, V3.new(0, 0.094, 0));   // hex drive
   return b.build();
 }
 
-/** Fixture furniture per task. */
+/**
+ * The bench: a frame of four plates with a central opening.
+ *
+ * The arm is mounted on the *floor* and rises to the working volume, so a solid
+ * slab would pass straight through its lower cells — that is not a rendering
+ * artefact, it is intersecting geometry. Real rigs have a cut-out for exactly
+ * this reason, so the table is drawn as a frame around the arm's base.
+ */
+export function benchFrame({ halfX = 0.575, halfZ = 0.475, thickness = 0.035, hole = 0.20 } = {}) {
+  const b = new MeshBuilder();
+  const y = -thickness / 2;
+  const plate = (x0, x1, z0, z1) => {
+    const sx = x1 - x0;
+    const sz = z1 - z0;
+    b.merge(cube(sx, thickness, sz), null, V3.new((x0 + x1) / 2, y, (z0 + z1) / 2));
+  };
+  plate(-halfX, halfX, hole, halfZ);          // north
+  plate(-halfX, halfX, -halfZ, -hole);        // south
+  plate(-halfX, -hole, -hole, hole);          // west
+  plate(hole, halfX, -hole, hole);            // east
+  return b.build();
+}
+
 export function fixtureMesh(kind, size) {
   const b = new MeshBuilder();
   const s = size ?? { x: 0.14, y: 0.02, z: 0.14 };

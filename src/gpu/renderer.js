@@ -591,8 +591,10 @@ export class FallbackRenderer {
           const ndl = Math.abs(nx * light.x + ny * light.y + nz * light.z);
           // hemispheric ambient: up-facing surfaces pick up the sky, down-facing
           // ones the floor. Without it everything below the horizon went nearly black.
-          const ambient = 0.30 + 0.26 * (0.5 + 0.5 * ny);
-          const shade = ambient + 0.85 * ndl + emis;
+          const ambient = 0.26 + 0.22 * (0.5 + 0.5 * ny);
+          // clamped: without it every upward-facing surface saturates to white and
+          // the lattice structure disappears into a blob
+          const shade = Math.min(1.02, ambient + 0.85 * ndl) + emis;
           const depth = (sa.z + sb.z + sc.z) / 3;
           const fog = Math.max(0, Math.min(1, (depth - 1.6) * 0.42));
           const r = Math.round(255 * Math.min(1, col[0] * shade) * (1 - fog) + 8 * fog);

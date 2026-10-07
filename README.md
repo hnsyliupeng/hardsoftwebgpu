@@ -8,7 +8,31 @@ expert. JavaScript plus Rust; no build step, no dependencies, no network.
 
 ![home view](docs/screenshot-1-home.png)
 
-## Run it
+## Run it — local Node.js (no install, no build)
+
+Requires Node >= 18 and nothing else (zero dependencies).
+
+```bash
+node run.mjs                     # serve the browser app → open http://localhost:5173
+node run.mjs --open              # ... and open a browser window
+node run.mjs --port 8080         # ... on another port
+node run.mjs --terminal          # run the simulation in this terminal (no browser)
+node run.mjs --all               # all five jobs, table output
+node run.mjs --train             # train the IK network + transformer, print scores
+node run.mjs --selftest          # acceptance + training smoke test (exit code for CI)
+node run.mjs --bundle            # build the single-file runner below
+```
+
+`hardsoftwebgpu-node.mjs` is the **same runner with the whole app embedded**
+(304 kB, 20 files) — copy it anywhere and run it with no repository around it:
+
+```bash
+node hardsoftwebgpu-node.mjs --terminal --task 2 --seconds 40
+node hardsoftwebgpu-node.mjs --all
+node hardsoftwebgpu-node.mjs --help
+```
+
+## Run it — browser
 
 Two ways, both offline:
 

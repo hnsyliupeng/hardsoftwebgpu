@@ -81,7 +81,7 @@ function quatZ(q) {
 
 /** Orbit camera: spherical position around `target`, clamped pitch. */
 export class OrbitCamera {
-  constructor({ yaw = 0.6, pitch = 0.25, dist = 1.6, target = V3.new(0, 0.45, 0) } = {}) {
+  constructor({ yaw = 0.66, pitch = 0.36, dist = 1.15, target = V3.new(0, 0.36, 0) } = {}) {
     this.yaw = yaw;
     this.pitch = pitch;
     this.dist = dist;
