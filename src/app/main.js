@@ -69,9 +69,13 @@ export async function boot(hooks = {}) {
   // ---------------------------------------------------------------- renderer
   let renderer = null;
   let fallback = false;
+  // `?render=cpu` forces the software path — handy on GPUs where the shader
+  // compiles but the draw is dropped (which would otherwise be a black screen)
+  const forceCpu = typeof location !== 'undefined' && /[?&]render=cpu/.test(location.search ?? '');
+  if (forceCpu) report('boot', 'render=cpu → software rasteriser');
   setBoot('requesting WebGPU adapter…');
   try {
-    renderer = await Renderer.create(canvas, { msaa: 4 });
+    if (!forceCpu) renderer = await Renderer.create(canvas, { msaa: 4 });
   } catch (err) {
     report('webgpu', err?.message ?? err);
   }
@@ -384,7 +388,7 @@ export async function boot(hooks = {}) {
           const axis = V3.norm(spec.axis);
           const size = (stage.fixture?.size?.x ?? 0.12);
           const isActive = scenario === active;
-          const tint = isActive ? 0.78 : 0.34;
+          const tint = isActive ? 1.05 : 0.42;
           pushFixture(spec.anchor, axis, fixFor[stage.id] ?? 'plate', size,
             [tint, tint, tint * 0.95, 1], partFor[stage.id], isActive);
         }
@@ -402,8 +406,21 @@ export async function boot(hooks = {}) {
     if (tool) {
       scene.mesh('tool', { p: tool.transform.p, q: tool.transform.q, scale: 1 }, [0.55, 0.58, 0.64, 1], [0.9, 0.25, 0.0, 1]);
     }
-    // ---- base pedestal
-    scene.mesh('base', { p: V3.new(0, benchCenter.y + bench.size.y / 2 + 0.024, 0), q: null, scale: 1 }, [0.5, 0.52, 0.58, 1], [0.7, 0.3, 0, 1]);
+    // ---- base pedestal: the arm stands on the floor, not on the bench
+    // (its kinematics start at y = 0 — measured, the drawn chain ends on the tool)
+    scene.mesh('base', { p: V3.new(0, 0.022, 0), q: null, scale: 1 }, [0.5, 0.52, 0.58, 1], [0.7, 0.3, 0, 1]);
+
+    // ---- floor grid: depth cue for the fallback rasteriser, which has no depth
+    // buffer and therefore draws its polylines over the shaded triangles
+    if (view.grid !== false) {
+      const half = 0.9;
+      const step = 0.15;
+      const gcol = [0.26, 0.34, 0.44, 0.5];
+      for (let g = -half; g <= half + 1e-6; g += step) {
+        scene.polyline([V3.new(g, 0.001, -half), V3.new(g, 0.001, half)], gcol);
+        scene.polyline([V3.new(-half, 0.001, g), V3.new(half, 0.001, g)], gcol);
+      }
+    }
 
     // ---- tendons
     if (view.cables) {
@@ -427,7 +444,7 @@ export async function boot(hooks = {}) {
 
     // ---- sprites: anchor marker + tip marker
     if (robot.spec) {
-      scene.sprite(robot.spec.anchor, 0.014, 1.6);
+      scene.sprite(robot.spec.anchor, 0.02, 2.4);
       scene.sprite(V3.add(robot.spec.anchor, V3.scale(V3.norm(robot.spec.axis), 0.02)), 0.006, 1.0);
     }
     scene.sprite(st.tool.p, 0.008, robot.mode === CONTROL_MODE.MANUAL ? 2.2 : 1.1);
@@ -545,6 +562,7 @@ export async function boot(hooks = {}) {
   let acc = 0;
   let last = performance.now();
   let fpsAcc = 0;
+  let gpuEmptyFrames = 0;   // consecutive frames the GPU renderer produced nothing
   let fpsFrames = 0;
   let spsWindow = 0;
   let spsSteps = 0;
@@ -595,6 +613,23 @@ export async function boot(hooks = {}) {
       grain: view.grain,
       lightScale: view.light ? 1 : 0.2,
     });
+    // Self-healing: a WebGPU context can initialise yet draw nothing (driver or
+    // iframe restrictions). Rather than leave a black rectangle in the preview,
+    // switch to the rasteriser after a second of empty frames.
+    if (!fallback && renderer?.stats) {
+      if (renderer.stats.draws === 0) {
+        gpuEmptyFrames += 1;
+        if (gpuEmptyFrames > 30) {
+          fallback = true;
+          renderer = new FallbackRenderer(canvas);
+          renderer.resize();
+          report('webgpu', 'GPU renderer produced no draws for 30 frames — switched to the CPU rasteriser');
+          hud.toast('WebGPU drew nothing — using the CPU rasteriser', 6000);
+        }
+      } else {
+        gpuEmptyFrames = 0;
+      }
+    }
     view.project = (p) => camera.project(p);
     hud.update(rawDt);
 

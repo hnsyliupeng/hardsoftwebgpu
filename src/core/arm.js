@@ -185,8 +185,15 @@ export class Arm {
    * so the chord is (L/φ)·(sin φ·Y + (1 − cos φ)·d) — continuous at φ → 0, where
    * it degenerates to a straight (0, L, 0) segment.
    */
-  segmentTransform(seg) {
-    const len = Math.max(this.cfg.segmentLength - seg.compress, 0.02);
+  /**
+   * Chord transform of one curved piece.
+   *
+   * `lenOverride` exists because the arm is *drawn* per printed cell (three per
+   * segment), and a cell's chord is a third of the segment's. Calling this with
+   * no override — as `fk` does — gives the whole segment.
+   */
+  segmentTransform(seg, lenOverride = null) {
+    const len = Math.max((lenOverride ?? this.cfg.segmentLength) - seg.compress, 0.002);
     const bend = seg.bend;
     const d = V3.new(Math.cos(seg.plane), 0, Math.sin(seg.plane));
     if (Math.abs(bend) < 1e-6) return { p: V3.new(0, len, 0), q: Quat.identity() };
@@ -743,7 +750,14 @@ export class Arm {
 
   // --------------------------------------------------------------- rendering
 
-  /** Per-cell transforms for the instanced renderer. */
+  /**
+   * Per-cell transforms for the instanced renderer.
+   *
+   * The printed cell is ~79 mm, so each segment is three cells. Each cell walks
+   * the *cell* chord (hence the `lenOverride`); walking whole-segment chords was
+   * making the drawn arm three times too long — a genuine, visible bug: the
+   * drawn chain ended at y = 1.70 m while the tool was at y = 0.59 m.
+   */
   bones(state) {
     const cells = Math.max(this.cfg.cellsPerSegment, 1);
     const out = [];
@@ -751,8 +765,10 @@ export class Arm {
     const spin = state.motorAngle - state.shaftTwist;
     for (let s = 0; s < N_SEGMENTS; s += 1) {
       const seg = state.seg[s];
-      const cellBend = this.truss.distribute(seg.bend);
-      const cellLen = (this.cfg.segmentLength - seg.compress) / cells;
+      // uniform split, matching `fk`: a circular arc's sub-chords compose to the
+      // same end pose, so the drawn arm cannot drift off the kinematic tool
+      const cellBend = seg.bend / cells;
+      const cellLen = Math.max((this.cfg.segmentLength - seg.compress) / cells, 0.002);
       for (let c = 0; c < cells; c += 1) {
         const frac = (s * cells + c + 0.5) / (cells * N_SEGMENTS);
         const twist = spin * frac;
@@ -767,7 +783,7 @@ export class Arm {
           segment: s,
           active: true,
         });
-        frame = Transform.mul(frame, this.segmentTransform(segmentState(cellBend, seg.plane, seg.compress / cells)));
+        frame = Transform.mul(frame, this.segmentTransform(segmentState(cellBend, seg.plane, 0), cellLen));
       }
     }
     const t = this.fk(state.seg, 0, 0);
@@ -775,28 +791,35 @@ export class Arm {
     return out;
   }
 
-  /** Tendon polylines in world space (5 points each) + tension colouring data. */
+  /**
+   * Tendon polylines in world space.
+   *
+   * A tendon runs on the cell surface at `cableRadius` from the spine, from the
+   * base to the ring where it is anchored (the end of its own segment). The spine
+   * is walked cell by cell — the same walk `bones()` uses — so the drawn tendon
+   * cannot drift away from the drawn arm.
+   */
   cablePaths(state) {
     const out = [];
+    const cells = Math.max(this.cfg.cellsPerSegment, 1);
+    // world spine samples: [0] = base, then one per cell
+    const spine = [Transform.identity()];
+    for (let s = 0; s < N_SEGMENTS; s += 1) {
+      const seg = state.seg[s];
+      const cellBend = seg.bend / cells;
+      const cellLen = Math.max((this.cfg.segmentLength - seg.compress) / cells, 0.002);
+      for (let c = 0; c < cells; c += 1) {
+        spine.push(Transform.mul(spine[spine.length - 1], this.segmentTransform(segmentState(cellBend, seg.plane, 0), cellLen)));
+      }
+    }
     for (let c = 0; c < N_CABLES; c += 1) {
       const psi = CABLE_ANGLES[c % 3];
-      const s = Math.floor(c / 3);
-      const steps = 5;
+      const segIdx = Math.floor(c / 3);
+      const off = V3.new(this.cfg.cableRadius * Math.cos(psi), 0, this.cfg.cableRadius * Math.sin(psi));
       const points = [];
-      for (let i = 0; i < steps; i += 1) {
-        const t = i / (steps - 1);
-        let g = Transform.identity();
-        for (let k = 0; k < N_SEGMENTS; k += 1) {
-          const seg = state.seg[k];
-          const part = clamp(t * N_SEGMENTS - k, 0, 1);
-          g = Transform.mul(g, this.segmentTransform(segmentState(seg.bend * part, seg.plane, seg.compress * part)));
-        }
-        const off = V3.new(this.cfg.cableRadius * Math.cos(psi), 0, this.cfg.cableRadius * Math.sin(psi));
-        points.push(Transform.apply(g, off));
-      }
-      const attach = this.fk(state.seg.slice(0, s + 1), 0, 0);
-      points[steps - 1] = Transform.apply(attach, V3.new(this.cfg.cableRadius * Math.cos(psi), 0, this.cfg.cableRadius * Math.sin(psi)));
-      out.push({ points, tension: state.tension[c], cable: c, segment: s });
+      const last = Math.min((segIdx + 1) * cells, spine.length - 1);
+      for (let i = 0; i <= last; i += 1) points.push(Transform.apply(spine[i], off));
+      out.push({ points, tension: state.tension[c], cable: c, segment: segIdx });
     }
     return out;
   }

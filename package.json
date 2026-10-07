@@ -3,7 +3,7 @@
   "version": "0.3.0",
   "private": true,
   "type": "module",
-  "description": "TRUNC soft-robotic-arm lab \u2014 WebGPU interactive simulation of mechanical-metamaterial torque transmission (arXiv:2412.02650)",
+  "description": "TRUNC soft-robotic-arm lab — WebGPU interactive simulation of mechanical-metamaterial torque transmission (arXiv:2412.02650)",
   "scripts": {
     "start": "node tools/dev-server.mjs",
     "dev": "node tools/dev-server.mjs",
@@ -15,5 +15,9 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "@sparticuz/chromium": "^153.0.0",
+    "puppeteer-core": "^25.12.0"
   }
 }

@@ -103,6 +103,9 @@ the job.
 
 ## 4. App
 
+![the bench, the arm at home, and the five jobs](screenshot-1-home.png)
+
+
 * `index.html` → `src/app/main.js`; zero dependencies; WebGPU when
   `navigator.gpu` exists, otherwise `FallbackRenderer` (painter-sorted CPU
   rasteriser) — the banner in the HUD says which one is live.
@@ -117,14 +120,30 @@ the job.
   exposes `POST /__log` and `GET /__status` (`{ok, booted, recent}`) so the shell
   can report boot diagnostics even when the console is not visible.
 
+### Screenshots are real output
+
+`docs/screenshot-*.png` are produced by `.check/render-shot.mjs`, which runs the
+shipped `FallbackRenderer` inside Node against a small software Canvas2D
+(`.check/softcanvas.mjs`, ~200 lines: scanline polygon fill, gradient sky,
+polyline strokes, circle sprites, PNG writer) and box-filters the 2× supersample
+on write. They are the renderer's own pixels, not mock-ups — which is how two
+visual bugs were caught that no headless assertion had noticed: `bones()` walked
+whole-segment chords while drawing per-cell instances (a straight 1.67 m tower
+whose real tip was at 0.59 m), and the fallback's triangle decimation shredded
+the lattice truss into slivers. Both are fixed; `.check/rig-check.mjs` now
+asserts the drawn chain ends on the kinematic tool (2.5 mm) and that tendon paths
+start on the base ring.
+
 ## 5. Verification
 
 ```
-npm run check:rust          # lib ✅ bin ✅ tests ✅ (WASI toolchain, no wasm shipped)
+npm run check:rust              # lib ✅ bin ✅ tests ✅ (WASI toolchain, no wasm shipped)
 node --test tests/*.test.mjs    # 6/6 — math, nn oracle, task invariants
 node .check/episode.mjs         # 5/5 task acceptance
 node .check/apptest.mjs         # boot, HUD, 6 frames, mode + task cycling — ALL OK
-node .check/policy-final.mjs    # three-arm policy rollout table
+node .check/rig-check.mjs       # drawn arm vs. kinematics — 2.5 mm
+node .check/render-shot.mjs     # renders docs/screenshot-*.png (≈10 s)
+node .check/policy-sweep.mjs    # policy-authority ablation table
 ```
 
 A real browser run was **not** possible inside the build sandbox (no browser

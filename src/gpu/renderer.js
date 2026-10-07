@@ -557,7 +557,10 @@ export class FallbackRenderer {
       if (!inst) continue;
       const idx = mesh.indices;
       const pos = mesh.positions;
-      const stride = idx.length / 3 > 900 ? 2 : 1;   // decimate heavy meshes
+      // Never drop alternate triangles: on a lattice truss that turns a closed
+      // surface into loose slivers (measured: the arm became a white comb).
+      // Sub-pixel triangles are culled instead, which is lossless on screen.
+      const stride = 1;
       for (let i = 0; i < entry.count; i += 1) {
         const o = i * 24;
         const m = inst.subarray(o, o + 16);
@@ -576,7 +579,7 @@ export class FallbackRenderer {
           if (!sa || !sb || !sc) { skipped += 1; continue; }
           // screen-space area cull (tiny triangles are not worth a fill)
           const area = Math.abs((sb.x - sa.x) * (sc.y - sa.y) - (sc.x - sa.x) * (sb.y - sa.y));
-          if (area < 2.2 * dpr * dpr && stride === 2) { skipped += 1; continue; }
+          if (area < 0.7 * dpr * dpr) { skipped += 1; continue; }
           // face normal from the world-space winding
           const ux = wb.x - wa.x; const uy = wb.y - wa.y; const uz = wb.z - wa.z;
           const vx = wc.x - wa.x; const vy = wc.y - wa.y; const vz = wc.z - wa.z;
@@ -586,10 +589,12 @@ export class FallbackRenderer {
           const nl = Math.hypot(nx, ny, nz) || 1;
           nx /= nl; ny /= nl; nz /= nl;
           const ndl = Math.abs(nx * light.x + ny * light.y + nz * light.z);
-          const rim = 0.22;
-          const shade = rim + 0.85 * ndl + emis;
+          // hemispheric ambient: up-facing surfaces pick up the sky, down-facing
+          // ones the floor. Without it everything below the horizon went nearly black.
+          const ambient = 0.30 + 0.26 * (0.5 + 0.5 * ny);
+          const shade = ambient + 0.85 * ndl + emis;
           const depth = (sa.z + sb.z + sc.z) / 3;
-          const fog = Math.max(0, Math.min(1, (depth - 1.2) * 0.55));
+          const fog = Math.max(0, Math.min(1, (depth - 1.6) * 0.42));
           const r = Math.round(255 * Math.min(1, col[0] * shade) * (1 - fog) + 8 * fog);
           const gg = Math.round(255 * Math.min(1, col[1] * shade) * (1 - fog) + 12 * fog);
           const b = Math.round(255 * Math.min(1, col[2] * shade) * (1 - fog) + 20 * fog);
