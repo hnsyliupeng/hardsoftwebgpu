@@ -10,11 +10,21 @@ expert. JavaScript plus Rust; no build step, no dependencies, no network.
 
 ## Run it
 
+Two ways, both offline:
+
+**1. Single file (no server).** `hardsoftwebgpu.html` is the whole lab in one
+288 kB file — every module inlined, no imports, no fetches. Open it directly in a
+browser (`file://` is fine), or rebuild it after editing anything:
+
 ```bash
-npm start            # serves the tree on http://0.0.0.0:5173
+npm run bundle       # → hardsoftwebgpu.html
 ```
 
-Open the printed URL. WebGPU is used when the browser has it; otherwise the app
+**2. Served.** `npm start` runs the zero-dependency dev server on
+`http://0.0.0.0:5173`, which also exposes `POST /__log` and `GET /__status` for
+headless diagnostics. Open the printed URL.
+
+ WebGPU is used when the browser has it; otherwise the app
 falls back to its own CPU rasteriser (the HUD badge says which is live), and it
 also self-heals to the rasteriser if a GPU context initialises but draws
 nothing. `?render=cpu` forces the software path.

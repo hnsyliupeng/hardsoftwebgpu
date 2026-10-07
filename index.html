@@ -244,6 +244,10 @@
     box.classList.add('show');
   };
   const report = (kind, text) => {
+    // Only talk to the dev server when the page was actually served over HTTP;
+    // opening the standalone build from disk must not raise an unhandled
+    // rejection (which this page would then display as an error).
+    if (!location.protocol.startsWith('http')) return;
     try {
       fetch('/__log', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ kind, text: String(text).slice(0, 2000) }) });
     } catch { /* offline is fine */ }
