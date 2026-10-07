@@ -291,6 +291,33 @@ export async function main({ root, args = process.argv.slice(2), label = 'Hard-S
     });
     return;
   }
+  if (has(args, 'port')) {
+    // The MATLAB port, headless: every ported module, then a full replay of each
+    // task (this is what cpu.html's "run all checks" button runs in the browser).
+    console.log(`${label} — MATLAB port verification\n`);
+    const { verifyPort, MatlabPort, PORT_TASKS } = await load(root, 'src/app/matlabPort.js');
+    const res = await verifyPort((i, n, target) => {
+      if (i === 1 || i === n || i % 5 === 0) console.log(`  [${i}/${n}] ${target}`);
+    });
+    let group = null;
+    for (const row of res.rows) {
+      if (row.group !== group) { group = row.group; console.log(`\n  == ${group}`); }
+      console.log(`  ${row.ok ? 'ok  ' : 'FAIL'} ${row.name}${row.detail ? ` — ${row.detail}` : ''}`);
+    }
+    console.log(`\n  ${res.passed}/${res.total} checks passed`);
+    if (flag(args, 'replay') !== '0') {
+      console.log('\n  full replays:');
+      for (const t of PORT_TASKS) {
+        const sim = new MatlabPort({ task: t.id });
+        const s = sim.runToEnd();
+        console.log(`  ${t.id.padEnd(12)} ${String(s.frames).padStart(5)} frames ${s.seconds.toFixed(1).padStart(6)} s  `
+          + `settled ${s.maxSettledError.toFixed(2).padStart(6)} mm  missed ${String(s.missed).padStart(3)}  `
+          + `motor ${s.motorSeconds.toFixed(1).padStart(5)} s  travel ${s.cableTravel.toFixed(0).padStart(5)} mm`);
+      }
+    }
+    process.exitCode = res.passed === res.total ? 0 : 1;
+    return;
+  }
   if (has(args, 'selftest')) {
     console.log(`${label} — selftest\n`);
     const { ok } = await acceptance(root, { seconds: Math.max(seconds, 40) });
@@ -304,11 +331,16 @@ export async function main({ root, args = process.argv.slice(2), label = 'Hard-S
   // default: serve the app
   const server = serve(root, { port, host });
   const urls = [`http://localhost:${port}/`, ...lanAddresses(port)];
+  const cpuUrls = [`http://localhost:${port}/cpu.html`, ...lanAddresses(port).map((u) => `${u}cpu.html`)];
   console.log(`\n${label}\n`);
   console.log(`  serving ${root}`);
-  console.log(`  open: ${urls.join('\n        ')}`);
-  console.log(`\n  the HUD badge shows whether the browser gave us WebGPU; add ?render=cpu to force`);
-  console.log(`  the software rasteriser. page diagnostics land in GET /__status.\n`);
+  console.log('  WebGPU page:');
+  console.log(`        ${urls.join('\n        ')}`);
+  console.log('  CPU reference page (same ported MATLAB plant, software rasteriser):');
+  console.log(`        ${cpuUrls.join('\n        ')}`);
+  console.log('\n  the HUD badge shows whether the browser gave us WebGPU; add ?render=cpu to force');
+  console.log('  the software rasteriser on the WebGPU page. The CPU page needs no GPU at all.');
+  console.log('  page diagnostics land in GET /__status.\n');
   if (has(args, 'open')) openBrowser(urls[0]);
   // keep the process alive; Ctrl-C stops it
   process.on('SIGINT', () => { server.close(); console.log('\nstopped'); });

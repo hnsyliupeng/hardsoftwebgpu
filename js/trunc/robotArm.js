@@ -26,6 +26,12 @@ import { clampCompression, compressionVector, HOME, SERVO_LIMITS } from './setup
                                  
                                                                      
                 
+     
+                                                                               
+                                                                        
+                                                                           
+     
+                               
  
 
                              
@@ -123,6 +129,8 @@ export class RobotArm {
     let reached = false;
     let current = new Array(9).fill(0);
     while (!reached) {
+      // one poll interval of the MATLAB loop: `pause(1/60)`
+      this.link.advance?.(1000 / 60);
       for (let idx = 0; idx <= 8; idx += 1) current[idx] = this.link.getServo(idx);
       let e = 0;
       for (let idx = 0; idx <= 8; idx += 1) { const d = finalPos[idx] - current[idx]; e += d * d; }

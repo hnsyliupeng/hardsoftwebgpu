@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TRUNC arm — CPU reference (MATLAB port)</title>
+<link rel="stylesheet" href="./src/app/app.css" />
+</head>
+<body class="cpu">
+  <div id="app">
+    <header>
+      <h1>TRUNC <span>CPU reference</span></h1>
+      <span class="tag" id="version">MATLAB port · TS + JS</span>
+      <span class="stat">renderer <b id="gpu-status">CPU rasteriser</b></span>
+      <span class="stat">fps <b id="fps">—</b></span>
+      <span class="stat">checks <b id="checks-status">not run</b></span>
+      <span class="spacer"></span>
+      <span class="stat" id="mode-status">no GPU required · every ported function is checked on this page</span>
+    </header>
+  </div>
+
+  <script type="module">
+    import { bootCpu } from './src/app/cpuApp.js';
+    const app = await bootCpu({
+      report: (kind, text) => console.log(`[cpu-app] ${kind}: ${text}`),
+    });
+    window.__cpuApp = app;
+  </script>
+</body>
+</html>

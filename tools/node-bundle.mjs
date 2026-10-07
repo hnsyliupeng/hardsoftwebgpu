@@ -44,14 +44,18 @@ async function collect(dir, filter) {
 
 const files = {
   'index.html': await readFile(join(REPO, 'index.html'), 'utf8'),
-  ...(await collect(join(REPO, 'src'), (n) => n.endsWith('.js') || n.endsWith('.wgsl'))),
+  'cpu.html': await readFile(join(REPO, 'cpu.html'), 'utf8'),
+  ...(await collect(join(REPO, 'src'), (n) => n.endsWith('.js') || n.endsWith('.wgsl') || n.endsWith('.css'))),
+  // the ported MATLAB modules and the CPU tools the pages import
+  ...(await collect(join(REPO, 'js'), (n) => n.endsWith('.js'))),
+  ...(await collect(join(REPO, 'tools'), (n) => n === 'raster.js' || n === 'gif.js')),
   'tools/node-launcher.js': await readFile(join(REPO, 'tools/node-launcher.js'), 'utf8'),
 };
 // Node needs a module type marker for the extracted .js files; the launcher would
 // otherwise be parsed as CommonJS and every `import` would fail.
 files['package.json'] = '{\n  "name": "hardsoftwebgpu-standalone",\n  "private": true,\n  "type": "module"\n}\n';
 
-for (const required of ['index.html', 'src/app/main.js', 'src/engine/robot.js', 'tools/node-launcher.js']) {
+for (const required of ['index.html', 'cpu.html', 'src/app/main.js', 'src/app/cpuApp.js', 'src/engine/robot.js', 'js/trunc/kinematics.js', 'tools/raster.js', 'tools/node-launcher.js']) {
   if (!files[required]) throw new Error(`node-bundle: missing ${required}`);
 }
 

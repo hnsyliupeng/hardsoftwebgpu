@@ -175,6 +175,25 @@ export class Raster {
     for (let i = 0; i < segments; i += 1) this.tri3(centre, rim[i], rim[i + 1], rgb);
   }
 
+  /**
+   * A torus — the equatorial guide ring the tendons thread through. Drawn as a
+   * closed loop of small tubes so you can see the truss core through the middle,
+   * which a solid disc would hide.
+   */
+  ring3(centre, normal, radius, tube, rgb, { major = 24, minor = 7 } = {}) {
+    const n = normalize(normal);
+    const u = normalize(Math.abs(n[1]) > 0.9 ? cross([1, 0, 0], n) : cross([0, 1, 0], n));
+    const v = cross(n, u);
+    let prev = null;
+    for (let i = 0; i <= major; i += 1) {
+      const a = (i / major) * Math.PI * 2;
+      const dir = normalize(add(mul(u, Math.cos(a)), mul(v, Math.sin(a))));
+      const c = add(centre, mul(dir, radius));
+      if (prev) this.cyl3(prev.c, c, tube, rgb, { segments: minor, cap: false });
+      prev = { c, dir };
+    }
+  }
+
   /** A capped cylinder from `a` to `b` — the base, the guide collars, props. */
   cyl3(a, b, radius, rgb, { segments = 16, cap = true, opts = {} } = {}) {
     const dir = normalize(sub(b, a));

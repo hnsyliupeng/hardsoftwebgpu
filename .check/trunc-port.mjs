@@ -176,6 +176,61 @@ console.log('\n== animation ==');
     + `motor ${summary.motorSeconds.toFixed(1)} s`);
 }
 
+// ------------------------------------------------- 5. hardware wrappers + math
+// These two were the port's remaining soft spots: the servo state machine could
+// spin forever because nothing advanced the transport inside its poll loop, and
+// `rotm2quat` read the column-major matrix rows-first, which quietly returns the
+// quaternion of the transpose.
+console.log('\n== hardware wrappers ==');
+{
+  const { RobotArm, LoopbackLink } = await J('trunc/robotArm.js');
+  const { HOME, SERVO_LIMITS } = await J('trunc/setup.js');
+  const { ArmMotor, MockMotorLink } = await J('trunc/armMotor.js');
+
+  const link = new LoopbackLink(900, 0);
+  const arm = new RobotArm({ link, pauseLength: 0.5, threshold: 1, timeout: 20 });
+  const cmd = HOME.map((v, k) => v + (k % 3 === 0 ? 40 : -18));
+  const res = arm.setPos(cmd);
+  ok('set_pos() polls until the servos arrive (and terminates)', res.ok && res.seconds > 0,
+    `${res.seconds.toFixed(3)} s of simulated polling, final error ≤ ${arm.threshold}`);
+
+  let unsafe = null;
+  arm.on((e) => { if (e.kind === 'unsafe') unsafe = e.detail; });
+  const bad = arm.setPos(HOME.map(() => SERVO_LIMITS.max + 50));
+  ok('set_pos() refuses a command outside the servo window', bad.ok === false && !!unsafe,
+    unsafe ?? 'no unsafe event');
+
+  const slow = new LoopbackLink(2000, 0);
+  const arm2 = new RobotArm({ link: slow, threshold: 1, timeout: 20 });
+  const legs = [];
+  arm2.resetArm((rep, phase) => legs.push(`${rep}:${phase}`));
+  ok('reset_arm() cycles comp → comp_max five times', legs.length === 10 && legs[0] === '0:comp_max' && legs[9] === '4:comp',
+    `${legs.length} legs, first ${legs[0]}, last ${legs[legs.length - 1]}`);
+
+  const motorLink = new MockMotorLink();
+  const motor = new ArmMotor(motorLink);
+  const dt = 1 / 240;
+  motor.pulse(3.5);
+  for (let t = 0; t < 6; t += dt) { motorLink.advance(dt); motor.update(dt); }
+  ok('pulse(t) holds the relay for exactly t seconds', near(motorLink.duty, 3.5, 1e-9) && motorLink.pulses.length === 1,
+    `relay duty ${motorLink.duty.toFixed(3)} s over ${motorLink.pulses.length} pulse`);
+}
+{
+  const { rotm2quat, quat2rotm, mul, rotZ, rotX } = await J('trunc/math.js');
+  const R = mul(rotZ(0.7), rotX(-0.4));
+  const back = quat2rotm(rotm2quat(R));
+  let worst = 0;
+  for (let k = 0; k < 16; k += 1) worst = Math.max(worst, Math.abs(back[k] - R[k]));
+  ok('rotm2quat ∘ quat2rotm is the identity (column-major)', worst < 1e-12,
+    `worst |ΔR| = ${worst.toExponential(2)}`);
+
+  const q = [0.3, -0.5, 0.2, 0.78];
+  const q2 = rotm2quat(quat2rotm(q));
+  const n = Math.hypot(...q);
+  const dot = Math.abs(q2.reduce((a, v, k) => a + v * q[k], 0) / n);
+  ok('quat2rotm ∘ rotm2quat agrees up to sign', near(dot, 1, 1e-12), `|q·q′| = ${dot.toFixed(12)}`);
+}
+
 const failed = results.filter((r) => !r.pass);
 console.log(`\n${results.length - failed.length}/${results.length} checks passed`);
 if (failed.length) process.exitCode = 1;

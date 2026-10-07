@@ -31,4 +31,29 @@ app.robot.selectTask(4);
 __drainRaf(3);
 console.log('multi-stage index:', app.robot.taskIndex, 'objective ok');
 console.log('report entries:', JSON.stringify(report.slice(0, 6)));
+
+// ---- the MATLAB port panel on the WebGPU page ----------------------------
+{
+  const { port, portView, portPanel } = app;
+  app.view.portArm = true;
+  port.select('bulb');
+  portView.playing = true;
+  for (let i = 0; i < 200; i += 1) port.step(1);
+  const geo = port.geometry();
+  const entities = app.renderer.constructor.name;
+  console.log('port arm: task', port.task, '| cells', geo.cells.length, '| guides', geo.guides.length,
+    '| tendons', geo.tendons.flat().length, '| spine pts', geo.spine.length);
+  console.log('port readouts:', JSON.stringify(Object.fromEntries(port.readouts()).phase));
+  const summary = port.runToEnd();
+  console.log('port replay:', summary.frames, 'frames /', summary.seconds.toFixed(1), 's | settled',
+    summary.maxSettledError.toFixed(2), 'mm | missed', summary.missed, '| motor', summary.motorSeconds.toFixed(2), 's');
+  const res = await app.verifyPort((i, n, label) => { if (i === 1 || i === n) console.log(`  verify [${i}/${n}] ${label}`); });
+  console.log('port verification inside the WebGPU page:', `${res.passed}/${res.total}`);
+  const bad = res.rows.filter((r) => !r.ok);
+  if (bad.length) { console.log('  failures:', bad.map((r) => r.name).join('; ')); process.exitCode = 1; }
+  if (summary.missed !== 0 || Math.abs(summary.motorSeconds - 3.5) > 1e-6) process.exitCode = 1;
+  if (!(geo.cells.length > 5 && geo.tendons.flat().length === 9 && geo.guides.length === 4)) process.exitCode = 1;
+  void portPanel; void entities;
+}
+
 console.log(process.exitCode ? 'FAILED' : 'ALL OK');

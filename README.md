@@ -79,19 +79,49 @@ nothing. `?render=cpu` forces the software path.
 ## Verify
 
 ```bash
-npm run check:rust              # lib ✅ bin ✅ tests ✅ (WASI toolchain; no wasm shipped)
-node --test tests/*.test.mjs    # 6/6 — math, nn oracle, task invariants
-node .check/episode.mjs         # 5/5 task acceptance, no damage
-node .check/apptest.mjs         # boot, HUD, frames, mode + task cycling
-node .check/rig-check.mjs       # drawn arm vs. kinematics (2.5 mm)
-node .check/render-shot.mjs     # renders docs/screenshot-*.png with the real renderer
-node .check/policy-sweep.mjs    # policy-authority ablation table
+npm run check:rust                     # lib ✅ bin ✅ tests ✅ (WASI toolchain; no wasm shipped)
+node --test tests/*.test.mjs           # 14/14 — arm maths, nn oracle, task invariants, the port's unit checks
+node .check/trunc-port.mjs             # 20/20 — the port against hand-computed MATLAB values
+node .check/cpu-app.mjs                # 14/14 — the CPU page: boots, draws, verifies, replays
+node .check/apptest.mjs                # boot, HUD, frames, mode + task cycling, the port panel, 44/44 checks
+node .check/episode.mjs                # 5/5 task acceptance, no damage
+node .check/rig-check.mjs              # drawn arm vs. kinematics (2.5 mm)
+node .check/bundle-test.mjs            # the single-file build boots and renders
+node .check/render-shot.mjs            # renders docs/screenshot-*.png with the real renderer
+node .check/policy-sweep.mjs           # policy-authority ablation table
 ```
+
+`src/app/matlabPort.js` holds the port's 44-row verification table — the same
+table the CPU page's **run all checks** button prints, the WebGPU page's
+**verify port** button prints and `node run.mjs --port` prints.
 
 `.check/render-shot.mjs` is worth a note: it runs the app's own `FallbackRenderer`
 inside Node against a small software Canvas2D (`softcanvas.mjs`) and writes PNGs,
 so the screenshots in `docs/` are produced by the shipped renderer rather than
 being mock-ups.
+
+## Two front ends, one plant
+
+| page | renderer | what it is for |
+| --- | --- | --- |
+| `index.html` | WebGPU (WGSL shaders, MSAA, shadows) with a Canvas2D fallback | the app: five jobs, the transformer planner, training, the full GUI |
+| `cpu.html` | `tools/raster.js` — a software rasteriser, **no GPU at all** | the CPU reference: the same ported MATLAB plant, plus a button that runs all 44 port checks in the page |
+
+Both pages import `src/app/matlabPort.js` (the simulation) and
+`src/app/portScene.js` (the drawing), so the CPU page is not a mock-up of the
+WebGPU page — it is the same replay with a different rasteriser. `docs/trunc-animation.gif`
+is that drawing encoded to GIF by `tools/make-gif.mjs`.
+
+The WebGPU page has a **MATLAB port** panel: switch it on and the ported replay
+replaces the engine arm, drawn by the GPU renderer, with its own task list,
+parameter sliders and a *verify port* button that runs the whole check table.
+
+```bash
+node run.mjs            # serves both pages and prints their URLs
+#   WebGPU page  → http://localhost:5173/
+#   CPU page     → http://localhost:5173/cpu.html
+node run.mjs --port     # headless: every ported module + a replay of all five tasks
+```
 
 ## MATLAB port (TRUNC) — TypeScript / JavaScript
 

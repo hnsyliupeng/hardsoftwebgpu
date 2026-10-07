@@ -25,6 +25,12 @@ export interface SerialLink {
   stop(channels: number[]): void;
   /** milliseconds since the link started — the MATLAB `tic`/`toc` */
   now(): number;
+  /**
+   * Advance a simulated transport by `dtMs` (optional). The MATLAB's `set_pos`
+   * polled real hardware, so a 1/60 s `pause` passed inside the loop; a
+   * loopback link has no clock of its own, so the poll loop ticks it here.
+   */
+  advance?(dtMs: number): void;
 }
 
 export interface PoseSensor {
@@ -122,6 +128,8 @@ export class RobotArm {
     let reached = false;
     let current = new Array(9).fill(0);
     while (!reached) {
+      // one poll interval of the MATLAB loop: `pause(1/60)`
+      this.link.advance?.(1000 / 60);
       for (let idx = 0; idx <= 8; idx += 1) current[idx] = this.link.getServo(idx);
       let e = 0;
       for (let idx = 0; idx <= 8; idx += 1) { const d = finalPos[idx] - current[idx]; e += d * d; }

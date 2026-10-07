@@ -19,6 +19,8 @@ import {
 import { Robot, CONTROL_MODE } from '../engine/robot.js';
 import { TASK_LIBRARY, benchLayout, stagesOf, FIXTURE } from '../engine/tasks.js';
 import { buildHud } from './hud.js';
+import { MatlabPort, PORT_TASKS, portGeometry, verifyPort, CABLE_RING_M } from './matlabPort.js';
+import { buildPortPanel } from './portPanel.js';
 import { V3, Quat, Transform, clamp, deg, rad } from '../core/mathx.js';
 import { defaultConfig } from '../core/arm.js';
 import { Mlp, Transformer, Adam, ACT } from '../core/nn.js';
@@ -64,7 +66,11 @@ export async function boot(hooks = {}) {
     exposure: 1.05, vignette: 0.42, grain: 0.012,
     project: () => null,
     light: true,
+    portArm: false,     // draw the ported MATLAB replay instead of the engine arm
   };
+  // The MATLAB port (portPanel.js) — same model as cpu.html, drawn on the GPU.
+  const port = new MatlabPort({ task: PORT_TASKS[0].id });
+  const portView = { playing: false, stepsPerFrame: 1 };
 
   // ---------------------------------------------------------------- renderer
   let renderer = null;
@@ -163,6 +169,47 @@ export async function boot(hooks = {}) {
     onCamera: (n) => applyPreset(n),
     onSpinTest: () => { sim.spinTest = 3; },
   });
+  // ---- MATLAB port panel: the ported plant, drawn by the same GPU renderer
+  const portPanel = buildPortPanel(root.left, {
+    onEnable: (v) => {
+      view.portArm = v;
+      portPanel.setEnabled(v);
+      hud.toast(v ? 'showing the MATLAB port replay' : 'showing the IK engine arm');
+      if (v) applyPreset('task');
+    },
+    onTask: (id) => {
+      port.select(id);
+      portView.playing = true;
+      portPanel.setPlaying(true);
+      hud.toast(`port task: ${id}`);
+      applyPreset('task');
+    },
+    onPlay: () => {
+      portView.playing = !portView.playing;
+      if (!view.portArm) { view.portArm = true; portPanel.setEnabled(true); }
+      portPanel.setPlaying(portView.playing);
+    },
+    onStep: () => { port.step(portView.stepsPerFrame); portPanel.update(Object.fromEntries(port.readouts()), null); },
+    onRestart: () => { port.restart(); portPanel.update(Object.fromEntries(port.readouts()), null); },
+    onParam: (patch) => {
+      if (patch.cableRing) { port.cableRing = patch.cableRing; return; }
+      port.setParams(patch);
+    },
+    onVerify: async () => {
+      portPanel.setVerdict('running every ported module in this page…');
+      const res = await verifyPort((i, n, label) => portPanel.setVerdict(`[${i}/${n}] ${label}`));
+      const failed = res.rows.filter((r) => !r.ok);
+      portPanel.setVerdict(
+        `${res.passed}/${res.total} checks passed on this page`
+        + (failed.length ? ` — first failure: ${failed[0].name}` : ''),
+        failed.length ? 'fail' : 'pass',
+      );
+      hud.toast(`port verification ${res.passed}/${res.total}`);
+      report('port-verify', `${res.passed}/${res.total}`);
+    },
+  });
+  portPanel.setPlaying(false);
+
   hud.refreshArm(robot.arm.cfg);
   hud.setGpu(fallback ? 'canvas 2D fallback' : 'WebGPU');
   hud.setStiffness(`${robot.arm.bendingStiffnessAt(robot.arm.cfg.preload).toFixed(2)} N·m/rad`);
@@ -396,6 +443,45 @@ export async function boot(hooks = {}) {
             [tint, tint, tint * 0.95, 1], partFor[stage.id], isActive);
         }
       }
+    }
+
+    // ---- the MATLAB port arm replaces the engine arm when it is showing
+    if (view.portArm) {
+      const geo = port.geometry();
+      const frame = port.ensureFrame();
+      for (const cell of geo.cells) {
+        scene.mesh('cell_truss', { p: V3.new(...cell.p), q: Quat.fromYTo(V3.new(...cell.dir)), scale: cell.scale }, [0.50, 0.55, 0.62, 1], [0.2, 0.3, 0.35, 1]);
+      }
+      for (const guide of geo.guides) {
+        scene.mesh('cell_equa', { p: V3.new(...guide.p), q: Quat.fromYTo(V3.new(...guide.dir)), scale: 1.35 }, [0.40, 0.46, 0.56, 1], [0.4, 0.2, 0.15, 1]);
+      }
+      // nine tendons, coloured by how far each cable has been pulled from slack
+      for (let m = 0; m < geo.tendons.length; m += 1) {
+        let slack = Infinity;
+        for (let c = 0; c < 3; c += 1) slack = Math.min(slack, frame.cableDelta[m * 3 + c]);
+        for (let c = 0; c < 3; c += 1) {
+          const t = clamp(Math.abs(frame.cableDelta[m * 3 + c] - slack) / 45, 0, 1);
+          scene.polyline(geo.tendons[m][c].map((p) => V3.new(...p)), [0.55 + 0.45 * t, 0.5 + 0.25 * t, 0.3 + 0.05 * t, 0.95]);
+        }
+      }
+      // tool + its commanded target
+      scene.mesh('tool', { p: V3.new(...geo.toolBase), q: Quat.fromYTo(V3.new(...geo.toolDir)), scale: 1 }, [0.62, 0.66, 0.72, 1], [0.85, 0.35, 0.05, 1]);
+      if (view.trail && port.trail.length > 1) {
+        scene.polyline(port.trail.map((p) => V3.new(...p)), frame.motorOn ? [1.0, 0.6, 0.35, 0.9] : [0.45, 0.92, 0.78, 0.85]);
+      }
+      if (view.cables) {
+        const traj = port.trajectory();
+        if (traj.length > 1) scene.polyline(traj.map((p) => V3.new(...p)), [0.34, 0.5, 0.78, 0.55]);
+      }
+      const tgt = V3.new(...geo.target);
+      const a = 0.03;
+      scene.line(V3.add(tgt, V3.new(-a, 0, 0)), V3.add(tgt, V3.new(a, 0, 0)), [0.44, 0.92, 0.74, 1]);
+      scene.line(V3.add(tgt, V3.new(0, -a, 0)), V3.add(tgt, V3.new(0, a, 0)), [0.44, 0.92, 0.74, 1]);
+      scene.line(V3.add(tgt, V3.new(0, 0, -a)), V3.add(tgt, V3.new(0, 0, a)), [0.44, 0.92, 0.74, 1]);
+      scene.sprite(tgt, frame.motorOn ? 0.016 : 0.010, frame.motorOn ? 2.6 : 1.6);
+      scene.sprite(V3.new(...geo.tip), 0.008, 1.2);
+      scene.mesh('base', { p: V3.new(0, 0.022, 0), q: null, scale: 1 }, [0.5, 0.52, 0.58, 1], [0.7, 0.3, 0, 1]);
+      return scene;
     }
 
     // ---- the arm itself: one TRUNC cell per printed cell, tool on the wrist
@@ -637,6 +723,11 @@ export async function boot(hooks = {}) {
     }
     view.project = (p) => camera.project(p);
     hud.update(rawDt);
+    if (view.portArm && portView.playing) {
+      port.step(portView.stepsPerFrame);
+      portPanel.update(Object.fromEntries(port.readouts()), port.anim.done ? port.summary() : null);
+      if (port.anim.done) { portView.playing = false; portPanel.setPlaying(false); }
+    }
 
     // manual mode: show the joystick strip
     if (robot.mode === CONTROL_MODE.MANUAL && manualPanel.style.display === 'none') {
@@ -693,7 +784,10 @@ export async function boot(hooks = {}) {
   // a couple of control steps so the first frame is not a straight arm
   for (let i = 0; i < 240; i += 1) robot.step(FIXED_DT, stepOpts());
   hideBoot();
-  window.__app = { robot, sim, view, camera, renderer, scene, meshes, hud, triangles, buildCloud };
+  window.__app = {
+    robot, sim, view, camera, renderer, scene, meshes, hud, triangles, buildCloud,
+    port, portView, portPanel, verifyPort,
+  };
   report('boot', `booted: ${fallback ? 'fallback renderer' : 'webgpu'}, ${triangles.toFixed(0)} triangles, ${Object.keys(meshes).length} meshes`);
   requestAnimationFrame(frame);
   return window.__app;

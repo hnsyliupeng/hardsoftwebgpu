@@ -100,6 +100,10 @@ export function rotZ(t: number): Mat4 {
 
 /** MATLAB `rotm2quat` order: w, x, y, z. */
 export function rotm2quat(m: Mat4): Quat {
+  // `Mat4` is column-major, and so is `quat2rotm` below, so the off-diagonal
+  // differences must be read as R(r,c) = m[c * 4 + r]. Reading them the other
+  // way round silently returns the quaternion of the transpose — which is the
+  // inverse rotation, so it looks harmless until you compose two of them.
   const trace = m[0] + m[5] + m[10];
   let w: number;
   let x: number;
@@ -108,24 +112,24 @@ export function rotm2quat(m: Mat4): Quat {
   if (trace > 0) {
     const s = Math.sqrt(trace + 1) * 2;
     w = 0.25 * s;
-    x = (m[9] - m[6]) / s;
-    y = (m[2] - m[8]) / s;
-    z = (m[4] - m[1]) / s;
+    x = (m[6] - m[9]) / s;
+    y = (m[8] - m[2]) / s;
+    z = (m[1] - m[4]) / s;
   } else if (m[0] > m[5] && m[0] > m[10]) {
     const s = Math.sqrt(1 + m[0] - m[5] - m[10]) * 2;
-    w = (m[9] - m[6]) / s;
+    w = (m[6] - m[9]) / s;
     x = 0.25 * s;
     y = (m[4] + m[1]) / s;
     z = (m[2] + m[8]) / s;
   } else if (m[5] > m[10]) {
     const s = Math.sqrt(1 + m[5] - m[0] - m[10]) * 2;
-    w = (m[2] - m[8]) / s;
-    x = (m[4] + m[1]) / s;
+    w = (m[8] - m[2]) / s;
+    x = (m[1] + m[4]) / s;
     y = 0.25 * s;
     z = (m[9] + m[6]) / s;
   } else {
     const s = Math.sqrt(1 + m[10] - m[0] - m[5]) * 2;
-    w = (m[4] - m[1]) / s;
+    w = (m[1] - m[4]) / s;
     x = (m[2] + m[8]) / s;
     y = (m[9] + m[6]) / s;
     z = 0.25 * s;
