@@ -15,9 +15,5 @@
   },
   "engines": {
     "node": ">=20"
-  },
-  "devDependencies": {
-    "@sparticuz/chromium": "^153.0.0",
-    "puppeteer-core": "^25.12.0"
   }
 }
