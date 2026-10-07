@@ -149,6 +149,12 @@ What the checks now say, from `.check/engine-check.mjs` (rows `cell/…`):
   * **the cell transmits rotation at constant velocity and is frame-invariant** —
     half-angle map exact to 3e−14°, both shafts roll together to 0.0 mrad, shape
     unchanged (2.8e−14 mm) by a 145 mm move + 63° reorientation.
+  * `docs/cells-joint-closeup.png` renders one joint of the live arm from its
+    own data: the outer orange barrel is the equatorial cell (M = 2 bands on the
+    88 mm mold), the blue lattice inside it the truss cell (M = 3, 56 mm mold,
+    the extra band of arrow heads visible as the second chevron row), the white
+    discs are the fold pins, the green helix the conical restoring spring and the
+    grey rings the two nodes' own bolt patterns.
   * **every joint of the arm closes from its own two FK frames** — 7 joints
     (3:2:2), active 2/4/6, worst rigid-link violation **2.7e−5 mm** on the circle
     task and ≤2.6e−4 mm on every other task's joints: for every pose the FK
