@@ -135,6 +135,8 @@ const server = createServer(async (req, res) => {
 
 server.listen(PORT, HOST, () => {
   console.log(`TRUNC soft-arm lab → http://${HOST}:${PORT}/  (root ${ROOT})`);
+  console.log(`  WebGPU page  http://${HOST}:${PORT}/index.html`);
+  console.log(`  CPU page     http://${HOST}:${PORT}/cpu.html   (no GPU needed)`);
   console.log(`headers: COOP/COEP ${ISOLATE ? 'ON (--isolate)' : 'off — embeddable in the preview iframe'}`);
   console.log('page diagnostics: POST /__log, requests+boot state: GET /__status');
 });
