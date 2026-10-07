@@ -93,6 +93,34 @@ inside Node against a small software Canvas2D (`softcanvas.mjs`) and writes PNGs
 so the screenshots in `docs/` are produced by the shipped renderer rather than
 being mock-ups.
 
+## MATLAB port (TRUNC) — TypeScript / JavaScript
+
+`ts/trunc/` is a line-by-line port of the TRUNC repository's MATLAB (`training/`
+and `matlab/`): the constant-curvature forward kinematics and cable-triangle
+geometry, the five trajectory generators, the waypoint densifier that
+`interp_waypoints.m` never shipped, the servo/rigid-body wrappers and the
+cross-coupling / efficiency / CV-joint analysis scripts. `ts/sim/` adds the
+damped-least-squares inverse solver, the calibrated per-task placements and the
+replay animation that mirrors `follow_trajectory.m` — servo rate limit, 0.5 s
+pauses, tool-motor pulses and the 15-sample pose average included.
+
+```bash
+node --disable-warning=ExperimentalWarning tools/ts-emit.mjs   # ts/** -> js/**
+node .check/trunc-port.mjs        # 14/14: kinematics, placement, animation
+node .check/trunc-calibrate.mjs   # re-run the task-placement search
+```
+
+`tools/make-gif.mjs` draws that animation with a dependency-free software
+rasteriser (`tools/raster.js` — depth buffer, truss tube, tendons, guides, 3x5
+font) and encodes it with a hand-written GIF89a encoder (`tools/gif.js` —
+median-cut palette, LZW, Netscape loop): no browser, no packages.
+
+```bash
+node --disable-warning=ExperimentalWarning tools/make-gif.mjs
+node ... tools/make-gif.mjs --task=bulb --frames=6 --still=3   # one task, PNG
+# -> docs/trunc-animation.gif: the five tasks, 720x540, with a results card
+```
+
 ## Honest status
 
 * The learned **inverse kinematics** fits well (1.6 mm rms vs 5.6 mm for the mean
