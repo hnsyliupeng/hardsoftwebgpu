@@ -101,6 +101,25 @@ if (!app) {
   writeFileSync(new URL('../docs/screenshot-4-standalone.png', import.meta.url), encodePng(app.renderer.canvas._ctx?.buf ?? app.renderer.ctx.buf, app.renderer.canvas.width, app.renderer.canvas.height, 2));
   const m = app.robot.metrics();
   console.log(`ran 10 s of simulation · phase ${m.phaseName} · turns ${m.turns.toFixed(2)} · wrote docs/screenshot-4-standalone.png`);
+  // the inlined MATLAB port must work in the standalone file too
+  {
+    const { port, portView } = app;
+    app.view.portArm = true;
+    portView.playing = true;
+    port.select('motherboard');
+    for (let i = 0; i < 300; i += 1) port.step(1);
+    const geo = port.geometry();
+    __drainRaf(2);
+    app.renderer.present(app.scene, {});
+    const summary = port.runToEnd();
+    const good = geo.cells.length > 4 && geo.tendons.flat().length === 9 && geo.guides.length === 4
+      && summary.missed === 0 && Math.abs(summary.motorSeconds - 21) < 1e-6;
+    console.log(`inlined MATLAB port · task ${port.task} · ${geo.cells.length} cells, ${geo.guides.length} guides, `
+      + `${geo.tendons.flat().length} tendons · replay ${summary.frames} frames, motor ${summary.motorSeconds.toFixed(1)} s, missed ${summary.missed}`);
+    const res = await app.verifyPort();
+    console.log(`port verification in the standalone file: ${res.passed}/${res.total}`);
+    if (!good || res.passed !== res.total) process.exitCode = 1;
+  }
   console.log(report.length ? `page reports: ${JSON.stringify(report.slice(-3))}` : 'page reports: (none — nothing went wrong)');
 }
 console.log(process.exitCode ? 'BUNDLE FAILED' : 'BUNDLE OK — standalone boots and renders');
