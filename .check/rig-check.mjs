@@ -18,10 +18,10 @@ cables.forEach((c) => {
   const a = c.points[0];
   const b = c.points[c.points.length - 1];
   const r = Math.hypot(a.x, a.z);
-  worst = Math.max(worst, Math.abs(r - 0.0245));
+  worst = Math.max(worst, Math.abs(r - 0.065));
   console.log(`  cable ${c.cable}: base (${a.x.toFixed(3)}, ${a.y.toFixed(3)}, ${a.z.toFixed(3)}) → anchor (${b.x.toFixed(3)}, ${b.y.toFixed(3)}, ${b.z.toFixed(3)}) · ${c.points.length} pts`);
 });
-console.log(`base ring radius error: ${(worst * 1000).toFixed(2)} mm (want ≈ 0: cables sit on the spine's surface)`);
+console.log(`base ring radius error: ${(worst * 1000).toFixed(2)} mm (want ≈ 0: the tendons ride the three-arm guides' 65 mm triangle)`);
 // spine monotonicity: each bone must be further up than the previous in the arm's own frame
 let monotone = true;
 for (let i = 1; i < body.length; i += 1) {

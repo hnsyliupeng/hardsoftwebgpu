@@ -6,6 +6,26 @@ rigidly (52× torsion/bending) — with five robotic tasks, a learned
 inverse-kinematics network and a transformer policy distilled from a scripted
 expert. JavaScript plus Rust; no build step, no dependencies, no network.
 
+The joint geometry is **taken from the paper, not reconstructed**:
+Carton, Kowalewski, Guo, Alpert, Garg, Revier, Lipton, *"Bridging Hard and Soft:
+Mechanical Metamaterials Enable Rigid Torque Transmission in Soft Robots"*
+([arXiv:2412.02650v1](https://arxiv.org/html/2412.02650v1)) and the authors'
+[`TransformativeRoboticsLab/TRUNC`](https://github.com/TransformativeRoboticsLab/TRUNC)
+MATLAB. `src/core/truncSpec.js` is where that mapping lives, one constant per
+sentence of the paper:
+
+| what the paper says | where it shows up |
+| --- | --- |
+| the joint is the **double-arrowhead auxetic cell tiled on a sphere**, axial point group `2*N`, **N = 4** | `cellLattice()` — eight half-sectors per band, built from the auxetic chevrons |
+| **truss** = `M = 3` (two joint bands either side of the equator, internal shear); **equatorial** = `M = 2` (one band on the equator) | `BAND_COUNT`, `truncCell(kind)` |
+| the arm's body is **two nested flex shafts** — the truss shaft drives the tool, the equatorial shaft guides the tendons | every joint draws one ball inside the other |
+| truss cells in the arm are **D = 56 mm** | `CELL_DIAMETER_MM`; the ball is never scaled to the pitch |
+| cables attach at **shoulder, elbow and wrist** — **nine tendons**, the joints between them passive | `Arm.guides()`, `cablePaths()`; 7 joints, 8 three-arm guides |
+| the **three-arm cable guides** bend/twist in-plane and resist out-of-plane bending (Fig. 4 C) | `guideArms()`; the tendons' corners *are* the guide rollers |
+| a **conical spring** restores extension without carrying torque (Fig. 2 E) | `conicalSpring()` |
+| the MATLAB's **3L/7 : 2L/7 : 2L/7** split, **L = 695 mm**, 65 mm cable triangle, **l = 710 mm**, 45°/joint | `segmentSplit`, `CABLE_RING_M`, `Arm.segLength()` |
+| a **socket-driver** end effector turns the bulb into its socket (Fig. 5) | `socketTool()` |
+
 ![home view](docs/screenshot-1-home.png)
 
 ## Run it — local Node.js (no install, no build)
@@ -57,7 +77,7 @@ nothing. `?render=cpu` forces the software path.
 
 | area | files | notes |
 | --- | --- | --- |
-| plant | `src/core/{metamaterial,arm,physics}.js` | 3 segments × 3 printed cells, 9 tendons, 45°/joint, 710 mm reach; damped-least-squares inverse kinematics over the cable space, load-compensated, warm started |
+| plant | `src/core/{truncSpec,metamaterial,arm,physics}.js` | 7 nested TRUNC joints (3:2:2, D = 56 mm), 8 three-arm cable guides, 9 tendons, 45°/joint, 710 mm reach; damped-least-squares inverse kinematics over the cable space, load-compensated, warm started |
 | tasks | `src/engine/tasks.js`, `src/core/physics.js` | bolt, bulb, valve, peg and a two-stage assembly; contact-driven phase supervisor with bounded wrenches |
 | learners | `src/workers/trainers.js`, `src/workers/sim.worker.js` | MLP inverse kinematics (1.6 mm rms tendon error) and a causal chunk transformer distilled from expert episodes; both train in a worker |
 | engine | `src/engine/robot.js` | expert / learned / manual modes, receding-horizon transformer rollout, telemetry, trail, metrics |

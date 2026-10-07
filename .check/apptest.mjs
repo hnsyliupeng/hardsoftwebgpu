@@ -41,8 +41,8 @@ console.log('report entries:', JSON.stringify(report.slice(0, 6)));
   for (let i = 0; i < 200; i += 1) port.step(1);
   const geo = port.geometry();
   const entities = app.renderer.constructor.name;
-  console.log('port arm: task', port.task, '| cells', geo.cells.length, '| guides', geo.guides.length,
-    '| tendons', geo.tendons.flat().length, '| spine pts', geo.spine.length);
+  console.log('port arm: task', port.task, '| joints', geo.joints.length, '(D =', geo.spec.cellDiameterMm, 'mm) | cable guides',
+    geo.cableGuides.length, '| tendons', geo.tendons.flat().length, '| spine pts', geo.spine.length);
   console.log('port readouts:', JSON.stringify(Object.fromEntries(port.readouts()).phase));
   const summary = port.runToEnd();
   console.log('port replay:', summary.frames, 'frames /', summary.seconds.toFixed(1), 's | settled',

@@ -33,28 +33,66 @@ WASI toolchain and `tests/*.test.mjs` asserts the JS side matches those numbers.
 
 ## 2. Arm geometry (what is actually drawn)
 
-The joint is a **nested TRUNC truss**, and three geometry bugs had to be fixed
-before the rendering said so:
+**This section was rewritten after the model drawn here was rejected as not being
+the paper's joint.** The earlier arm — a diamond lattice with a central shaft and
+solid collars — was a *reconstruction*: it looked like a truss, but no part of it
+came from the publication. It has been replaced by geometry read off
+arXiv:2412.02650v1 and the authors' MATLAB. `src/core/truncSpec.js` is the single
+place that mapping is written down, with the citation next to each constant.
 
-  * `truncCell()` was built from `y = 0…L` but placed at each cell's *mid*
-    transform, so every instance was half a cell too high — the end rings stacked
-    into what read as a **coil**, which is not the TRUNC arm at all. The mesh is
-    now centred on `y = 0`, matching `Arm.bones()`, and the chain ends exactly on
-    the kinematic tool (asserted by `.check/rig-check.mjs`, 2.5 mm).
-  * the "truss" was a smooth helix. It is now a **diamond lattice** (three
-    right-hand + three left-hand helical runs), six longitudinal spines and a
-    **central flex shaft** — the nested member that carries the torque — closed by
-    end rings at every cell boundary.
-  * the tendons need their **equatorial guide**: each cell now draws the collar
-    and its nine cable bores in the tendon annulus, which is what the paper's
-    rigid-torque transmission uses to hold the cables at a constant radius.
+What the paper actually specifies, and what is now drawn:
 
-Two scene-level consequences were then fixed as well: the arm is mounted on the
-*floor*, so a solid bench slab passed straight through its lower cells — the
-bench is now a frame with an opening (real rigs have the same cut-out) — and the
-fallback rasteriser's camera and shading were reworked (clamped diffuse term,
-framed on the 0.59 m arm rather than the 1.15 m bench) because the lattice was
-either blown out to white or sub-pixel thin at the old distance.
+  * **The cell.** TRUNC is a **double-arrowhead auxetic cell tiled on a sphere**:
+    a spherical mechanism of non-fixed radius, described by axial point groups
+    `2*N`. The paper chooses four-fold equatorial symmetry (**N = 4**), so
+    `cellLattice()` lays eight half-sectors of auxetic chevrons around the axis,
+    widening to a waist at the equator and closing on a pole ring at each end.
+  * **Two variants, two shafts.** `M = 2` is the **equatorial** joint — a single
+    band of joints on the equator, the *easy* bending mode that holds the tendons
+    at a constant radius (twist : bend = 11). `M = 3` is the **truss** — a second
+    band above the equator, so the cell can shear internally and the twist mode is
+    stiff (twist : bend = 52). The paper's arm is **two nested flex shafts**: the
+    truss shaft drives the socket driver, the equatorial shaft guides the nine
+    tendons. Every joint in the app therefore draws *two* balls, one inside the
+    other, from the same `cellLattice()`.
+  * **D = 56 mm.** The truss cells used in the arm are 56 mm across
+    (§ Supplementary). The drawn ball is the printed joint, so it is **never
+    scaled**: the axial pitch (101.4 mm) is larger than the ball, and the gap
+    between two balls is the link section of the shaft — exactly the arrangement
+    in Fig. 4 A, and what the press photos of the arm show.
+  * **Seven joints, eight guides, nine tendons.** The MATLAB splits the arm
+    `shoulder : elbow : wrist = 3L/7 : 2L/7 : 2L/7` with `L = 695 mm`; the cells
+    follow that split 3 : 2 : 2, giving a uniform 101.4 mm pitch over the 710 mm
+    neutral length. A **three-arm cable guide** sits at the base, at every cell
+    boundary and at the wrist (Fig. 4 C). Its arm tips *are* the cable-triangle
+    corners, so the nine tendons thread exactly over the guide rollers instead of
+    merely passing nearby.
+  * **Restoring spring.** A **conical spring** runs down the middle of each truss
+    cell (Fig. 2 E): it restores extension without transmitting torque, which is
+    the whole point of the design.
+  * **End effector.** The socket driver from the paper's demo (Fig. 5) — taper,
+    socket head, motor sleeve that lights up while the drill relay is energised.
+
+Three real bugs were found while re-deriving this, and all three were visible on
+screen before they were fixed:
+
+  * `portGeometry()` passed the cable ring radius in **metres** to `cornersOf()`,
+    which works in **millimetres** (like the rest of the ported kinematics). Every
+    tendon was therefore computed on a 0.065 mm triangle and collapsed onto the
+    shaft axis — the "nine tendons" were one orange line down the middle.
+  * the engine arm's cell walk used a single `cellsPerSegment` and equal thirds of
+    the length, so the drawn pitches were 78.9/118.3 mm instead of the MATLAB's
+    uniform 101.4 mm; `segmentSplit` now carries 3:2:2 and `segLength(s)` is what
+    the FK, the bones, the guides and the tendons all walk.
+  * the guide stations are placed *on* the arc samples (`SPINE_N = 12`, divisible
+    by 3 and 2), so a guide's roller and the tendon that threads it are the same
+    point in space rather than two points that happen to be close.
+
+Scene-level work that is still true: the arm is mounted on the floor, so the
+bench is a **frame with an opening** rather than a solid slab, and the fallback
+rasteriser frames the 0.59 m arm (not the 1.15 m bench) with a clamped diffuse
+term, because a 56 mm lattice a metre away is either blown out to white or
+sub-pixel thin.
 
 ## 3. Tasks
 

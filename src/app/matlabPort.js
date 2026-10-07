@@ -39,6 +39,10 @@ import {
   taskExtent, MATLAB_TO_ROBOT, APP_CHAIN_AXIS,
 } from '../../js/sim/placement.js';
 import { ArmAnimation, HOME_CABLES } from '../../js/sim/animation.js';
+import {
+  cellLattice, guideArms, conicalSpring, CELL_DIAMETER_MM, CELLS_PER_SEGMENT,
+  JOINT_BEND_DEG, TWIST_BEND_RATIO, SYMMETRY_N, BAND_COUNT, ARM_LENGTH_MM,
+} from '../core/truncSpec.js';
 import { Solver, DEFAULT_LIMITS, reach, bendOf } from '../../js/sim/solver.js';
 
 // ------------------------------------------------------------------ metadata
@@ -79,10 +83,15 @@ export const PARAM_SPECS = [
 /** The MATLAB's cable-triangle radius (65 mm) — the ring the nine tendons ride. */
 export const CABLE_RING_M = TRUNC.cableRadius / 1000;
 
-const SPINE_N = 13;        // samples per segment when drawing the arc
+const SPINE_N = 12;        // samples per segment when drawing the arc (divisible
+                           // by the 3:2:2 cell split, so the cable guides land on samples)
 const CELL_L = 0.0789;     // one printed truss cell, m (the mesh the GPU scene uses)
 
 const vsub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const vadd = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+const crossV = (a, b) => [
+  a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0],
+];
 const vmul = (a, s) => [a[0] * s, a[1] * s, a[2] * s];
 const vlen = (a) => Math.hypot(a[0], a[1], a[2]);
 const vnorm = (a) => { const n = vlen(a) || 1; return [a[0] / n, a[1] / n, a[2] / n]; };
@@ -102,6 +111,7 @@ export function portGeometry(state, cableRing = CABLE_RING_M) {
   const joints = [[state.t1, state.t2], [state.t3, state.t4], [state.t5, state.t6]];
   const arcs = [];
   const interfaces = [];      // the four module interfaces, for the guide rings
+  const samples = [];         // per segment: { p, corners, dir } in app metres
   const tendons = [0, 1, 2].map(() => [[], [], []]);   // [module][cable] → polyline
   let T = identity();
 
@@ -109,12 +119,24 @@ export function portGeometry(state, cableRing = CABLE_RING_M) {
     interfaces.push({ p: mm2app(pos4(T)), T });
     const [a, b] = joints[s];
     const arc = [];
+    const segSamples = [];
     for (let i = 0; i <= SPINE_N; i += 1) {
       const Ti = mul(T, segmentTransform(a, b, -lens[s] * (i / SPINE_N)));
-      arc.push(mm2app(pos4(Ti)));
-      const corners = cornersOf(Ti, cableRing);
-      for (let k = 0; k < 3; k += 1) tendons[s][k].push(mm2app(corners[k]));
+      const p = mm2app(pos4(Ti));
+      arc.push(p);
+      // `cornersOf` works in millimetres, like the rest of the kinematics
+      const corners = cornersOf(Ti, cableRing * 1000).map(mm2app);
+      segSamples.push({ p, corners });
+      for (let k = 0; k < 3; k += 1) tendons[s][k].push(corners[k]);
     }
+    for (let i = 0; i <= SPINE_N; i += 1) {
+      const prev = segSamples[Math.max(0, i - 1)].p;
+      const next = segSamples[Math.min(SPINE_N, i + 1)].p;
+      segSamples[i].dir = i === 0
+        ? vnorm(vsub(segSamples[1].p, segSamples[0].p))
+        : vnorm(vsub(next, prev));
+    }
+    samples.push(segSamples);
     T = mul(T, segmentTransform(a, b, -lens[s]));
     arcs.push(arc);
   }
@@ -129,6 +151,93 @@ export function portGeometry(state, cableRing = CABLE_RING_M) {
       ? vnorm(vsub(seg[1], seg[0]))
       : vnorm(vsub(it.p, other[other.length - 2]));
     return { p: it.p, dir, r: cableRing };
+  });
+
+  /** Cell-local (x right, y along the shaft, z) → app metres. */
+  const placeInCell = (frame, local) => {
+    const dir = frame.dir;
+    const u = vnorm(Math.abs(dir[1]) > 0.9 ? [1, 0, 0] : crossV([0, 1, 0], dir));
+    const v = crossV(dir, u);
+    const mm = 0.001;
+    return [
+      frame.p[0] + (u[0] * local[0] + dir[0] * local[1] + v[0] * local[2]) * mm,
+      frame.p[1] + (u[1] * local[0] + dir[1] * local[1] + v[1] * local[2]) * mm,
+      frame.p[2] + (u[2] * local[0] + dir[2] * local[1] + v[2] * local[2]) * mm,
+    ];
+  };
+
+  // ---- the seven nested joint units (paper Fig. 4 A) ---------------------
+  // 3 : 2 : 2 cells, which is the MATLAB's 3L/7 : 2L/7 : 2L/7 split. Each unit is
+  // the truss cell nested inside the equatorial cell, with the conical restoring
+  // spring down the middle of the truss cell. The cell *ball* is the printed
+  // joint — diameter 56 mm, the paper's D — and the axial pitch is larger, so
+  // there is a gap between the balls: that gap is the link section, exactly the
+  // arrangement in Fig. 4.
+  const cellFrames = [];
+  for (let sIdx = 0; sIdx < 3; sIdx += 1) {
+    const count = CELLS_PER_SEGMENT[sIdx];
+    for (let c = 0; c < count; c += 1) {
+      const i = Math.min(SPINE_N, Math.max(0, Math.round(((c + 0.5) / count) * SPINE_N)));
+      cellFrames.push({
+        p: samples[sIdx][i].p,
+        dir: samples[sIdx][i].dir,
+        axial: CELL_DIAMETER_MM,
+        segment: sIdx,
+      });
+    }
+  }
+  const joints3d = cellFrames.map((frame) => {
+    const axial = frame.axial;                        // mm — the printed ball
+    const truss = cellLattice('truss', CELL_DIAMETER_MM, axial);
+    const equa = cellLattice('equatorial', CELL_DIAMETER_MM * 1.28, axial * 0.94);
+    return {
+      frame,
+      axial,
+      truss: truss.struts.map(([a, c]) => [placeInCell(frame, a), placeInCell(frame, c)]),
+      equatorial: equa.struts.map(([a, c]) => [placeInCell(frame, a), placeInCell(frame, c)]),
+      pins: truss.pins.map((pin) => placeInCell(frame, pin)),
+      spring: conicalSpring(axial * 0.8, CELL_DIAMETER_MM * 0.16, CELL_DIAMETER_MM * 0.34)
+        .map((pt) => placeInCell(frame, pt)),
+    };
+  });
+
+  // ---- the three-arm cable guides, on the tendon corners -----------------
+  // One guide at every cell boundary and one at the wrist. The arm tips are the
+  // cable-triangle corners themselves, so the nine tendons thread exactly over
+  // the guide rollers — that is the structure of Fig. 4 C.
+  const HUB_MM = 9;
+  const guideStations = [];
+  for (let sIdx = 0; sIdx < 3; sIdx += 1) {
+    const count = CELLS_PER_SEGMENT[sIdx];
+    for (let k = 0; k < count; k += 1) {
+      guideStations.push([sIdx, Math.round((k / count) * SPINE_N)]);
+    }
+  }
+  guideStations.push([2, SPINE_N]);                    // the wrist
+  const cableGuides = guideStations.map(([sIdx, i]) => {
+    const sample = samples[Math.min(2, sIdx)][i] ?? samples[sIdx][SPINE_N];
+    const p = sample.p;
+    const dir = sample.dir;
+    const hub = vnorm(Math.abs(dir[1]) > 0.9 ? [1, 0, 0] : crossV([0, 1, 0], dir));
+    const struts = [];
+    const rollers = [];
+    for (const corner of sample.corners) {
+      const radial = vnorm(vsub(corner, p));
+      const inner = vadd(p, vmul(radial, HUB_MM * 0.001));
+      const knee = vadd(p, vmul(radial, vlen(vsub(corner, p)) * 0.55));
+      struts.push([inner, knee]);
+      struts.push([knee, corner]);
+      rollers.push(corner);
+    }
+    // the hub the arms grow from
+    const b2 = crossV(dir, hub);
+    const hubPts = [];
+    for (let k = 0; k < 6; k += 1) {
+      const a = (k / 6) * Math.PI * 2;
+      hubPts.push(vadd(p, vadd(vmul(hub, Math.cos(a) * HUB_MM * 0.001), vmul(b2, Math.sin(a) * HUB_MM * 0.001))));
+    }
+    for (let k = 0; k < 6; k += 1) struts.push([hubPts[k], hubPts[(k + 1) % 6]]);
+    return { p, dir, struts, rollers, tips: sample.corners.slice() };
   });
 
   // truss cells, at their own pitch along each arc, stretched to fit exactly
@@ -154,9 +263,22 @@ export function portGeometry(state, cableRing = CABLE_RING_M) {
   return {
     spine: arcs.flat(),
     arcs,
-    cells,
-    guides,
+    cells,             // legacy: uniform truss cells along each arc
+    guides,            // legacy: solid rings at the interfaces
     tendons,
+    // the paper's nested-joint geometry
+    joints: joints3d,        // 7 units: truss cell inside equatorial cell + spring
+    cableGuides,             // three-arm guides, rollers on the tendon corners
+    spec: {
+      cellDiameterMm: CELL_DIAMETER_MM,
+      cellsPerSegment: CELLS_PER_SEGMENT,
+      jointBendDeg: JOINT_BEND_DEG,
+      twistBendRatio: TWIST_BEND_RATIO,
+      symmetryN: SYMMETRY_N,
+      bands: BAND_COUNT,
+      armLengthMm: ARM_LENGTH_MM,
+      cableRadiusMm: cableRing * 1000,
+    },
     toolBase: wrist,
     tip: toolTip,
     toolDir: vnorm(vsub(toolTip, wrist)),

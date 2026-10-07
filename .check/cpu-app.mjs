@@ -33,9 +33,12 @@ ok('the arm is drawn from the ported FK (tool tip matches forward())',
     const g = app.port.geometry();
     // the drawn tip and the model's own end-effector, in the same frame
     const d = Math.hypot(g.tip[0] - g.ee[0], g.tip[1] - g.ee[1], g.tip[2] - g.ee[2]);
-    return g.spine.length === 42 && g.tendons.flat().length === 9 && d < 1e-12
+    const paper = g.joints?.length === 7 && g.cableGuides?.length === 8
+      && g.spec?.cellDiameterMm === 56 && g.spec?.armLengthMm === 710;
+    return g.spine.length === 39 && g.tendons.flat().length === 9 && d < 1e-12 && paper
       && Math.abs(Math.hypot(...g.tip) * 1000 - Math.hypot(...app.port.frame.ee)) < 1e-6;
-  })(), `spine ${app.port.geometry().spine.length} pts, 9 tendons, tool drawn at the FK's own tip`);
+  })(), `spine ${app.port.geometry().spine.length} pts, `
+  + `${app.port.geometry().joints?.length} TRUNC joints (D = 56 mm), 9 tendons, tool at the FK's own tip`);
 
 // ---- interaction ---------------------------------------------------------
 byId.get('app');

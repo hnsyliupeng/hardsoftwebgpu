@@ -14,7 +14,7 @@
 import { OrbitCamera, rayPlane, raySphere } from '../gpu/camera.js';
 import { Renderer, FallbackRenderer, SceneBuilder, LIGHT } from '../gpu/renderer.js';
 import {
-  truncCell, toolMesh, boltMesh, bulbMesh, valveMesh, pegMesh, fixtureMesh, benchFrame, cube, cylinder,
+  truncCell, toolMesh, socketTool, guideMesh, boltMesh, bulbMesh, valveMesh, pegMesh, fixtureMesh, benchFrame, cube, cylinder,
 } from '../gpu/meshes.js';
 import { Robot, CONTROL_MODE } from '../engine/robot.js';
 import { TASK_LIBRARY, benchLayout, stagesOf, FIXTURE } from '../engine/tasks.js';
@@ -95,11 +95,15 @@ export async function boot(hooks = {}) {
   // ---------------------------------------------------------------- meshes
   setBoot('uploading meshes…');
   const meshes = {
-    // one printed stage: the nested truss cell (centred on the cell's mid-frame)
-    cell_truss: truncCell(0, 0.0789, 0.0260, { struts: 6, thickness: 0.0016 }),
-    // the equatorial guide sits at the cell's equator, in the tendon annulus
-    cell_equa: truncCell(1, 0.0789, 0.0245, { struts: 6, thickness: 0.0014 }),
-    tool: toolMesh(),
+    // The printed joint: the double-arrowhead cell tiled on a sphere, 2*4
+    // symmetry, D = 56 mm (paper Fig. 2 + § Supplementary). The truss variant
+    // (M = 3 bands) is nested inside the equatorial one (M = 2 bands).
+    cell_truss: truncCell(0, 0.056, 0.028, { thickness: 0.0016 }),
+    cell_equa: truncCell(1, 0.0538, 0.0358, { thickness: 0.0014 }),
+    // the three-arm cable guides the nine tendons ride (Fig. 4 C), 65 mm ring
+    guide: guideMesh(0.065),
+    // the socket-driver end effector from the paper's demo (Fig. 5)
+    tool: socketTool(),
     bolt: boltMesh(0.008, 0.05),
     bulb: bulbMesh(0.03, 0.075),
     valve: valveMesh(0.032),
@@ -206,6 +210,19 @@ export async function boot(hooks = {}) {
       );
       hud.toast(`port verification ${res.passed}/${res.total}`);
       report('port-verify', `${res.passed}/${res.total}`);
+    },
+    onVerifyEngine: async () => {
+      portPanel.setVerdict('running the engine checks — the learners take a few seconds…');
+      const { runEngineChecks } = await import('./engineCheck.js');
+      const res = await runEngineChecks((i, n, label) => portPanel.setVerdict(`[${i}/${n}] ${label}`), { quick: true });
+      const failed = res.rows.filter((r) => !r.ok);
+      portPanel.setVerdict(
+        `${res.passed}/${res.total} engine checks passed in this page (arm · solver · jobs · learners · safety)`
+        + (failed.length ? ` — first failure: ${failed[0].name}` : ''),
+        failed.length ? 'fail' : 'pass',
+      );
+      hud.toast(`engine checks ${res.passed}/${res.total}`);
+      report('engine-check', `${res.passed}/${res.total}`);
     },
   });
   portPanel.setPlaying(false);
@@ -449,11 +466,15 @@ export async function boot(hooks = {}) {
     if (view.portArm) {
       const geo = port.geometry();
       const frame = port.ensureFrame();
-      for (const cell of geo.cells) {
-        scene.mesh('cell_truss', { p: V3.new(...cell.p), q: Quat.fromYTo(V3.new(...cell.dir)), scale: cell.scale }, [0.50, 0.55, 0.62, 1], [0.2, 0.3, 0.35, 1]);
+      // the MATLAB port's own nested joints: truss ball inside the equatorial
+      // one, D = 56 mm, with a three-arm cable guide at every cell boundary
+      for (const joint of geo.joints ?? []) {
+        const q = Quat.fromYTo(V3.new(...joint.frame.dir));
+        scene.mesh('cell_truss', { p: V3.new(...joint.frame.p), q, scale: 1 }, [0.50, 0.55, 0.62, 1], [0.2, 0.3, 0.35, 1]);
+        scene.mesh('cell_equa', { p: V3.new(...joint.frame.p), q, scale: 1 }, [0.40, 0.46, 0.56, 1], [0.4, 0.2, 0.15, 1]);
       }
-      for (const guide of geo.guides) {
-        scene.mesh('cell_equa', { p: V3.new(...guide.p), q: Quat.fromYTo(V3.new(...guide.dir)), scale: 1.35 }, [0.40, 0.46, 0.56, 1], [0.4, 0.2, 0.15, 1]);
+      for (const guide of geo.cableGuides ?? []) {
+        scene.mesh('guide', { p: V3.new(...guide.p), q: Quat.fromYTo(V3.new(...guide.dir)), scale: 1 }, [0.62, 0.66, 0.74, 1], [0.5, 0.3, 0.1, 1]);
       }
       // nine tendons, coloured by how far each cable has been pulled from slack
       for (let m = 0; m < geo.tendons.length; m += 1) {
@@ -484,14 +505,17 @@ export async function boot(hooks = {}) {
       return scene;
     }
 
-    // ---- the arm itself: one TRUNC cell per printed cell, tool on the wrist
+    // ---- the arm itself: the printed joint per cell, the guides between them
     const bones = robot.bones();
     for (const b of bones) {
       if (b.active === false) continue;                  // the tool joint is drawn separately
-      const cellScale = clamp(b.length / 0.0789, 0.2, 2);
-      // printed resin truss …, darker equatorial guide …, both on the cell's mid-frame
-      scene.mesh('cell_truss', { p: b.transform.p, q: b.transform.q, scale: cellScale }, [0.46, 0.51, 0.58, 1], [0.2, 0.3, 0.35, 1]);
-      scene.mesh('cell_equa', { p: b.transform.p, q: b.transform.q, scale: cellScale }, [0.34, 0.40, 0.50, 1], [0.4, 0.2, 0.15, 1]);
+      // the ball is the printed joint, D = 56 mm, so it is never scaled: the
+      // gap between two balls is the link section of the shaft, as in Fig. 4
+      scene.mesh('cell_truss', { p: b.transform.p, q: b.transform.q, scale: 1 }, [0.46, 0.51, 0.58, 1], [0.2, 0.3, 0.35, 1]);
+      scene.mesh('cell_equa', { p: b.transform.p, q: b.transform.q, scale: 1 }, [0.34, 0.40, 0.50, 1], [0.4, 0.2, 0.15, 1]);
+    }
+    for (const g of robot.guides()) {
+      scene.mesh('guide', { p: g.transform.p, q: g.transform.q, scale: 1 }, [0.62, 0.66, 0.74, 1], [0.5, 0.3, 0.1, 1]);
     }
     const tool = bones[bones.length - 1];
     if (tool) {
@@ -787,6 +811,11 @@ export async function boot(hooks = {}) {
   window.__app = {
     robot, sim, view, camera, renderer, scene, meshes, hud, triangles, buildCloud,
     port, portView, portPanel, verifyPort,
+    /** The engine-side acceptance, reachable from a page and from .check/. */
+    runEngineChecks: async (onStep) => {
+      const m = await import('./engineCheck.js');
+      return m.runEngineChecks(onStep, { quick: true });
+    },
   };
   report('boot', `booted: ${fallback ? 'fallback renderer' : 'webgpu'}, ${triangles.toFixed(0)} triangles, ${Object.keys(meshes).length} meshes`);
   requestAnimationFrame(frame);

@@ -63,8 +63,9 @@ export function buildPortPanel(parent, hooks = {}) {
     reads[key] = readout(readGrid, { label: key, value: '—' });
   }
 
-  const verifyRow = buttonRow(pPort.body, [
+  buttonRow(pPort.body, [
     { label: 'verify port (all functions)', kind: 'warn', onClick: () => hooks.onVerify?.() },
+    { label: 'verify engine (arm · solver · jobs · learners)', onClick: () => hooks.onVerifyEngine?.() },
   ]);
   const verdict = el('div', { class: 'readout', style: { display: 'block', color: 'var(--dim)' } },
     [el('span', { text: 'not run — runs every ported module in this page' })]);

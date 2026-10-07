@@ -112,13 +112,29 @@ if (!app) {
     __drainRaf(2);
     app.renderer.present(app.scene, {});
     const summary = port.runToEnd();
-    const good = geo.cells.length > 4 && geo.tendons.flat().length === 9 && geo.guides.length === 4
+    // the roller sits on the cable triangle: 65 mm from the ring's own centre
+    const g0 = geo.cableGuides?.[0];
+    const rel = g0 && g0.tips[0].map((v, i) => v - g0.p[i]);
+    const guideRing = rel && Math.hypot(...rel);
+    const paper = geo.joints?.length === 7 && geo.cableGuides?.length === 8
+      && geo.spec?.cellDiameterMm === 56 && geo.spec?.armLengthMm === 710
+      && Math.abs(guideRing * 1000 - 65) < 1e-6;
+    const good = paper && geo.tendons.flat().length === 9
       && summary.missed === 0 && Math.abs(summary.motorSeconds - 21) < 1e-6;
-    console.log(`inlined MATLAB port · task ${port.task} · ${geo.cells.length} cells, ${geo.guides.length} guides, `
-      + `${geo.tendons.flat().length} tendons · replay ${summary.frames} frames, motor ${summary.motorSeconds.toFixed(1)} s, missed ${summary.missed}`);
+    console.log(`inlined MATLAB port · task ${port.task} · ${geo.joints.length} TRUNC joints (D = ${geo.spec.cellDiameterMm} mm), `
+      + `${geo.cableGuides.length} cable guides at ${(guideRing * 1000).toFixed(0)} mm, ${geo.tendons.flat().length} tendons · `
+      + `replay ${summary.frames} frames, motor ${summary.motorSeconds.toFixed(1)} s, missed ${summary.missed}`);
     const res = await app.verifyPort();
     console.log(`port verification in the standalone file: ${res.passed}/${res.total}`);
     if (!good || res.passed !== res.total) process.exitCode = 1;
+  }
+  // the engine checks must run inside the standalone file as well
+  {
+    const res = await app.runEngineChecks(() => {});
+    const failed = res.rows.filter((r) => !r.ok);
+    console.log(`engine checks in the standalone file: ${res.passed}/${res.total}`
+      + (failed.length ? ` — FAIL ${failed[0].group}/${failed[0].name}: ${failed[0].detail}` : ''));
+    if (failed.length) process.exitCode = 1;
   }
   console.log(report.length ? `page reports: ${JSON.stringify(report.slice(-3))}` : 'page reports: (none — nothing went wrong)');
 }

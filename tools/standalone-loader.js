@@ -46,6 +46,12 @@
       /(\bfrom\s*|\bimport\s*)(['"])(\.{1,2}\/[^'"]+)\2/g,
       (m, pre, quote, spec) => pre + quote + window.__moduleUrl(resolveId(id, spec)) + quote,
     );
+    // dynamic imports too — `await import('./engineCheck.js')` in a blob module
+    // would otherwise resolve against the blob URL and 404
+    src = src.replace(
+      /(\bimport\s*\(\s*)(['"])(\.{1,2}\/[^'"]+)\2/g,
+      (m, pre, quote, spec) => pre + quote + window.__moduleUrl(resolveId(id, spec)) + quote,
+    );
     return src;
   };
 

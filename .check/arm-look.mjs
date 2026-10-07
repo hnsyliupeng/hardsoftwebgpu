@@ -16,9 +16,10 @@ for (const [name, entry] of scene.meshes) {
   if (/cell|tool|base/.test(name)) console.log(`  ${name.padEnd(12)} inst ${String(entry.count).padStart(3)} · ${String(t).padStart(5)} tris each · ${String(t * entry.count).padStart(6)} total`);
 }
 console.log(`scene total ${tris.toFixed(0)} tris`);
-const bones = app.robot.bones().filter((b) => b.length > 0);
+const bones = app.robot.bones().filter((b) => b.active !== false);
+const guides = app.robot.guides();
 const lo = Math.min(...bones.map((b) => b.transform.p.y));
 const hi = Math.max(...bones.map((b) => b.transform.p.y));
 const tip = app.robot.state.tool.p;
-console.log(`tower: ${bones.length} cells from y ${lo.toFixed(3)} to ${hi.toFixed(3)} m · tool at y ${tip.y.toFixed(3)} m`);
-console.log(`cell pitch: ${((hi - lo) / (bones.length - 1) * 1000).toFixed(1)} mm (mesh is 78.9 mm, centred)`);
+console.log(`tower: ${bones.length} nested joints from y ${lo.toFixed(3)} to ${hi.toFixed(3)} m · ${guides.length} cable guides · tool at y ${tip.y.toFixed(3)} m`);
+console.log(`joint pitch: ${((hi - lo) / (bones.length - 1) * 1000).toFixed(1)} mm, ball D = ${(bones[0].cellDiameter * 1000).toFixed(0)} mm (paper), guide ring ${(guides[0].radius * 1000).toFixed(0)} mm`);

@@ -16,6 +16,10 @@ export const SCENE = {
   baseTop: [98, 108, 126],
   truss: [140, 148, 164],
   cell: [60, 66, 80],
+  cellOuter: [126, 136, 156],
+  cellInner: [96, 106, 126],
+  pin: [196, 206, 222],
+  spring: [104, 132, 150],
   guide: [206, 214, 228],
   tendon: [240, 176, 84],
   tendonIdle: [146, 116, 74],
@@ -174,33 +178,63 @@ export function drawScene(raster, opts) {
   r.line3(add(target, [0, 0, -0.03]), add(target, [0, 0, 0.03]), tcol, 1);
 
   // ---- the arm -----------------------------------------------------------
-  // tendons first: they ride outside the truss core, on the cable ring
+  // Drawn from the paper's geometry (`src/core/truncSpec.js`): seven nested
+  // joint units along the chain, each a truss lattice inside an equatorial one,
+  // with three-arm cable guides between them and the nine tendons riding at the
+  // guide tips. Nothing here is stylised: if the joints look wrong, the spec is
+  // wrong.
+  const lattice = view.lattice !== false && g.joints?.length;
+  if (lattice) {
+    // cable guides first: their arms reach out past the cell balls and the
+    // tendons thread over the rollers at their tips
+    for (const guide of g.cableGuides ?? []) {
+      for (const [a, c] of guide.struts) r.cyl3(a, c, 0.004, SCENE.guide, { segments: 6, cap: true });
+      // the rollers the tendons ride over, at the ends of the three arms
+      for (const tip of guide.rollers ?? []) r.sphere3(tip, 0.0055, SCENE.guide, { rings: 7, segments: 10 });
+    }
+    for (const joint of g.joints) {
+      // the equatorial cell is the outer shell, the truss cell the inner one
+      for (const [a, c] of joint.equatorial) r.line3(a, c, SCENE.cellOuter, 2);
+      for (const [a, c] of joint.truss) r.line3(a, c, SCENE.cellInner, 2);
+      for (const pin of joint.pins) r.disc3(pin, [0, 1, 0], 0.0042, SCENE.pin, 6);
+      // the conical restoring spring inside the truss cell
+      if (view.spring) {
+        for (let i = 1; i < joint.spring.length; i += 1) {
+          r.line3(joint.spring[i - 1], joint.spring[i], SCENE.spring, 1);
+        }
+      }
+    }
+  } else {
+    // fallback: the solid core, for a quick look or if the spec is unavailable
+    r.tube3(g.spine, 0.0245, SCENE.truss, { segments: 16 });
+    for (let i = 2; i < g.spine.length - 1; i += 1) {
+      const dir = normalize(sub(g.spine[i + 1], g.spine[i - 1]));
+      r.disc3(g.spine[i], dir, 0.0255, SCENE.cell, 16);
+    }
+  }
+
+  // nine tendons, from the MATLAB's own cable triangle, coloured by tension
   if (view.tendons) {
     for (let m = 0; m < g.tendons.length; m += 1) {
       for (let c = 0; c < g.tendons[m].length; c += 1) {
         const line = g.tendons[m][c];
         const col = tendonColour(frame.cableDelta, m, c);
-        for (let i = 1; i < line.length; i += 1) r.line3(line[i - 1], line[i], col, 2);
+        for (let i = 1; i < line.length; i += 1) r.line3(line[i - 1], line[i], col, 1);
       }
     }
   }
-  // the truss core
-  r.tube3(g.spine, 0.0245, SCENE.truss, { segments: 16 });
-  for (let i = 2; i < g.spine.length - 1; i += 1) {
-    const dir = normalize(sub(g.spine[i + 1], g.spine[i - 1]));
-    r.disc3(g.spine[i], dir, 0.0255, SCENE.cell, 16);
-  }
-  // the equatorial guide rings the tendons thread through
-  if (view.guides) {
-    for (const guide of g.guides) {
-      const tube = Math.max(0.006, guide.r * 0.16);
-      r.ring3(guide.p, guide.dir, guide.r, tube, SCENE.guide, { major: 22, minor: 7 });
-    }
-  }
-  // the tool
-  r.cyl3(g.toolBase, mix(g.toolBase, g.tip, 0.72), 0.021, SCENE.tool, { segments: 14, cap: true });
-  r.cyl3(mix(g.toolBase, g.tip, 0.72), g.tip, 0.011, SCENE.tool, { segments: 12, cap: true });
-  r.disc3(g.tip, g.toolDir, 0.012, frame.motorOn ? SCENE.motor : SCENE.accent, 12);
+
+  // the socket-driver end effector (paper Fig. 5): a taper down to the socket
+  // head, with the motor's twist sleeve lit when the drill motor is running
+  const tip = g.tip;
+  const base = g.toolBase;
+  const at = (f) => add(base, mul(sub(tip, base), f));
+  r.cyl3(at(0), at(0.24), 0.017, SCENE.tool, { segments: 16, cap: true });
+  r.cyl3(at(0.24), at(0.60), 0.013, SCENE.tool, { segments: 16, cap: true });
+  r.cyl3(at(0.60), at(0.86), 0.019, SCENE.tool, { segments: 16, cap: true });
+  r.cyl3(at(0.86), at(1), 0.008, frame.motorOn ? SCENE.motor : SCENE.accent, { segments: 14, cap: true });
+
+  if (!view.hud) return;
 
   if (!view.hud) return;
 

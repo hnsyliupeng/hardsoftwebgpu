@@ -88,6 +88,8 @@ export async function bootCpu(hooks = {}) {
     lastDraw: 0,
     verifying: false,
     verified: null,
+    engineChecking: false,
+    engineChecked: null,
   };
   const view = {
     yaw: 0.55, pitch: 0.26, dist: 1.4, target: [0, 0.4, 0],
@@ -300,20 +302,7 @@ export async function bootCpu(hooks = {}) {
       state.verified = res;
       verdict.className = `verdict ${res.passed === res.total ? 'pass' : 'fail'}`;
       verdict.textContent = `${res.passed}/${res.total} checks passed · ${(performance.now() - t0).toFixed(0)} ms · run in this page`;
-      const table = el('table', { class: 'checks' });
-      let group = null;
-      for (const row of res.rows) {
-        if (row.group !== group) {
-          group = row.group;
-          table.append(el('tr', { class: 'group' }, [el('td', { colspan: '3', text: group })]));
-        }
-        table.append(el('tr', { class: row.ok ? 'pass' : 'fail' }, [
-          el('td', { class: 'mark', text: row.ok ? 'ok' : 'FAIL' }),
-          el('td', { class: 'name', text: row.name }),
-          el('td', { class: 'detail', text: row.detail ?? '' }),
-        ]));
-      }
-      checkTable.append(table);
+      checkTable.append(checksTable(res));
       report('verify', `${res.passed}/${res.total}`);
     } catch (err) {
       verdict.className = 'verdict fail';
@@ -322,6 +311,67 @@ export async function bootCpu(hooks = {}) {
     } finally {
       state.verifying = false;
       progress.textContent = 'tip: this table is the same 44 checks .check/trunc-port.mjs runs headless';
+    }
+  }
+
+  /** One HTML table from a `{ rows: [{group, name, ok, detail}] }` result. */
+  function checksTable(res) {
+    const table = el('table', { class: 'checks' });
+    let group = null;
+    for (const row of res.rows) {
+      if (row.group !== group) {
+        group = row.group;
+        table.append(el('tr', { class: 'group' }, [el('td', { colspan: '3', text: group })]));
+      }
+      table.append(el('tr', { class: row.ok ? 'pass' : 'fail' }, [
+        el('td', { class: 'mark', text: row.ok ? 'ok' : 'FAIL' }),
+        el('td', { class: 'name', text: row.name }),
+        el('td', { class: 'detail', text: row.detail ?? '' }),
+      ]));
+    }
+    return table;
+  }
+
+  // ---- the engine-side checks: the same table, for everything the WebGPU page
+  //      is built on that is *not* the MATLAB port (arm, IK, the five jobs, the
+  //      two learners, the safety envelope).
+  const pEngine = panel('verify the engine (arm · solver · jobs · learners)');
+  right.append(pEngine.node);
+  const engineVerdict = el('div', { class: 'verdict', text: 'not run yet' });
+  const engineTable = el('div');
+  const engineProgress = el('div', { class: 'verdict', text: '' });
+  pEngine.body.append(engineVerdict, engineTable);
+  button(pEngine.body, {
+    label: 'run engine checks',
+    kind: 'primary',
+    onClick: () => runEngineChecks_(),
+  });
+  pEngine.body.append(engineProgress);
+
+  async function runEngineChecks_() {
+    if (state.engineChecking) return;
+    state.engineChecking = true;
+    engineVerdict.className = 'verdict';
+    engineVerdict.textContent = 'running… (the learners take a few seconds)';
+    engineTable.textContent = '';
+    const t0 = performance.now();
+    try {
+      const { runEngineChecks } = await import('./engineCheck.js');
+      const res = await runEngineChecks((i, n, label) => {
+        engineProgress.textContent = `[${i}/${n}] ${label}`;
+      }, { quick: true });
+      state.engineChecked = res;
+      engineVerdict.className = `verdict ${res.passed === res.total ? 'pass' : 'fail'}`;
+      engineVerdict.textContent = `${res.passed}/${res.total} engine checks passed · ${((performance.now() - t0) / 1000).toFixed(1)} s`;
+      engineTable.append(checksTable(res));
+      report('engine-check', `${res.passed}/${res.total}`);
+    } catch (err) {
+      engineVerdict.className = 'verdict fail';
+      engineVerdict.textContent = `engine checks threw: ${err.message}`;
+      report('engine-check-error', err.stack ?? err.message);
+    } finally {
+      state.engineChecking = false;
+      engineProgress.textContent = 'tip: the same rows run headless in .check/ and inside the single-file build';
     }
   }
 
@@ -386,6 +436,7 @@ export async function bootCpu(hooks = {}) {
       render();
     } else if (e.key === 'r') { port.restart(); render(); }
     else if (e.key === 'v') { runVerification(); }
+    else if (e.key === 'e') { runEngineChecks_(); }
   };
   window.addEventListener('keydown', onKey);
 
@@ -445,6 +496,7 @@ export async function bootCpu(hooks = {}) {
     state, view, port, raster, canvas, ctx,
     render, update, runVerification, togglePlay, applyPreset,
     tasks, paramWidgets, cableBars, live, sumRead, verdict, checkTable,
+    engineVerdict, engineTable, runEngineChecks_,
     stop: () => cancelAnimationFrame(raf),
     /** Draw the end-of-run card instead of the scene (used by the checks). */
     renderCard: (rows, totals) => { drawSummaryCard(raster, rows, totals); return raster.resolve(); },

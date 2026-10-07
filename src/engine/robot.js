@@ -463,8 +463,9 @@ export class Robot {
       : { success: false, damaged: false, turns: 0, depthMm: 0, loadTorque: 0, misalignMm: 0, absorbedMm: 0, peakForceN: 0, safety: 0, timeS: this.time, phase: -1, phaseName: 'idle' };
   }
 
-  /** Rendering data: the cell chain + cable polylines. */
+  /** Rendering data: the cell chain, the cable guides, the tendons. */
   bones() { return this.arm.bones(this.state); }
+  guides() { return this.arm.guides(this.state); }
   cables() { return this.arm.cablePaths(this.state); }
 
   /** Deep copy of the tool pose for gizmos. */

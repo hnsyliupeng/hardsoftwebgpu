@@ -20,10 +20,26 @@ export const SEGMENT_NAMES = ['shoulder', 'elbow', 'wrist'];
 
 export function defaultConfig() {
   return {
-    segmentLength: 0.71 / 3,
-    cellsPerSegment: 3,
+    segmentLength: 0.71 / 3,          // kept for callers that want a mean length
+    /**
+     * Segment split of the arm's length, exactly the MATLAB's
+     * `shoulder : elbow : wrist = 3L/7 : 2L/7 : 2L/7` (kinematics.m).
+     */
+    segmentSplit: [3 / 7, 2 / 7, 2 / 7],
+    // 3 : 2 : 2 printed TRUNC joints, the MATLAB's 3L/7 : 2L/7 : 2L/7 split
+    cellsPerSegment: [3, 2, 2],
+    // the printed joint is D = 56 mm (paper § Supplementary)
+    cellDiameter: 0.056,
+    cellRadius: 0.028,
+    // the three-arm guides carry the tendons at the MATLAB's 65 mm cable triangle
+    guideRadius: 0.065,
+    /**
+     * The cable-space mapping constant (servo command → bend). The paper's arm
+     * has its tendons on the guide tips; this number is what the *control*
+     * calibration was fitted with, so it stays 24.5 mm even though the drawn
+     * tendons ride the 65 mm guides (see `cablePaths`).
+     */
     cableRadius: 0.0245,
-    cellRadius: 0.026,
     preload: 25,
     servoSpeed: 0.35,
     servoBandwidth: 200,
@@ -88,14 +104,23 @@ export class Arm {
   constructor(cfg = defaultConfig()) {
     this.cfg = { ...cfg };
     const r = this.cfg.cellRadius;
-    const trussCell = cellTruss(this.cfg.segmentLength / this.cfg.cellsPerSegment, r * 0.94, this.cfg.anisotropy);
-    this.truss = cellChain(trussCell, this.cfg.cellsPerSegment);
-    this.guide = cellChain(cellEquatorial(this.cfg.segmentLength / this.cfg.cellsPerSegment, r), this.cfg.cellsPerSegment);
+    const counts = this.cellCounts();
+    const cellL = this.totalLength / counts.reduce((a, b) => a + b, 0);
+    const trussCell = cellTruss(cellL, r * 0.94, this.cfg.anisotropy);
+    this.truss = cellChain(trussCell, counts[0]);
+    this.guide = cellChain(cellEquatorial(cellL, r), counts[0]);
     /** the single printed cell used for the compliance maths */
     this.shoulder = this.truss;
   }
 
+  /** L of the arm, mm-for-mm the MATLAB's `L_n` (695) plus the tool offset. */
   get totalLength() { return this.cfg.segmentLength * N_SEGMENTS; }
+
+  /** Length of segment `s`, from the 3 : 2 : 2 split. */
+  segLength(s = 0) {
+    const split = this.cfg.segmentSplit ?? [1 / 3, 1 / 3, 1 / 3];
+    return this.totalLength * (split[s] ?? 1 / 3);
+  }
   get maxCompression() { return 0.0943 * Math.sqrt(this.cfg.compliance); }
   get maxBendPerSegment() { return MAX_BEND_RAD * Math.min(Math.sqrt(this.cfg.compliance), 1.4); }
   get segmentBendingStiffness() { return this.truss.bendingStiffness() / Math.max(this.cfg.compliance, 0.05); }
@@ -107,6 +132,14 @@ export class Arm {
    * the 24.5 mm cable circle that is ≈0.8 N·m/rad — more than the printed cell
    * chain, which is exactly why the joint feels stiff while being soft.
    */
+  /** Cells per segment as a 3-vector (the config may hold a single number). */
+  cellCounts() {
+    const c = this.cfg.cellsPerSegment;
+    if (Array.isArray(c)) return [0, 1, 2].map((i) => Math.max(1, Math.round(c[i] ?? c[0] ?? 3)));
+    const n = Math.max(1, Math.round(c ?? 3));
+    return [n, n, n];
+  }
+
   get tendonBendingStiffness() { return 1.5 * this.cfg.tendonStiffness * this.cfg.cableRadius ** 2; }
 
   /** Total quasi-static bending stiffness of one segment under tendon actuation. */
@@ -193,7 +226,7 @@ export class Arm {
    * no override — as `fk` does — gives the whole segment.
    */
   segmentTransform(seg, lenOverride = null) {
-    const len = Math.max((lenOverride ?? this.cfg.segmentLength) - seg.compress, 0.002);
+    const len = Math.max((lenOverride ?? seg.length ?? this.cfg.segmentLength) - seg.compress, 0.002);
     const bend = seg.bend;
     const d = V3.new(Math.cos(seg.plane), 0, Math.sin(seg.plane));
     if (Math.abs(bend) < 1e-6) return { p: V3.new(0, len, 0), q: Quat.identity() };
@@ -215,7 +248,9 @@ export class Arm {
   fk(seg, motorAngle = 0, shaftTwist = 0) {
     let t = Transform.identity();
     const n = Math.min(seg.length, N_SEGMENTS);
-    for (let s = 0; s < n; s += 1) t = Transform.mul(t, this.segmentTransform(seg[s]));
+    for (let s = 0; s < n; s += 1) {
+      t = Transform.mul(t, this.segmentTransform({ ...seg[s], length: this.segLength(s) }));
+    }
     t = Transform.rotated(t, Quat.fromAxisAngle(V3.up(), motorAngle - shaftTwist));
     return t;
   }
@@ -223,8 +258,8 @@ export class Arm {
   compressionOf(seg) {
     let total = 0;
     for (let s = 0; s < N_SEGMENTS; s += 1) {
-      const len = this.cfg.segmentLength;
-      const arc = V3.len(this.segmentTransform(seg[s]).p);
+      const len = this.segLength(s);
+      const arc = V3.len(this.segmentTransform({ ...seg[s], length: len }).p);
       total += seg[s].compress + Math.max(len - arc, 0);
     }
     return total;
@@ -759,35 +794,68 @@ export class Arm {
    * drawn chain ended at y = 1.70 m while the tool was at y = 0.59 m.
    */
   bones(state) {
-    const cells = Math.max(this.cfg.cellsPerSegment, 1);
+    const counts = this.cellCounts();
+    const total = counts.reduce((a, b) => a + b, 0);
     const out = [];
     let frame = Transform.identity();
+    let walked = 0;
     const spin = state.motorAngle - state.shaftTwist;
     for (let s = 0; s < N_SEGMENTS; s += 1) {
       const seg = state.seg[s];
+      const cells = counts[s];
       // uniform split, matching `fk`: a circular arc's sub-chords compose to the
       // same end pose, so the drawn arm cannot drift off the kinematic tool
       const cellBend = seg.bend / cells;
-      const cellLen = Math.max((this.cfg.segmentLength - seg.compress) / cells, 0.002);
+      const cellLen = Math.max((this.segLength(s) - seg.compress) / cells, 0.002);
       for (let c = 0; c < cells; c += 1) {
-        const frac = (s * cells + c + 0.5) / (cells * N_SEGMENTS);
+        const frac = (walked + 0.5) / total;
         const twist = spin * frac;
         const mid = Transform.mul(frame, { p: V3.new(0, cellLen * 0.5, 0), q: Quat.identity() });
         const axis = V3.new(Math.sin(seg.plane), 0, -Math.cos(seg.plane));
         const q = Quat.mul(Quat.mul(frame.q, Quat.fromAxisAngle(axis, cellBend * 0.5)), Quat.fromAxisAngle(V3.up(), twist - state.shaftTwist * frac));
         out.push({
           transform: { p: mid.p, q },
-          kind: c === 0 && s === 0 ? 0 : 1,
+          kind: 0,
           length: cellLen,
           radius: this.cfg.cellRadius,
           segment: s,
+          // the drawn ball is the printed joint: D = 56 mm, whatever the pitch
+          cellDiameter: this.cfg.cellDiameter,
           active: true,
         });
+        walked += 1;
         frame = Transform.mul(frame, this.segmentTransform(segmentState(cellBend, seg.plane, 0), cellLen));
       }
     }
     const t = this.fk(state.seg, 0, 0);
     out.push({ transform: { p: t.p, q: t.q }, kind: 0, length: 0.018, radius: this.cfg.cellRadius * 0.86, segment: 2, active: false });
+    return out;
+  }
+
+  /**
+   * The three-arm cable guides (paper Fig. 4 C): one at the base, one between
+   * every pair of neighbouring joints, and one at the wrist — so `1 + cells`
+   * of them per arm, exactly the arrangement in Fig. 4 A.
+   */
+  guides(state) {
+    const counts = this.cellCounts();
+    const out = [];
+    let frame = Transform.identity();
+    for (let s = 0; s < N_SEGMENTS; s += 1) {
+      const seg = state.seg[s];
+      const cells = counts[s];
+      const cellBend = seg.bend / cells;
+      const cellLen = Math.max((this.segLength(s) - seg.compress) / cells, 0.002);
+      for (let c = 0; c < cells; c += 1) {
+        out.push({
+          transform: { p: frame.p, q: frame.q },
+          radius: this.cfg.guideRadius,
+          segment: s,
+        });
+        frame = Transform.mul(frame, this.segmentTransform(segmentState(cellBend, seg.plane, 0), cellLen));
+      }
+    }
+    out.push({ transform: { p: frame.p, q: frame.q }, radius: this.cfg.guideRadius, segment: N_SEGMENTS - 1 });
     return out;
   }
 
@@ -801,25 +869,30 @@ export class Arm {
    */
   cablePaths(state) {
     const out = [];
-    const cells = Math.max(this.cfg.cellsPerSegment, 1);
+    const counts = this.cellCounts();
+    // the tendons ride the three-arm guides, at the MATLAB's 65 mm cable triangle
+    const ring = this.cfg.guideRadius ?? this.cfg.cableRadius;
     // world spine samples: [0] = base, then one per cell
     const spine = [Transform.identity()];
+    let stops = [0];
     for (let s = 0; s < N_SEGMENTS; s += 1) {
       const seg = state.seg[s];
+      const cells = counts[s];
       const cellBend = seg.bend / cells;
-      const cellLen = Math.max((this.cfg.segmentLength - seg.compress) / cells, 0.002);
+      const cellLen = Math.max((this.segLength(s) - seg.compress) / cells, 0.002);
       for (let c = 0; c < cells; c += 1) {
         spine.push(Transform.mul(spine[spine.length - 1], this.segmentTransform(segmentState(cellBend, seg.plane, 0), cellLen)));
       }
+      stops.push(spine.length - 1);
     }
     for (let c = 0; c < N_CABLES; c += 1) {
       const psi = CABLE_ANGLES[c % 3];
       const segIdx = Math.floor(c / 3);
-      const off = V3.new(this.cfg.cableRadius * Math.cos(psi), 0, this.cfg.cableRadius * Math.sin(psi));
+      const off = V3.new(ring * Math.cos(psi), 0, ring * Math.sin(psi));
       const points = [];
-      const last = Math.min((segIdx + 1) * cells, spine.length - 1);
+      const last = Math.min(stops[segIdx + 1], spine.length - 1);
       for (let i = 0; i <= last; i += 1) points.push(Transform.apply(spine[i], off));
-      out.push({ points, tension: state.tension[c], cable: c, segment: segIdx });
+      out.push({ points, tension: state.tension[c], cable: c, segment: segIdx, radius: ring });
     }
     return out;
   }

@@ -14,6 +14,7 @@
 
 import { V3, Quat, Transform, deg, TAU } from '../core/mathx.js';
 import { CELL_TRUSS, CELL_EQUATORIAL } from '../core/metamaterial.js';
+import { cellLattice, guideArms, CELL_DIAMETER_MM } from '../core/truncSpec.js';
 
 const EMPTY = () => ({ positions: [], normals: [], indices: [] });
 
@@ -237,64 +238,88 @@ export function torus(major, minor, majorSegs = 28, minorSegs = 10) {
  * mid transform: building it from 0…L and placing it at the centre offsets every
  * instance by half a cell, which stacks the rings into what reads as a coil.
  */
-export function truncCell(kind, length, radius, { struts = 6, rings = 3, thickness = 0.0016 } = {}) {
+/**
+ * One TRUNC joint cell, built from the paper's geometry (see
+ * `src/core/truncSpec.js` for the citations and the parameters).
+ *
+ *   `kind`  0 = truss    (M = 3: two bands of double-arrowhead joints, one either
+ *                       side of the equator, so the cell can shear internally)
+ *           1 = equatorial (M = 2: a single band of joints along the equator)
+ *
+ * Every link in the tiling becomes a tube, and every pin vertex a short pin
+ * cylinder with a collar at each end — the jointed look of the real cells. The
+ * mesh is centred on the cell's mid-frame with +Y along the shaft, matching how
+ * `SceneBuilder.mesh()` places it.
+ */
+export function truncCell(kind, length, radius, opts = {}) {
   const b = new MeshBuilder();
-  const half = length / 2;
+  const kindName = kind === CELL_TRUSS ? 'truss' : 'equatorial';
+  const diameter = radius * 2;
+  const lattice = cellLattice(kindName, diameter, length, opts);
+  const linkR = Math.max(opts.thickness * 1.9, 0.0016);     // the printed link's half-width
+  const pinR = Math.max(opts.thickness * 3.1, 0.0026);      // pin joint
+  const collarR = pinR * 1.35;
 
-  if (kind === CELL_TRUSS) {
-    const rOuter = radius;
-    const t = Math.max(thickness * 2.1, 0.0032);      // struts must survive the 1-pixel cull
-    const rCore = radius * 0.30;
-    // A helical run between two phases, as a chain of straight struts.
-    const helix = (r, phase0, phase1, steps, rad) => {
-      let prev = null;
-      for (let i = 0; i <= steps; i += 1) {
-        const f = i / steps;
-        const a = phase0 + (phase1 - phase0) * f;
-        const p = V3.new(Math.cos(a) * r, -half + length * f, Math.sin(a) * r);
-        if (prev) b.merge(strut(prev, p, rad, 4));
-        prev = p;
-      }
-    };
-    // outer layer: a diamond lattice (three right-hand + three left-hand runs)
-    for (let k = 0; k < 3; k += 1) {
-      const phase = (k / 3) * TAU;
-      helix(rOuter, phase, phase + TAU / 3, 3, t);
-      helix(rOuter, phase + TAU / 3, phase, 3, t);
-    }
-    // the nested flex shaft: the central member that carries the torque
-    b.merge(cylinder(rCore, length * 0.92, 10, true), null, V3.new(0, 0, 0));
-    // end rings (the cell boundaries the next stage keys into)
-    for (const y of [-half, half]) {
-      b.merge(torus(rOuter, Math.max(thickness * 1.15, 0.0019), 14, 5), null, V3.new(0, y, 0));
-      b.merge(torus(rCore * 1.5, Math.max(thickness * 1.0, 0.0016), 10, 4), null, V3.new(0, y, 0));
-    }
-    // longitudinal spines tying the rings together
-    for (let i = 0; i < struts; i += 1) {
-      const a = (i / struts) * TAU + TAU / 12;
-      b.merge(strut(
-        V3.new(Math.cos(a) * rOuter, -half, Math.sin(a) * rOuter),
-        V3.new(Math.cos(a) * rOuter, half, Math.sin(a) * rOuter),
-        t * 0.5, 4,
-      ));
-    }
-  } else {
-    // ---- equatorial guide: the collar the tendons pass through
-    const collar = radius * 1.04;
-    b.merge(torus(collar, Math.max(thickness * 2.4, 0.0032), 14, 5), null, V3.new(0, 0, 0));
-    b.merge(cylinder(collar * 0.97, 0.008, 14, false), null, V3.new(0, 0, 0));
-    // nine cable bores, evenly spaced, in the tendon annulus
-    const bores = Math.max(3, struts + 3);
-    for (let i = 0; i < bores; i += 1) {
-      const a = (i / bores) * TAU;
-      b.merge(
-        cylinder(Math.max(thickness * 2.6, 0.0036), 0.012, 5, true),
-        null,
-        V3.new(Math.cos(a) * radius * 0.9, 0, Math.sin(a) * radius * 0.9),
-      );
-    }
-    void rings;
+  for (const [a, c] of lattice.struts) {
+    b.merge(strut(
+      V3.new(a[0] / 1000, a[1] / 1000, a[2] / 1000),
+      V3.new(c[0] / 1000, c[1] / 1000, c[2] / 1000),
+      linkR, 5,
+    ));
   }
+  // pin joints: a cylinder across the fold vertex plus two collars, which is
+  // what lets the links rotate (the paper's joints are pins; the printed cells
+  // replace them with flexures of the same topology)
+  for (const p of lattice.pins) {
+    const centre = V3.new(p[0] / 1000, p[1] / 1000, p[2] / 1000);
+    const tangent = V3.norm(V3.new(-p[2], 0, p[0]));
+    const a = V3.sub(centre, V3.scale(tangent, pinR * 1.6));
+    const c = V3.add(centre, V3.scale(tangent, pinR * 1.6));
+    b.merge(strut(a, c, pinR, 7));
+    for (const s of [-1, 1]) {
+      const at = V3.add(centre, V3.scale(tangent, s * pinR * 1.9));
+      b.merge(torus(collarR, pinR * 0.42, 10, 4), null, at);
+    }
+  }
+  void opts.rings;
+  return b.build();
+}
+
+/**
+ * The three-arm cable guide the tendons thread through (paper Fig. 4 C).
+ * It carries the cables at the MATLAB's 65 mm triangle radius.
+ */
+export function guideMesh(cableRadius = 0.065, { thickness = 0.0016 } = {}) {
+  const b = new MeshBuilder();
+  const arms = guideArms(cableRadius * 1000, 9);
+  const linkR = Math.max(thickness * 1.7, 0.0014);
+  const pinR = Math.max(thickness * 2.6, 0.0022);
+  for (const [a, c] of arms.struts) {
+    b.merge(strut(
+      V3.new(a[0] / 1000, a[1] / 1000, a[2] / 1000),
+      V3.new(c[0] / 1000, c[1] / 1000, c[2] / 1000),
+      linkR, 4,
+    ));
+  }
+  for (const p of arms.pins) {
+    b.merge(sphere(pinR, 7, 5), null, V3.new(p[0] / 1000, p[1] / 1000, p[2] / 1000));
+  }
+  return b.build();
+}
+
+/**
+ * The socket-driver end effector from the paper's demo (Fig. 5 A/B, the blue
+ * tool in the photos): a taper, a socket head, and a twist sleeve. +Y is the
+ * tool axis; the origin sits at the wrist.
+ */
+export function socketTool({ length = 0.115, radius = 0.021 } = {}) {
+  const b = new MeshBuilder();
+  b.merge(cylinder(radius * 1.15, length * 0.18, 18), null, V3.new(0, radius * 0.9, 0));
+  b.merge(cylinder(radius, length * 0.5, 18), null, V3.new(0, length * 0.32, 0));
+  b.merge(cylinder(radius * 0.78, length * 0.34, 16), null, V3.new(0, length * 0.72, 0));
+  // socket head: a hex-ish collar with a bore
+  b.merge(cylinder(radius * 0.95, length * 0.13, 6), null, V3.new(0, length * 0.95, 0));
+  b.merge(cylinder(radius * 0.55, length * 0.1, 12), null, V3.new(0, length * 1.03, 0));
   return b.build();
 }
 
