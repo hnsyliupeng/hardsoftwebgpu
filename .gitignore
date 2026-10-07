@@ -1,0 +1,20 @@
+# Rust toolchain fetched by tools/fetch-toolchain.mjs (≈210 MB) — never committed
+.toolchain/
+
+# Transient probe output (screenshots, extracted browsers); the probe scripts
+# themselves are committed — docs/design.md cites them as the verification suite
+.check/*.png
+
+# Build outputs
+node_modules/
+target/
+rust/trunc_core/target/
+dist/
+pkg/
+*.wasm.tmp
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.log

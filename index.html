@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>TRUNC Soft-Arm Lab — WebGPU transformer robotics sandbox</title>
+<link rel="stylesheet" href="./src/app/app.css">
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>TRUNC <span>soft-arm lab</span></h1>
+    <span class="tag" id="version">v0.3.0</span>
+    <span class="tag" id="paper">arXiv:2412.02650</span>
+    <span class="stat">gpu <b id="gpu-status">…</b></span>
+    <span class="stat">fps <b id="fps">—</b></span>
+    <span class="stat">steps/s <b id="sps">—</b></span>
+    <span class="spacer"></span>
+    <span class="stat" id="mode-status">mode <b>expert</b></span>
+    <span class="stat" id="sim-time">t <b>0.00 s</b></span>
+    <button class="btn" id="help-btn" style="flex:0 0 auto" title="keyboard &amp; mouse help (H)">help</button>
+  </header>
+
+  <aside id="left"></aside>
+
+  <main id="stage">
+    <canvas id="view"></canvas>
+    <div id="overlay"></div>
+    <div id="help">
+      <h2>TRUNC soft-arm lab — controls</h2>
+      <div class="cols">
+        <table>
+          <tr><td>left drag</td><td>orbit the camera</td></tr>
+          <tr><td>middle / right drag</td><td>pan</td></tr>
+          <tr><td>wheel</td><td>zoom</td></tr>
+          <tr><td>click</td><td>pick a task prop and run it</td></tr>
+          <tr><td>shift + click</td><td>place the manual tool target on the bench plane</td></tr>
+          <tr><td>space</td><td>pause / resume the simulation</td></tr>
+          <tr><td>R</td><td>reset the arm and the current task</td></tr>
+          <tr><td>1 … 5</td><td>select a scenario</td></tr>
+          <tr><td>E / L / M</td><td>expert · learned · manual control</td></tr>
+          <tr><td>A</td><td>draw the attention map of the policy</td></tr>
+          <tr><td>C / W / T / G</td><td>cables · workspace cloud · trail · grid</td></tr>
+          <tr><td>P</td><td>save a PNG of the viewport</td></tr>
+          <tr><td>H</td><td>this panel</td></tr>
+        </table>
+        <h2 style="margin-top:14px">what you are looking at</h2>
+        <p class="hint">
+          A 710 mm three-segment soft continuum arm driven by nine tendons. Each joint is a chain of
+          printed TRUNC metamaterial cells: a helical truss torque channel (52× stiffer in torsion than in
+          bending) nested inside equatorial cells that guide the cables. The motor at the base spins the
+          truss shaft through every bend, which is what lets the tool fasten bolts and turn valves while the
+          structure stays soft enough to absorb misalignment.
+        </p>
+        <p class="hint">
+          The controller stack mirrors the paper: a learned inverse-kinematics network maps the desired tool
+          pose to tendon lengths, a classical damped-least-squares solver fills in the residual, and a causal
+          transformer policy sequences the whole task from the plan tokens and the object parameters.
+          Train both here — datasets are distilled from the scripted expert in a Web Worker.
+        </p>
+      </div>
+    </div>
+    <div id="error"></div>
+  </main>
+
+  <aside id="right"></aside>
+
+  <footer>
+    <div id="foot-left"></div>
+    <div class="foot-charts" id="foot-right"></div>
+  </footer>
+</div>
+
+<div id="boot">
+  <div class="spin"></div>
+  <div class="msg" id="boot-msg">booting WebGPU…</div>
+  <!-- Static fallback: if the module graph never runs (blocked, mis-served, or a
+       preview that strips scripts) the panel still says what this page is and
+       what went wrong, instead of leaving an empty rectangle. -->
+  <div class="msg" id="boot-hint" style="opacity:0.62;font-size:11px;margin-top:10px">
+    Hard–Soft Arm Lab — a TRUNC truss-flexure arm, five robotic tasks, and a
+    transformer policy trained in the browser. If this message is still here
+    after a few seconds the module graph did not start; the box below shows why.
+  </div>
+</div>
+
+<script type="module">
+  // Boot diagnostics: any error is surfaced in-page *and* reported to the dev
+  // server, so a headless check can see what the browser saw.
+  const bootMsg = document.getElementById('boot-msg');
+  const showError = (text) => {
+    const box = document.getElementById('error');
+    box.textContent = String(text).slice(0, 4000);
+    box.classList.add('show');
+  };
+  const report = (kind, text) => {
+    // Only talk to the dev server when the page was actually served over HTTP;
+    // opening the standalone build from disk must not raise an unhandled
+    // rejection (which this page would then display as an error).
+    if (!location.protocol.startsWith('http')) return;
+    try {
+      fetch('/__log', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ kind, text: String(text).slice(0, 2000) }) });
+    } catch { /* offline is fine */ }
+  };
+  window.__report = report;
+  window.addEventListener('error', (e) => { showError(`error: ${e.message}\n${e.filename}:${e.lineno}`); report('error', `${e.message} @ ${e.filename}:${e.lineno}`); });
+  window.addEventListener('unhandledrejection', (e) => { showError(`rejection: ${e.reason?.stack ?? e.reason}`); report('rejection', e.reason?.stack ?? e.reason); });
+  let mod;
+  try {
+    mod = await import('./src/app/main.js');
+  } catch (err) {
+    bootMsg.textContent = `failed to load src/app/main.js: ${err.message}`;
+    showError(err.stack ?? err.message);
+    report('boot', err.stack ?? err.message);
+    throw err;
+  }
+  try {
+    await mod.boot({
+      setBoot: (t) => { bootMsg.textContent = t; },
+      hideBoot: () => document.getElementById('boot').classList.add('hide'),
+      showError, report,
+    });
+  } catch (err) {
+    bootMsg.textContent = `boot failed: ${err.message}`;
+    showError(err.stack ?? err.message);
+    report('boot', err.stack ?? err.message);
+  }
+</script>
+</body>
+</html>

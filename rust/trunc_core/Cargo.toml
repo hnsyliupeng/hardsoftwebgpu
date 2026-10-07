@@ -1,0 +1,24 @@
+[package]
+name = "trunc_core"
+version = "0.3.0"
+edition = "2021"
+description = "TRUNC soft-robotic-arm simulation core (tendon kinematics, metamaterial torque transmission, IK/transformer models, task physics) — WebAssembly + native, no dependencies"
+license = "MIT"
+repository = "https://github.com/hnsyliupeng/hardsoftwebgpu"
+keywords = ["robotics", "soft-robotics", "webgpu", "wasm", "simulation"]
+categories = ["simulation", "wasm"]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "trunc_cli"
+path = "src/bin/trunc_cli.rs"
+
+[dependencies]
+
+[profile.release]
+opt-level = 3
+lto = true
+panic = "abort"
+codegen-units = 1

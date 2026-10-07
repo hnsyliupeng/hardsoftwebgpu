@@ -1,0 +1,20 @@
+{
+  "name": "hardsoftwebgpu",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "description": "TRUNC soft-robotic-arm lab \u2014 WebGPU interactive simulation of mechanical-metamaterial torque transmission (arXiv:2412.02650)",
+  "scripts": {
+    "start": "node tools/dev-server.mjs",
+    "dev": "node tools/dev-server.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check:rust": "node tools/check-rust.mjs",
+    "fetch:toolchain": "node tools/fetch-toolchain.mjs",
+    "build:rust": "node tools/build-rust.mjs",
+    "build:wasm": "node tools/build-rust.mjs --wasm",
+    "bundle": "node tools/bundle.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
