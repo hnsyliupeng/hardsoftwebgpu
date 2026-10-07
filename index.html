@@ -224,6 +224,14 @@
 <div id="boot">
   <div class="spin"></div>
   <div class="msg" id="boot-msg">booting WebGPU…</div>
+  <!-- Static fallback: if the module graph never runs (blocked, mis-served, or a
+       preview that strips scripts) the panel still says what this page is and
+       what went wrong, instead of leaving an empty rectangle. -->
+  <div class="msg" id="boot-hint" style="opacity:0.62;font-size:11px;margin-top:10px">
+    Hard–Soft Arm Lab — a TRUNC truss-flexure arm, five robotic tasks, and a
+    transformer policy trained in the browser. If this message is still here
+    after a few seconds the module graph did not start; the box below shows why.
+  </div>
 </div>
 
 <script type="module">

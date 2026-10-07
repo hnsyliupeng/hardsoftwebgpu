@@ -3,8 +3,14 @@
  * dev-server.mjs — zero-dependency static server for the lab.
  *
  *   * serves the repo root (index.html + src/**) with correct MIME types
- *   * sends COOP/COEP so `SharedArrayBuffer` and `crossOriginIsolated` work if a
- *     later build wants threads — WebGPU itself does not need them
+ *   * does NOT send COOP/COEP by default. `require-corp` on a document makes it
+ *     un-embeddable inside an iframe whose parent is not itself cross-origin
+ *     isolated, which is exactly how the sandbox preview hosts the app — the
+ *     symptom is a blank preview panel with no error on either side. The app
+ *     needs neither (WebGPU does not use SharedArrayBuffer), so isolation is
+ *     opt-in via --isolate for anyone who wants to experiment with threads.
+ *   * logs every request into /__status, so "the preview shows nothing" can be
+ *     told apart from "the browser never reached the server"
  *   * answers `/__log` (the page's boot diagnostics) and `/__status` (machine
  *     readable state) so a headless run can tell whether the app really started
  *   * binds 0.0.0.0 so the sandbox preview proxy can reach it, and accepts any
@@ -29,6 +35,8 @@ const getArg = (name, fallback) => {
 const PORT = Number(getArg('port', process.env.PORT ?? 5173));
 const HOST = getArg('host', '0.0.0.0');
 const ROOT = resolve(getArg('root', REPO));
+const ISOLATE = args.includes('--isolate');   // opt-in COOP/COEP (see header note)
+const requests = [];
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -69,11 +77,22 @@ const server = createServer(async (req, res) => {
   const url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`);
   const headers = {
     'access-control-allow-origin': '*',
-    'cross-origin-opener-policy': 'same-origin',
-    'cross-origin-embedder-policy': 'require-corp',
     'cross-origin-resource-policy': 'cross-origin',
     'cache-control': 'no-store',
   };
+  if (ISOLATE) {
+    headers['cross-origin-opener-policy'] = 'same-origin';
+    headers['cross-origin-embedder-policy'] = 'require-corp';
+  }
+  requests.push({
+    at: new Date().toISOString(),
+    method: req.method ?? 'GET',
+    path: (req.url ?? '/').slice(0, 120),
+    host: (req.headers.host ?? '').slice(0, 80),
+    ref: (req.headers.referer ?? '').slice(0, 80),
+    ua: (req.headers['user-agent'] ?? '').slice(0, 60),
+  });
+  if (requests.length > 300) requests.shift();
 
   if (url.pathname === '/__log') {
     if (req.method === 'POST') return logHandler(req, res);
@@ -88,6 +107,9 @@ const server = createServer(async (req, res) => {
       entries: log.length,
       booted: log.some((l) => l.kind === 'boot'),
       recent: errors.slice(-12),
+      // proof of life: what the browser actually asked for, newest last
+      requests: requests.slice(-40),
+      isolated: ISOLATE,
     }, null, 2));
   }
 
@@ -113,5 +135,6 @@ const server = createServer(async (req, res) => {
 
 server.listen(PORT, HOST, () => {
   console.log(`TRUNC soft-arm lab → http://${HOST}:${PORT}/  (root ${ROOT})`);
-  console.log('page diagnostics: POST /__log, state: GET /__status');
+  console.log(`headers: COOP/COEP ${ISOLATE ? 'ON (--isolate)' : 'off — embeddable in the preview iframe'}`);
+  console.log('page diagnostics: POST /__log, requests+boot state: GET /__status');
 });
