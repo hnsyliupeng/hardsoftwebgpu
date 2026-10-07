@@ -1,0 +1,5 @@
+Name,Material Type,Bend,Twist,Bend Moment (Nmm),Twist Moment (Nmm),Scale Factor
+D112,Neoprene Rubber,0.000317937,0.000794952,2.12E-09,2.12E-08,1
+D112,"Plastic, PET (amorphous)",0.029420016,0.121726911,0.002051887,0.020518868,1
+D112,"Aluminum alloy, wrought, 6061, T6",0.111738233,0.235716845,0.048820755,0.488207547,1
+D112,"Carbon steel, 1095, hardened & tempered",0.240161751,0.241386729,0.15,1.5,1

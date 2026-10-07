@@ -18,3 +18,7 @@ pkg/
 .idea/
 .vscode/
 *.log
+
+# Python bytecode
+__pycache__/
+*.pyc

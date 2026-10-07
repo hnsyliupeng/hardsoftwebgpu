@@ -1,0 +1,293 @@
+{
+  "paper": {
+    "workspace_xy_diameter_mm": 600.0,
+    "workspace_diameter_pct": 84.5,
+    "compression_mm": 94.3,
+    "compression_pct": 13.3,
+    "tilt_max_deg": 83.9,
+    "workspace_volume_cm3": 18272.0,
+    "trajectory_mm": {
+      "circle": 5.0,
+      "triangle": 7.3,
+      "line": 5.7
+    },
+    "trajectory_deg": {
+      "circle": 2.1,
+      "triangle": 1.9,
+      "line": 2.5
+    },
+    "repeat_point_mm": 2.1,
+    "repeat_point_deg": 0.1,
+    "repeat_trajectory_mm": 0.4,
+    "repeat_trajectory_deg": 0.1,
+    "cross_coupling_nmm": 2.5,
+    "bend_deg": 11.3,
+    "truss_deg": 52.0
+  },
+  "generated_by": "python/trunc_sim.py",
+  "withdraw": {
+    "source_csv": "workspace-poses.csv",
+    "poses_in_file": 18300,
+    "poses_fitted": 400,
+    "stride": 45,
+    "position_error_mm": {
+      "mean": 0.025201916014098224,
+      "std": 0.04106083645529951,
+      "max": 0.4523401334404476,
+      "median": 0.011919103519769955
+    },
+    "orientation_error_deg": {
+      "mean": 0.008078915810822934,
+      "max": 0.19874681616647946
+    },
+    "arm_length_mm": {
+      "mean": 709.7533225439522,
+      "min": 709.4298489815624,
+      "max": 710.1067021583408,
+      "nominal": 710.0
+    },
+    "bend_deg": {
+      "mean": 30.357997437647462,
+      "max": 75.78564783619468
+    },
+    "cable_delta_rms_mm": {
+      "mean": 73.48542470972392,
+      "max": 120.47909800429184,
+      "samples": 400
+    },
+    "recorded_compression_ratio": [
+      1.0,
+      0.786,
+      0.475
+    ],
+    "length_note": "the recorded pose alone pins the end effector, not the arm length: L is a redundant coordinate for a given pose, so the fitted L stays within a few tenths of a millimetre of 710 mm while the winch columns carry the recorded compression",
+    "cable_note": "the recorded l0\u2026l8 are the winch commands of the authors' own model (find_lengths: dl_offset + the 0.75 wrist coupling), so the geometry-only tendon comparison carries that calibration offset; the compression *convention* matches exactly (pure compaction of \u0394L shortens all nine commands by \u0394L in this model, too)",
+    "used_cables_in_fit": false,
+    "home_pose_mm": [
+      -29.32407307019455,
+      25.543226221692784,
+      345.8696420788765
+    ],
+    "home_fit": {
+      "params": [
+        -0.8020598127025632,
+        0.503670704110251,
+        2.7114679298444306,
+        -0.03371409893894547,
+        -3.828632841204187,
+        -0.20866403194814004,
+        709.9787412810725
+      ],
+      "t_deg": [
+        -45.95464218491017,
+        28.85820560989987,
+        155.35566866516027,
+        -1.9316755792880622,
+        -219.36450310618102,
+        -11.955568366811399
+      ],
+      "L": 709.9787412810725,
+      "position_error_mm": 0.016746367005777318,
+      "orientation_error_deg": 0.0,
+      "cable_error_mm": null,
+      "residual": 2.874581161035587,
+      "capture_pose_mm": [
+        -29.32407307019455,
+        25.543226221692784,
+        345.8696420788765
+      ]
+    },
+    "home_params_deg_mm": [
+      -0.8021,
+      0.5037,
+      2.7115,
+      -0.0337,
+      -3.8286,
+      -0.2087,
+      709.9787
+    ]
+  },
+  "workspace": {
+    "poses": 18300,
+    "xy_circle_centre_mm": [
+      -7.07663496049228,
+      8.959131888631868
+    ],
+    "xy_diameter_mm": 665.5427524271366,
+    "xy_diameter_pct_of_arm": 93.73841583480797,
+    "xy_diameter_midslice_mm": 541.2409374333419,
+    "xy_midslice_samples": 9994,
+    "xy_diameter_equal_area_mm": 608.5897320086409,
+    "z_span_mm": 279.995280504226,
+    "z_span_pct_of_arm": 39.43595500059521,
+    "volume_cm3": 45528.0,
+    "voxels": 45528,
+    "grid": [
+      65,
+      59,
+      28
+    ],
+    "tilt_max_deg": 83.8853757802945,
+    "tilt_mean_deg": 31.45781966932235,
+    "tilt_p95_deg": 59.789736919765964,
+    "point_density_per_100mm": 65.10977123645186
+  },
+  "trajectory": {
+    "circle": {
+      "name": "circle",
+      "waypoints": 100,
+      "mean_position_error_mm": 5.027991826470863,
+      "std_position_error_mm": 2.2664685897223045,
+      "max_position_error_mm": 10.732044272765025,
+      "mean_orientation_error_deg": 2.076403167050849,
+      "max_orientation_error_deg": 3.6784834892390554,
+      "seconds_total": 418.0
+    },
+    "triangle": {
+      "name": "triangle",
+      "waypoints": 100,
+      "mean_position_error_mm": 7.27265456749233,
+      "std_position_error_mm": 4.315361505023016,
+      "max_position_error_mm": 17.542242998155846,
+      "mean_orientation_error_deg": 1.8716918193087728,
+      "max_orientation_error_deg": 3.72779135535951,
+      "seconds_total": 421.0
+    },
+    "line": {
+      "name": "line",
+      "waypoints": 100,
+      "mean_position_error_mm": 5.688265196568925,
+      "std_position_error_mm": 3.2776777696983985,
+      "max_position_error_mm": 11.455859653879648,
+      "mean_orientation_error_deg": 2.545976952159808,
+      "max_orientation_error_deg": 5.4922073098904,
+      "seconds_total": 403.0
+    }
+  },
+  "repeatability": {
+    "point": {
+      "name": "point",
+      "clusters": 100,
+      "samples": 500,
+      "position_sd_mm": 2.0499617125892824,
+      "position_mean_mm": 3.479860396127342,
+      "position_p95_mm": 7.764885624205257,
+      "angle_sd_deg": 0.9587873030193744,
+      "angle_mean_deg": 1.6151366758854482,
+      "angle_p95_deg": 3.465730930929347
+    },
+    "trajectory": {
+      "name": "trajectory",
+      "clusters": 100,
+      "samples": 500,
+      "position_sd_mm": 0.4317230888326499,
+      "position_mean_mm": 0.5423287899888997,
+      "position_p95_mm": 1.4142697225490308,
+      "angle_sd_deg": 0.10825877372724514,
+      "angle_mean_deg": 0.13474030167459394,
+      "angle_p95_deg": 0.3659616164060187
+    }
+  },
+  "cvjoint": {
+    "bend": [
+      {
+        "label": "0 DEG",
+        "phase_lag_fraction": 0.0039100684261974585,
+        "phase_lag_percent": 0.39100684261974583,
+        "residual_mean_deg": -0.6332273852385238,
+        "residual_std_deg": 0.6998537637304459,
+        "peak_lag_samples": 4,
+        "period_samples": 1023
+      },
+      {
+        "label": "5 DEG",
+        "phase_lag_fraction": 0.005865102639296188,
+        "phase_lag_percent": 0.5865102639296188,
+        "residual_mean_deg": -1.1035947344734474,
+        "residual_std_deg": 0.7871508622649455,
+        "peak_lag_samples": 6,
+        "period_samples": 1023
+      },
+      {
+        "label": "10 DEG",
+        "phase_lag_fraction": 0.0039100684261974585,
+        "phase_lag_percent": 0.39100684261974583,
+        "residual_mean_deg": -0.6721011295446523,
+        "residual_std_deg": 0.5618394466025762,
+        "peak_lag_samples": 4,
+        "period_samples": 1023
+      },
+      {
+        "label": "15 DEG",
+        "phase_lag_fraction": 0.005865102639296188,
+        "phase_lag_percent": 0.5865102639296188,
+        "residual_mean_deg": -1.3397963807975997,
+        "residual_std_deg": 0.8604683167386822,
+        "peak_lag_samples": 6,
+        "period_samples": 1023
+      },
+      {
+        "label": "20 DEG",
+        "phase_lag_fraction": 0.017595307917888565,
+        "phase_lag_percent": 1.7595307917888563,
+        "residual_mean_deg": -3.4627429490598747,
+        "residual_std_deg": 1.9406303809145713,
+        "peak_lag_samples": 18,
+        "period_samples": 1023
+      }
+    ],
+    "extend": [
+      {
+        "label": "-13 MM",
+        "residual_mean_deg": 9.759265988372093,
+        "residual_std_deg": 4.42208104465069,
+        "residual_p95_deg": 17.578125
+      },
+      {
+        "label": "-6.5 MM",
+        "residual_mean_deg": 8.264664804469273,
+        "residual_std_deg": 4.6737253461598325,
+        "residual_p95_deg": 14.765625
+      },
+      {
+        "label": "+6.5 MM",
+        "residual_mean_deg": 8.279414848993289,
+        "residual_std_deg": 3.5907029336405567,
+        "residual_p95_deg": 15.1171875
+      },
+      {
+        "label": "+13 MM",
+        "residual_mean_deg": 6.9140625,
+        "residual_std_deg": 2.722600380804559,
+        "residual_p95_deg": 10.1953125
+      },
+      {
+        "label": "+22.5 MM",
+        "residual_mean_deg": 9.148800872093023,
+        "residual_std_deg": 6.697943962711432,
+        "residual_p95_deg": 20.0390625
+      }
+    ]
+  },
+  "cross_coupling": {
+    "inner_driven": {
+      "trials": 5,
+      "mean_torque_nmm": 0.15636072144288585,
+      "max_torque_nmm": 0.328,
+      "abs_mean_torque_nmm": 0.2047615230460929,
+      "p95_torque_nmm": 0.382,
+      "below_sensitivity": true,
+      "std_torque_nmm": 0.14532019120607176
+    },
+    "outer_driven": {
+      "trials": 6,
+      "mean_torque_nmm": 0.4425585149313964,
+      "max_torque_nmm": 0.7633333333333333,
+      "abs_mean_torque_nmm": 0.5313559322033898,
+      "p95_torque_nmm": 0.7316666666666668,
+      "below_sensitivity": true,
+      "std_torque_nmm": 0.3183869846361613
+    }
+  },
+  "runtime_s": 81.46289682388306
+}
