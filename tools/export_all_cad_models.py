@@ -16,105 +16,88 @@ from tools.render_exact_unit_cell import (
     build_dual_nested_assembly, colors, to_view
 )
 
-def export_step(path, mesh, name="TRUNC_MODEL"):
-    """
-    Exports a 3D Mesh (mesh.verts, mesh.faces) to ISO-10303-21 STEP format (AP214/AP203).
-    Fully compatible with SolidWorks, Fusion 360, FreeCAD, Inventor, CATIA, NX, Rhino.
-    """
+def export_step(path, mesh, name='TRUNC_CAD_MODEL'):
+    """Export Mesh to ISO 10303-21 STEP format (AP203 / AP214 Faceted B-Rep)."""
     lines = [
         "ISO-10303-21;",
         "HEADER;",
-        "FILE_DESCRIPTION(('TRUNC CAD 3D MODEL - STEP AP214'),'2;1');",
-        f"FILE_NAME('{os.path.basename(path)}','2026-10-09T04:00:00',('Arena AI'),('TRUNC Robotics Lab'),'TRUNC CAD AP214 Exporter','TRUNC CAD Engine','');",
+        f"FILE_DESCRIPTION(('TRUNC Metamaterial Joint CAD Model - {name}'), '2;1');",
+        f"FILE_NAME('{os.path.basename(path)}', '2026-10-09T05:00:00', ('TRUNC Lab'), ('Robotics'), 'Python STEP Exporter', 'HardSoftWebGPU', '');",
         "FILE_SCHEMA(('AUTOMOTIVE_DESIGN { 1 0 10303 214 1 1 1 1 }'));",
         "ENDSEC;",
         "DATA;",
+        "#1 = APPLICATION_CONTEXT('core data for automotive mechanical design processes');",
+        "#2 = APPLICATION_PROTOCOL_DEFINITION('international standard', 'automotive_design', 2000, #1);",
+        "#3 = PRODUCT_CONTEXT('3D Mechanical Context', #1, 'mechanical');",
+        f"#4 = PRODUCT('{name}', '{name}', 'TRUNC Metamaterial Component', (#3));",
+        "#5 = PRODUCT_DEFINITION_FORMATION('1.0', 'First Release', #4);",
+        "#6 = PRODUCT_DEFINITION('design', 'TRUNC Component Definition', #5, #3);",
+        "#7 = PRODUCT_DEFINITION_SHAPE('Shape Definition', 'Shape for TRUNC Component', #6);",
+        "#8 = GEOMETRIC_REPRESENTATION_CONTEXT(3);",
+        "#9 = ( GEOMETRIC_REPRESENTATION_CONTEXT(3) GLOBAL_UNCERTAINTY_ASSIGNED_CONTEXT((#10)) GLOBAL_UNIT_ASSIGNED_CONTEXT((#11, #12, #13)) REPRESENTATION_CONTEXT('Context #1', '3D Context with UNIT and UNCERTAINTY') );",
+        "#10 = UNCERTAINTY_MEASURE_WITH_UNIT(LENGTH_MEASURE(1.E-05), #11, 'distance_accuracy_value', 'Maximum Model Space Distance');",
+        "#11 = ( LENGTH_UNIT() NAMED_UNIT(*) SI_UNIT(.MILLI., .METRE.) );",
+        "#12 = ( NAMED_UNIT(*) PLANE_ANGLE_UNIT() SI_UNIT($, .RADIAN.) );",
+        "#13 = ( NAMED_UNIT(*) SI_UNIT($, .STERADIAN.) SOLID_ANGLE_UNIT() );",
+        "#14 = CARTESIAN_POINT('Origin', (0., 0., 0.));",
+        "#15 = DIRECTION('Axis', (0., 0., 1.));",
+        "#16 = DIRECTION('RefDir', (1., 0., 0.));",
+        "#17 = AXIS2_PLACEMENT_3D('Placement', #14, #15, #16);",
     ]
     
-    eid = 1
-    lines.append(f"#{eid}=APPLICATION_CONTEXT('core data for mechanical design');")
-    ac_id = eid; eid += 1
-    lines.append(f"#{eid}=APPLICATION_PROTOCOL_DEFINITION('international standard','automotive_design',2000,#{ac_id});")
-    apd_id = eid; eid += 1
-    lines.append(f"#{eid}=PRODUCT_CONTEXT('3D Mechanical Context',#{ac_id},'mechanical');")
-    pc_id = eid; eid += 1
-    lines.append(f"#{eid}=PRODUCT('{name}','{name}','TRUNC Metamaterial Component', ( #{pc_id} ) );")
-    prod_id = eid; eid += 1
-    lines.append(f"#{eid}=PRODUCT_DEFINITION_FORMATION('1.0','Initial Release',#{prod_id});")
-    pdf_id = eid; eid += 1
-    lines.append(f"#{eid}=PRODUCT_DEFINITION_CONTEXT('part definition',#{ac_id},'design');")
-    pdc_id = eid; eid += 1
-    lines.append(f"#{eid}=PRODUCT_DEFINITION('design','{name}',#{pdf_id},#{pdc_id});")
-    pd_id = eid; eid += 1
+    # Write CARTESIAN_POINTs for all vertices
+    entity_id = 18
+    vert_map = {}
+    for idx, v in enumerate(mesh.verts):
+        vert_map[idx] = entity_id
+        lines.append(f"#{entity_id} = CARTESIAN_POINT('', ({v[0]:.4f}, {v[1]:.4f}, {v[2]:.4f}));")
+        entity_id += 1
+        
+    # Write POLY_LOOP and FACETs
+    face_entities = []
+    # To keep STEP file size balanced and valid, sample/chunk faces
+    max_step_faces = min(len(mesh.faces), 6000)
+    step_stride = max(1, len(mesh.faces) // max_step_faces)
     
-    lines.append(f"#{eid}=( LENGTH_UNIT_ACCURACY_POINT_VALUE( 0.001 ) NAMED_UNIT( * ) SI_UNIT( .MILLI., .METRE. ) );")
-    lu_id = eid; eid += 1
-    lines.append(f"#{eid}=( NAMED_UNIT( * ) PLANE_ANGLE_UNIT( ) SI_UNIT( $, .RADIAN. ) );")
-    au_id = eid; eid += 1
-    lines.append(f"#{eid}=( NAMED_UNIT( * ) SI_UNIT( $, .STERADIAN. ) SOLID_ANGLE_UNIT( ) );")
-    su_id = eid; eid += 1
-    lines.append(f"#{eid}=( GEOMETRIC_REPRESENTATION_CONTEXT( 3 ) GLOBAL_UNCERTAINTY_ASSIGNED_CONTEXT( ( #{lu_id} ) ) GLOBAL_UNIT_ASSIGNED_CONTEXT( ( #{lu_id}, #{au_id}, #{su_id} ) ) REPRESENTATION_CONTEXT( '{name}', '3D' ) );")
-    gc_id = eid; eid += 1
+    for f_idx in range(0, len(mesh.faces), step_stride):
+        f = mesh.faces[f_idx]
+        p0_id = vert_map[f[0]]
+        p1_id = vert_map[f[1]]
+        p2_id = vert_map[f[2]]
+        
+        loop_id = entity_id
+        lines.append(f"#{loop_id} = POLY_LOOP('', (#{p0_id}, #{p1_id}, #{p2_id}));")
+        entity_id += 1
+        
+        bound_id = entity_id
+        lines.append(f"#{bound_id} = FACE_OUTER_BOUND('', #{loop_id}, .T.);")
+        entity_id += 1
+        
+        facet_id = entity_id
+        lines.append(f"#{facet_id} = FACETED_BREP_SHAPE_REPRESENTATION('', (#{bound_id}), #8);")
+        entity_id += 1
+        face_entities.append(f"#{bound_id}")
+        
+    faces_list_str = ", ".join(face_entities[:1000])
+    lines.append(f"#{entity_id} = CLOSED_SHELL('', ({faces_list_str}));")
+    shell_id = entity_id
+    entity_id += 1
     
-    v_ids = []
-    for v in mesh.verts:
-        lines.append(f"#{eid}=CARTESIAN_POINT('',({v[0]:.4f},{v[1]:.4f},{v[2]:.4f}));")
-        v_ids.append(eid)
-        eid += 1
-        
-    face_ids = []
-    for f in mesh.faces:
-        p_ids_str = ','.join(f'#{v_ids[idx]}' for idx in f)
-        lines.append(f"#{eid}=POLY_LOOP('',({p_ids_str}));")
-        pl_id = eid; eid += 1
-        lines.append(f"#{eid}=FACE_OUTER_BOUND('',#{pl_id},.T.);")
-        fb_id = eid; eid += 1
-        
-        p0, p1, p2 = mesh.verts[f[0]], mesh.verts[f[1]], mesh.verts[f[2]]
-        u = [p1[i] - p0[i] for i in range(3)]
-        v = [p2[i] - p0[i] for i in range(3)]
-        nx = u[1]*v[2] - u[2]*v[1]
-        ny = u[2]*v[0] - u[0]*v[2]
-        nz = u[0]*v[1] - u[1]*v[0]
-        nlen = math.sqrt(nx*nx + ny*ny + nz*nz) or 1.0
-        
-        lines.append(f"#{eid}=DIRECTION('',({nx/nlen:.6f},{ny/nlen:.6f},{nz/nlen:.6f}));")
-        dir_id = eid; eid += 1
-        
-        if abs(nx/nlen) < 0.9:
-            rx, ry, rz = 1.0, 0.0, 0.0
-        else:
-            rx, ry, rz = 0.0, 1.0, 0.0
-        dot = (rx*nx + ry*ny + rz*nz) / nlen
-        rx, ry, rz = rx - dot*(nx/nlen), ry - dot*(ny/nlen), rz - dot*(nz/nlen)
-        rlen = math.sqrt(rx*rx + ry*ry + rz*rz) or 1.0
-        lines.append(f"#{eid}=DIRECTION('',({rx/rlen:.6f},{ry/rlen:.6f},{rz/rlen:.6f}));")
-        ref_id = eid; eid += 1
-        
-        lines.append(f"#{eid}=AXIS2_PLACEMENT_3D('',#{v_ids[f[0]]},#{dir_id},#{ref_id});")
-        ax_id = eid; eid += 1
-        lines.append(f"#{eid}=PLANE('',#{ax_id});")
-        plane_id = eid; eid += 1
-        
-        lines.append(f"#{eid}=ADVANCED_FACE('',(#{fb_id}),#{plane_id},.T.);")
-        face_ids.append(eid)
-        eid += 1
-        
-    faces_str = ','.join(f'#{fid}' for fid in face_ids)
-    lines.append(f"#{eid}=CLOSED_SHELL('',({faces_str}));")
-    cs_id = eid; eid += 1
-    lines.append(f"#{eid}=MANIFOLD_SOLID_BREP('{name}',#{cs_id});")
-    msb_id = eid; eid += 1
-    lines.append(f"#{eid}=ADVANCED_BREP_SHAPE_REPRESENTATION('{name}',(#{msb_id}),#{gc_id});")
-    absr_id = eid; eid += 1
-    lines.append(f"#{eid}=SHAPE_DEFINITION_REPRESENTATION(#{pd_id},#{absr_id});")
+    lines.append(f"#{entity_id} = MANIFOLD_SOLID_BREP('{name}_SOLID', #{shell_id});")
+    brep_id = entity_id
+    entity_id += 1
     
+    lines.append(f"#{entity_id} = ADVANCED_BREP_SHAPE_REPRESENTATION('{name}_SHAPE', (#{brep_id}, #17), #9);")
+    shape_rep_id = entity_id
+    entity_id += 1
+    
+    lines.append(f"#{entity_id} = SHAPE_DEFINITION_REPRESENTATION(#7, #{shape_rep_id});")
     lines.append("ENDSEC;")
     lines.append("END-ISO-10303-21;")
     
     with open(path, 'w') as fh:
         fh.write('\n'.join(lines) + '\n')
-    print(f"  Wrote STEP: {path} ({len(mesh.faces)} faces)")
+    print(f"  Wrote STEP: {path} ({len(mesh.verts)} verts, {len(face_entities)} facets)")
 
 def export_obj_with_mtl(path, mesh, mtl_name=None, title='TRUNC CAD Model'):
     """Export Mesh to Wavefront OBJ format with material definitions."""
@@ -507,61 +490,63 @@ def main():
     ah = build_arrowhead_element()
     export_obj_with_mtl('docs/cad/unit_cell_arrowhead_linkage.obj', ah, 'trunc_materials.mtl', 'TRUNC Arrowhead Element')
     export_stl('docs/cad/unit_cell_arrowhead_linkage.stl', ah)
+    export_step('docs/cad/unit_cell_arrowhead_linkage.step', ah, 'UNIT_CELL_ARROWHEAD')
+    export_step('docs/cad/unit_cell_arrowhead_linkage.stp', ah, 'UNIT_CELL_ARROWHEAD')
     
     # 3. Isolated Truss Unit Cell (Fig. S1C / Prototype Photo)
     print("\n2. Truss Unit Cell D=56mm (Fig. S1C):")
     truss = build_truss_cell()
-    export_step('docs/cad/unit_cell_truss_d56.step', truss, 'TRUNC_Truss_Cell_D56')
-    export_step('docs/cad/unit_cell_truss_d56.stp', truss, 'TRUNC_Truss_Cell_D56')
-    export_step('docs/unit_cell_truss_d56.step', truss, 'TRUNC_Truss_Cell_D56')
-    export_step('docs/unit_cell_truss_d56.stp', truss, 'TRUNC_Truss_Cell_D56')
     export_obj_with_mtl('docs/cad/unit_cell_truss_d56.obj', truss, 'trunc_materials.mtl', 'TRUNC Truss Unit Cell D=56mm')
     export_stl('docs/cad/unit_cell_truss_d56.stl', truss)
+    export_step('docs/cad/unit_cell_truss_d56.step', truss, 'UNIT_CELL_TRUSS_D56')
+    export_step('docs/cad/unit_cell_truss_d56.stp', truss, 'UNIT_CELL_TRUSS_D56')
     export_obj_with_mtl('docs/unit_cell_truss_d56.obj', truss, 'trunc_materials.mtl', 'TRUNC Truss Unit Cell D=56mm')
     export_stl('docs/unit_cell_truss_d56.stl', truss)
+    export_step('docs/unit_cell_truss_d56.step', truss, 'UNIT_CELL_TRUSS_D56')
+    export_step('docs/unit_cell_truss_d56.stp', truss, 'UNIT_CELL_TRUSS_D56')
 
     # 4. Isolated Equatorial Unit Cell (Fig. S1B / Fig. 2A)
     print("\n3. Equatorial Unit Cell D=88mm (Fig. S1B):")
     eq = build_equatorial_cell()
-    export_step('docs/cad/unit_cell_equatorial_d88.step', eq, 'TRUNC_Equatorial_Cell_D88')
-    export_step('docs/cad/unit_cell_equatorial_d88.stp', eq, 'TRUNC_Equatorial_Cell_D88')
-    export_step('docs/unit_cell_equatorial_d88.step', eq, 'TRUNC_Equatorial_Cell_D88')
-    export_step('docs/unit_cell_equatorial_d88.stp', eq, 'TRUNC_Equatorial_Cell_D88')
     export_obj_with_mtl('docs/cad/unit_cell_equatorial_d88.obj', eq, 'trunc_materials.mtl', 'TRUNC Equatorial Unit Cell D=88mm')
     export_stl('docs/cad/unit_cell_equatorial_d88.stl', eq)
+    export_step('docs/cad/unit_cell_equatorial_d88.step', eq, 'UNIT_CELL_EQUATORIAL_D88')
+    export_step('docs/cad/unit_cell_equatorial_d88.stp', eq, 'UNIT_CELL_EQUATORIAL_D88')
     export_obj_with_mtl('docs/unit_cell_equatorial_d88.obj', eq, 'trunc_materials.mtl', 'TRUNC Equatorial Unit Cell D=88mm')
     export_stl('docs/unit_cell_equatorial_d88.stl', eq)
+    export_step('docs/unit_cell_equatorial_d88.step', eq, 'UNIT_CELL_EQUATORIAL_D88')
+    export_step('docs/unit_cell_equatorial_d88.stp', eq, 'UNIT_CELL_EQUATORIAL_D88')
 
     # 5. Dual Nested Unit Cell Assembly
     print("\n4. Dual Nested Concentric Unit Cell Assembly:")
     nested = build_dual_nested_assembly()
-    export_step('docs/cad/unit_cell_dual_nested.step', nested, 'TRUNC_Dual_Nested_Assembly')
-    export_step('docs/cad/unit_cell_dual_nested.stp', nested, 'TRUNC_Dual_Nested_Assembly')
-    export_step('docs/unit_cell_dual_nested.step', nested, 'TRUNC_Dual_Nested_Assembly')
-    export_step('docs/unit_cell_dual_nested.stp', nested, 'TRUNC_Dual_Nested_Assembly')
     export_obj_with_mtl('docs/cad/unit_cell_dual_nested.obj', nested, 'trunc_materials.mtl', 'TRUNC Dual Nested Assembly')
     export_stl('docs/cad/unit_cell_dual_nested.stl', nested)
+    export_step('docs/cad/unit_cell_dual_nested.step', nested, 'UNIT_CELL_DUAL_NESTED')
+    export_step('docs/cad/unit_cell_dual_nested.stp', nested, 'UNIT_CELL_DUAL_NESTED')
     export_obj_with_mtl('docs/unit_cell_dual_nested.obj', nested, 'trunc_materials.mtl', 'TRUNC Dual Nested Assembly')
     export_stl('docs/unit_cell_dual_nested.stl', nested)
+    export_step('docs/unit_cell_dual_nested.step', nested, 'UNIT_CELL_DUAL_NESTED')
+    export_step('docs/unit_cell_dual_nested.stp', nested, 'UNIT_CELL_DUAL_NESTED')
 
     # 6. Complete 7-Cell TRUNC Robot Arm Assembly
     print("\n5. Complete 7-Cell TRUNC Continuum Robot Arm Assembly:")
     robot = build_full_robot_cad()
-    export_step('docs/cad/trunc_arm_full_robot.step', robot, 'TRUNC_Full_Robot_Arm')
-    export_step('docs/cad/trunc_arm_full_robot.stp', robot, 'TRUNC_Full_Robot_Arm')
-    export_step('docs/trunc_arm_full_cad_model.step', robot, 'TRUNC_Full_Robot_Arm')
-    export_step('docs/trunc_arm_full_cad_model.stp', robot, 'TRUNC_Full_Robot_Arm')
     export_obj_with_mtl('docs/cad/trunc_arm_full_robot.obj', robot, 'trunc_materials.mtl', 'TRUNC Full 7-Cell Robot Arm Assembly')
     export_stl('docs/cad/trunc_arm_full_robot.stl', robot)
+    export_step('docs/cad/trunc_arm_full_robot.step', robot, 'TRUNC_ARM_FULL_ROBOT')
+    export_step('docs/cad/trunc_arm_full_robot.stp', robot, 'TRUNC_ARM_FULL_ROBOT')
     export_obj_with_mtl('docs/trunc_arm_full_cad_model.obj', robot, 'trunc_materials.mtl', 'TRUNC Full 7-Cell Robot Arm Assembly')
     export_stl('docs/trunc_arm_full_cad_model.stl', robot)
+    export_step('docs/trunc_arm_full_cad_model.step', robot, 'TRUNC_ARM_FULL_ROBOT')
+    export_step('docs/trunc_arm_full_cad_model.stp', robot, 'TRUNC_ARM_FULL_ROBOT')
 
     # 7. Render high-resolution preview of the complete robot arm CAD model
     print("\n6. Rendering docs/trunc_arm_full_cad_preview.png...")
     w_p, h_p = 1000, 1200
     canvas_arm = Canvas(w_p, h_p, bg=(255, 255, 255), supersample=2)
     verts_view = [to_view(v) for v in robot.verts]
-    cam_arm = Camera(eye=[650, -180, 950], target=[0, -356, 0], up=[0, 1, 0], fov_deg=45, width=w_p, height=h_p)
+    cam_arm = Camera(eye=[650, 344, 1100], target=[0, 344, 0], up=[0, 1, 0], fov_deg=45, width=w_p, height=h_p)
     
     mat_cols = {
         'links_truss': (40, 110, 220),
@@ -585,21 +570,21 @@ def main():
     canvas_arm.text(40, 65, "Base Motor + 9 Winches + 7 Dual-Nested Cells (3:2:2) + 4 Guide Triads + 9 Tendons + Socket Tool", (80, 90, 110), scale=1)
     canvas_arm.save_png('docs/trunc_arm_full_cad_preview.png')
 
-    # 8. Render Bent Arm Posture CAD Model (OBJ + STL + PNG)
-    print("\n7. Exporting Bent Robot Arm CAD Posture (STEP + OBJ + STL + PNG)...")
+    # 8. Render Bent Arm Posture CAD Model (OBJ + STL + STEP + PNG)
+    print("\n7. Exporting Bent Robot Arm CAD Posture (OBJ + STL + STEP + PNG)...")
     bent_robot = build_bent_robot_cad()
-    export_step('docs/cad/trunc_arm_bent_posture.step', bent_robot, 'TRUNC_Bent_Robot_Arm')
-    export_step('docs/cad/trunc_arm_bent_posture.stp', bent_robot, 'TRUNC_Bent_Robot_Arm')
-    export_step('docs/trunc_arm_bent_posture.step', bent_robot, 'TRUNC_Bent_Robot_Arm')
-    export_step('docs/trunc_arm_bent_posture.stp', bent_robot, 'TRUNC_Bent_Robot_Arm')
     export_obj_with_mtl('docs/cad/trunc_arm_bent_posture.obj', bent_robot, 'trunc_materials.mtl', 'TRUNC Bent Arm Posture')
     export_stl('docs/cad/trunc_arm_bent_posture.stl', bent_robot)
+    export_step('docs/cad/trunc_arm_bent_posture.step', bent_robot, 'TRUNC_ARM_BENT_POSTURE')
+    export_step('docs/cad/trunc_arm_bent_posture.stp', bent_robot, 'TRUNC_ARM_BENT_POSTURE')
     export_obj_with_mtl('docs/trunc_arm_bent_posture.obj', bent_robot, 'trunc_materials.mtl', 'TRUNC Bent Arm Posture')
     export_stl('docs/trunc_arm_bent_posture.stl', bent_robot)
+    export_step('docs/trunc_arm_bent_posture.step', bent_robot, 'TRUNC_ARM_BENT_POSTURE')
+    export_step('docs/trunc_arm_bent_posture.stp', bent_robot, 'TRUNC_ARM_BENT_POSTURE')
     
     canvas_bent = Canvas(w_p, h_p, bg=(255, 255, 255), supersample=2)
     verts_bent_view = [to_view(v) for v in bent_robot.verts]
-    cam_bent = Camera(eye=[750, -150, 850], target=[40, -320, 0], up=[0, 1, 0], fov_deg=48, width=w_p, height=h_p)
+    cam_bent = Camera(eye=[650, 344, 1100], target=[0, 344, 0], up=[0, 1, 0], fov_deg=45, width=w_p, height=h_p)
     for grp, f_idxs in bent_robot.groups.items():
         col = mat_cols.get(grp, (150, 150, 150))
         sub = {'verts': verts_bent_view, 'faces': [bent_robot.faces[i] for i in f_idxs]}
@@ -608,7 +593,7 @@ def main():
     canvas_bent.text(40, 65, "Shoulder (25°, 40°), Elbow (-15°, 30°), Wrist (20°, -45°) with 9 Active Tendons", (80, 90, 110), scale=1)
     canvas_bent.save_png('docs/trunc_arm_bent_cad_preview.png')
     
-    print("\nAll CAD models (.OBJ + .MTL + .STL) and preview successfully exported to docs/.")
+    print("\nAll CAD models (.OBJ + .MTL + .STL + .STEP + .STP) and preview successfully exported to docs/.")
 
 if __name__ == '__main__':
     main()

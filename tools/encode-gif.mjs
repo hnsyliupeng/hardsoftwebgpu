@@ -1,5 +1,4 @@
-#!/usr/bin/env node
-import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, readdirSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { GifWriter, medianCut, paletteLookup } from './gif.js';
 
@@ -10,19 +9,18 @@ if (rawFiles.length === 0) {
 }
 
 const W = 720, H = 540;
-const frames = rawFiles.map(f => readFileSync(join('/tmp/fea_frames', f)));
+const frames = rawFiles.map(f => new Uint8Array(readFileSync(join('/tmp/fea_frames', f))));
 
 console.log(`Encoding ${frames.length} frames into docs/fea/trunc_torque_transmission_mbd_fem.gif...`);
-const samples = [{ data: frames[0], stride: 4 }, { data: frames[Math.floor(frames.length / 2)], stride: 4 }];
+const samples = frames.map(data => ({ data }));
 const palette = medianCut(samples, 256);
-const map = paletteLookup(palette);
-const writer = new GifWriter(W, H, palette, 0);
+const writer = new GifWriter(W, H, palette);
+const lookup = paletteLookup(palette);
 
-for (const frame of frames) {
-  const indexed = new Uint8Array(W * H);
-  map(frame, indexed);
-  writer.addFrame(indexed, 100);
-}
+frames.forEach((f) => {
+  const quant = writer.quantise(f, lookup, { dither: false });
+  writer.addFrame(quant, 100);
+});
 
 const gifBytes = writer.finish();
 writeFileSync('docs/fea/trunc_torque_transmission_mbd_fem.gif', gifBytes);

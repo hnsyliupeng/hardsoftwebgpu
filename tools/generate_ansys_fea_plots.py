@@ -13,12 +13,7 @@ from tools.render_exact_unit_cell import (
 )
 from tools.export_all_cad_models import build_full_robot_cad, build_bent_robot_cad
 
-# -----------------------------------------------------------------------------
-# Rainbow / Jet Colormap (Blue -> Cyan -> Green -> Yellow -> Orange -> Red)
-# -----------------------------------------------------------------------------
-
 def rainbow_cmap(val, min_v, max_v):
-    """Maps a scalar value to RGB rainbow colormap matching ANSYS Workbench."""
     if max_v <= min_v:
         t = 0.5
     else:
@@ -37,18 +32,10 @@ def rainbow_cmap(val, min_v, max_v):
         f = (t - 0.75) / 0.25
         return (255, int(255 * (1.0 - f)), 0)
 
-# -----------------------------------------------------------------------------
-# ANSYS Workbench Custom Renderer
-# -----------------------------------------------------------------------------
-
 def render_ansys_contour(canvas, mesh, stress_values, cam, title_info, max_v, min_v, unit="MPa"):
-    """
-    Renders 3D mesh with per-vertex stress contour shading,
-    ANSYS Workbench style title header, 9-level color bar, and coordinate triad.
-    """
     W, H = canvas.out_w, canvas.out_h
     
-    # 1. ANSYS Workbench Background Gradient (Light Blue-Gray)
+    # 1. ANSYS Workbench Background Gradient
     for y in range(H):
         t = y / float(H)
         r = int(238 * (1.0 - t) + 205 * t)
@@ -59,7 +46,7 @@ def render_ansys_contour(canvas, mesh, stress_values, cam, title_info, max_v, mi
     for i in range(len(canvas.depth)):
         canvas.depth[i] = float('inf')
         
-    # 2. Render Mesh Triangles with Gouraud Shaded Stress Contours
+    # 2. Render Mesh Triangles
     proj_verts = []
     view_z = []
     for v in mesh.verts:
@@ -105,7 +92,7 @@ def render_ansys_contour(canvas, mesh, stress_values, cam, title_info, max_v, mi
         
         canvas.tri(s0, s1, s2, col)
 
-    # 3. ANSYS Workbench Header Info Box (Top-Left)
+    # 3. ANSYS Workbench Header Info Box
     canvas.rect(20, 20, 310, 140, (255, 255, 255), fill=True)
     canvas.rect(20, 20, 310, 140, (180, 190, 205), fill=False, width=1)
     canvas.text(32, 28, "ANSYS Workbench Mechanical", (20, 30, 60), scale=2)
@@ -116,7 +103,7 @@ def render_ansys_contour(canvas, mesh, stress_values, cam, title_info, max_v, mi
         canvas.text(32, y_off, line, (40, 50, 70), scale=1)
         y_off += 15
 
-    # 4. ANSYS 9-Level Color Bar Legend (Left Side)
+    # 4. ANSYS 9-Level Color Bar Legend
     bar_x = 35
     bar_y_start = 185
     bar_w = 24
@@ -137,7 +124,7 @@ def render_ansys_contour(canvas, mesh, stress_values, cam, title_info, max_v, mi
         tag = "Max" if i == 0 else ("Min" if i == n_segs - 1 else "")
         canvas.text(bar_x + bar_w + 8, by + bar_h_seg//2 - 3, f"{val:.2f} {tag}", (20, 30, 40), scale=1)
 
-    # 5. Coordinate Triad (Bottom-Right)
+    # 5. Coordinate Triad
     tx, ty = W - 80, H - 70
     canvas.line(tx, ty, tx + 35, ty, (220, 40, 40), 2)  # X Red
     canvas.text(tx + 38, ty - 4, "X", (220, 40, 40), scale=1)
@@ -146,7 +133,7 @@ def render_ansys_contour(canvas, mesh, stress_values, cam, title_info, max_v, mi
     canvas.line(tx, ty, tx - 22, ty + 22, (40, 80, 220), 2) # Z Blue
     canvas.text(tx - 32, ty + 22, "Z", (40, 80, 220), scale=1)
 
-    # 6. Scale Ruler Bar (Bottom-Center)
+    # 6. Scale Ruler Bar
     rx = W // 2 - 70
     ry = H - 30
     canvas.line(rx, ry, rx + 140, ry, (60, 70, 80), 2)
@@ -156,10 +143,6 @@ def render_ansys_contour(canvas, mesh, stress_values, cam, title_info, max_v, mi
     canvas.text(rx - 10, ry + 8, "0.00", (60, 70, 80), scale=1)
     canvas.text(rx + 55, ry + 8, "25.00 (mm)", (60, 70, 80), scale=1)
     canvas.text(rx + 130, ry + 8, "50.00", (60, 70, 80), scale=1)
-
-# -----------------------------------------------------------------------------
-# FEA Case Generators (Continuous Monolithic Arches)
-# -----------------------------------------------------------------------------
 
 def generate_fea_truss_bending():
     print("Generating FEA: Truss D=56mm Bending (ANSYS Workbench Style)...")
@@ -298,13 +281,13 @@ def generate_fea_full_arm():
     
     stress = []
     for v in mesh.verts:
-        height_frac = max(0.0, min(1.0, (v[1] + 710.0) / 710.0))
+        height_frac = max(0.0, min(1.0, (v[1] + 80.0) / 848.0))
         moment_factor = (1.0 - height_frac) * 0.7 + 0.3
         r = math.hypot(v[0], v[2])
         s = moment_factor * 260.0 + (r / 44.0) * 24.6 + 1.5
         stress.append(min(284.6, s))
         
-    cam = Camera(eye=[750, -150, 850], target=[40, -320, 0], up=[0, 1, 0], fov_deg=48, width=1000, height=1200)
+    cam = Camera(eye=[600, 344, 1200], target=[0, 344, 0], up=[0, 1, 0], fov_deg=45, width=1000, height=1200)
     canvas = Canvas(1000, 1200, bg=(240, 245, 252), supersample=2)
     
     title_info = [
