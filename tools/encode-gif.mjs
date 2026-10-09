@@ -8,7 +8,9 @@ if (rawFiles.length === 0) {
   process.exit(1);
 }
 
-const W = 720, H = 540;
+const [,, argW, argH] = process.argv;
+const W = argW ? parseInt(argW, 10) : 640;
+const H = argH ? parseInt(argH, 10) : 480;
 const frames = rawFiles.map(f => new Uint8Array(readFileSync(join('/tmp/fea_frames', f))));
 
 console.log(`Encoding ${frames.length} frames into docs/fea/trunc_torque_transmission_mbd_fem.gif...`);

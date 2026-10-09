@@ -377,10 +377,6 @@ def main():
     export_stl('docs/cad/unit_cell_truss_d56.stl', truss)
     export_step('docs/cad/unit_cell_truss_d56.step', truss, 'UNIT_CELL_TRUSS_D56')
     export_step('docs/cad/unit_cell_truss_d56.stp', truss, 'UNIT_CELL_TRUSS_D56')
-    export_obj_with_mtl('docs/unit_cell_truss_d56.obj', truss, 'trunc_materials.mtl', 'TRUNC Truss Unit Cell D=56mm')
-    export_stl('docs/unit_cell_truss_d56.stl', truss)
-    export_step('docs/unit_cell_truss_d56.step', truss, 'UNIT_CELL_TRUSS_D56')
-    export_step('docs/unit_cell_truss_d56.stp', truss, 'UNIT_CELL_TRUSS_D56')
 
     # 3. Equatorial Unit Cell D=88mm (Fig. S1B)
     print("\n3. Equatorial Unit Cell D=88mm (Fig. S1B):")
@@ -389,10 +385,6 @@ def main():
     export_stl('docs/cad/unit_cell_equatorial_d88.stl', eq)
     export_step('docs/cad/unit_cell_equatorial_d88.step', eq, 'UNIT_CELL_EQUATORIAL_D88')
     export_step('docs/cad/unit_cell_equatorial_d88.stp', eq, 'UNIT_CELL_EQUATORIAL_D88')
-    export_obj_with_mtl('docs/unit_cell_equatorial_d88.obj', eq, 'trunc_materials.mtl', 'TRUNC Equatorial Unit Cell D=88mm')
-    export_stl('docs/unit_cell_equatorial_d88.stl', eq)
-    export_step('docs/unit_cell_equatorial_d88.step', eq, 'UNIT_CELL_EQUATORIAL_D88')
-    export_step('docs/unit_cell_equatorial_d88.stp', eq, 'UNIT_CELL_EQUATORIAL_D88')
 
     # 4. Dual Nested Concentric Unit Cell Assembly
     print("\n4. Dual Nested Concentric Unit Cell Assembly:")
@@ -401,10 +393,6 @@ def main():
     export_stl('docs/cad/unit_cell_dual_nested.stl', nested)
     export_step('docs/cad/unit_cell_dual_nested.step', nested, 'UNIT_CELL_DUAL_NESTED')
     export_step('docs/cad/unit_cell_dual_nested.stp', nested, 'UNIT_CELL_DUAL_NESTED')
-    export_obj_with_mtl('docs/unit_cell_dual_nested.obj', nested, 'trunc_materials.mtl', 'TRUNC Dual Nested Assembly')
-    export_stl('docs/unit_cell_dual_nested.stl', nested)
-    export_step('docs/unit_cell_dual_nested.step', nested, 'UNIT_CELL_DUAL_NESTED')
-    export_step('docs/unit_cell_dual_nested.stp', nested, 'UNIT_CELL_DUAL_NESTED')
 
     # 5. Complete 7-Cell TRUNC Robot Arm Assembly
     print("\n5. Complete 7-Cell Continuous TRUNC Continuum Robot Arm Assembly:")
@@ -413,10 +401,6 @@ def main():
     export_stl('docs/cad/trunc_arm_full_robot.stl', robot)
     export_step('docs/cad/trunc_arm_full_robot.step', robot, 'TRUNC_ARM_FULL_ROBOT')
     export_step('docs/cad/trunc_arm_full_robot.stp', robot, 'TRUNC_ARM_FULL_ROBOT')
-    export_obj_with_mtl('docs/trunc_arm_full_cad_model.obj', robot, 'trunc_materials.mtl', 'TRUNC Full 7-Cell Robot Arm Assembly')
-    export_stl('docs/trunc_arm_full_cad_model.stl', robot)
-    export_step('docs/trunc_arm_full_cad_model.step', robot, 'TRUNC_ARM_FULL_ROBOT')
-    export_step('docs/trunc_arm_full_cad_model.stp', robot, 'TRUNC_ARM_FULL_ROBOT')
 
     # Render high-resolution preview of neutral CAD model
     print("\n6. Rendering docs/trunc_arm_full_cad_preview.png...")
@@ -454,10 +438,6 @@ def main():
     export_stl('docs/cad/trunc_arm_bent_posture.stl', bent_robot)
     export_step('docs/cad/trunc_arm_bent_posture.step', bent_robot, 'TRUNC_ARM_BENT_POSTURE')
     export_step('docs/cad/trunc_arm_bent_posture.stp', bent_robot, 'TRUNC_ARM_BENT_POSTURE')
-    export_obj_with_mtl('docs/trunc_arm_bent_posture.obj', bent_robot, 'trunc_materials.mtl', 'TRUNC Bent Arm Posture')
-    export_stl('docs/trunc_arm_bent_posture.stl', bent_robot)
-    export_step('docs/trunc_arm_bent_posture.step', bent_robot, 'TRUNC_ARM_BENT_POSTURE')
-    export_step('docs/trunc_arm_bent_posture.stp', bent_robot, 'TRUNC_ARM_BENT_POSTURE')
     
     canvas_bent = Canvas(w_p, h_p, bg=(255, 255, 255), supersample=2)
     verts_bent_view = [to_view(v) for v in bent_robot.verts]

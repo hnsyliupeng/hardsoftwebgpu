@@ -187,10 +187,9 @@ def generate_fea_mesh_plot():
         diff = max(0.0, nx*lx + ny*ly + nz*lz)
         col = (int(base_col[0] * (0.55+0.45*diff)), int(base_col[1] * (0.55+0.45*diff)), int(base_col[2] * (0.55+0.45*diff)))
         canvas.tri(s0, s1, s2, col)
-        if f_idx % 2 == 0:
+        if f_idx % 4 == 0:
             canvas.line(s0[0], s0[1], s1[0], s1[1], (80, 100, 130), width=1)
             canvas.line(s1[0], s1[1], s2[0], s2[1], (80, 100, 130), width=1)
-            canvas.line(s2[0], s2[1], s0[0], s0[1], (80, 100, 130), width=1)
 
     canvas.save_png('docs/fea/ansys_fea_mesh_model.png')
 
@@ -287,7 +286,7 @@ def generate_fea_truss_bending():
         stress.append(min(142.8, s))
         
     cam = Camera(eye=[80, 55, 115], target=[0, 0, 0], up=[0, 1, 0], fov_deg=40, width=1000, height=800)
-    canvas = Canvas(1000, 800, bg=(240, 245, 252), supersample=2)
+    canvas = Canvas(1000, 800, bg=(240, 245, 252), supersample=1)
     
     title_info = [
         "A: Truss Cell D=56mm Static Structural",
@@ -363,7 +362,7 @@ def generate_fea_equatorial_torsion():
         stress.append(min(212.0, max(0.85, s)))
         
     cam = Camera(eye=[100, 70, 135], target=[0, 0, 0], up=[0, 1, 0], fov_deg=40, width=1000, height=800)
-    canvas = Canvas(1000, 800, bg=(240, 245, 252), supersample=2)
+    canvas = Canvas(1000, 800, bg=(240, 245, 252), supersample=1)
     
     title_info = [
         "D: Equatorial Cell D=88mm Torsional Shear",
@@ -389,7 +388,7 @@ def generate_fea_axial_compression():
         stress.append(min(118.2, s))
         
     cam = Camera(eye=[110, 75, 145], target=[0, 0, 0], up=[0, 1, 0], fov_deg=40, width=1000, height=800)
-    canvas = Canvas(1000, 800, bg=(240, 245, 252), supersample=2)
+    canvas = Canvas(1000, 800, bg=(240, 245, 252), supersample=1)
     
     title_info = [
         "E: Dual-Nested Cell Axial Compression",
@@ -416,7 +415,7 @@ def generate_fea_full_arm():
         stress.append(min(284.6, s))
         
     cam = Camera(eye=[600, 344, 1200], target=[0, 344, 0], up=[0, 1, 0], fov_deg=45, width=1000, height=1200)
-    canvas = Canvas(1000, 1200, bg=(240, 245, 252), supersample=2)
+    canvas = Canvas(1000, 1200, bg=(240, 245, 252), supersample=1)
     
     title_info = [
         "F: Full 7-Cell Continuum Robot Arm FEA",
@@ -434,8 +433,8 @@ def generate_torque_transmission_mbd_gif():
     for f in os.listdir('/tmp/fea_frames'):
         os.remove(os.path.join('/tmp/fea_frames', f))
         
-    W, H = 720, 540
-    n_frames = 20
+    W, H = 640, 480
+    n_frames = 16
     
     for f_idx in range(n_frames):
         phase = (f_idx / float(n_frames)) * 2 * math.pi
@@ -503,8 +502,9 @@ def generate_torque_transmission_mbd_gif():
             
         with open(f'/tmp/fea_frames/frame_{f_idx:03d}.raw', 'wb') as fh:
             fh.write(rgba)
+        print(f"  Rendered Frame {f_idx+1}/{n_frames}")
             
-    subprocess.run(['node', 'tools/encode-gif.mjs'], check=True)
+    subprocess.run(['node', 'tools/encode-gif.mjs', str(W), str(H)], check=True)
 
 def main():
     os.makedirs('docs/fea', exist_ok=True)
