@@ -21,7 +21,7 @@ from trunclib.kinematics import segment_transform, mdot, eye
 from trunclib.metamaterial import solve_unit_cell_pose, cell_layout, LINK
 from tools.render_exact_unit_cell import (
     build_arrowhead_element, build_equatorial_cell, build_truss_cell,
-    build_dual_nested_assembly, colors, to_view
+    build_dual_nested_assembly, to_view
 )
 
 def export_step(path, mesh, name='TRUNC_CAD_MODEL'):
@@ -360,7 +360,6 @@ def main():
     
     mtl_path = 'docs/cad/trunc_materials.mtl'
     export_mtl(mtl_path)
-    export_mtl('docs/trunc_materials.mtl')
     
     # 1. Arrowhead Element (Fig. S1A)
     print("\n1. Arrowhead Linkage Element (Fig. S1A):")
