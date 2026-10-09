@@ -368,10 +368,26 @@ export function truncCell(kind, length, ballR, opts = {}) {
   }
   void e2;
 
-  // the connector between the cell and the next one: a 4 mm steel rod
-  // press-fit through a bearing, which is how the paper chains cells
   const cellHalf = cellH * 0.5 * M;
   const half = pitchMm * 0.5 * M;
+
+  // central conical restoring spring and end collar blocks
+  if (kindName === 'truss') {
+    const springPts = restoringSpring(cellH * 0.8, Rmm * 0.25, Rmm * 0.5, 5);
+    for (let i = 0; i < springPts.length - 1; i += 1) {
+      const p0 = V(springPts[i]);
+      const p1 = V(springPts[i + 1]);
+      b.merge(strut(p0, p1, 0.0008, 6));
+    }
+    b.merge(cube(0.016, 0.006, 0.016), null, V3.new(0, cellHalf, 0));
+    b.merge(cube(0.016, 0.006, 0.016), null, V3.new(0, -cellHalf, 0));
+  } else {
+    b.merge(cube(0.018, 0.006, 0.018), null, V3.new(0, cellHalf, 0));
+    b.merge(cube(0.018, 0.006, 0.018), null, V3.new(0, -cellHalf, 0));
+  }
+
+  // the connector between the cell and the next one: a 4 mm steel rod
+  // press-fit through a bearing, which is how the paper chains cells
   if (half > cellHalf + 1e-6) {
     const rodR = 0.002;
     const bearingR = 0.0065;
