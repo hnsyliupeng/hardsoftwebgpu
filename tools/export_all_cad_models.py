@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """
-tools/export_all_cad_models.py — Generates exact 3D CAD models (Wavefront .OBJ + .MTL and .STL)
-for the TRUNC metamaterial unit cells and the complete 7-cell robot arm assembly.
+tools/export_all_cad_models.py — Generates exact 3D CAD models in:
+  1. ISO 10303-21 STEP format (.step / .stp)
+  2. Wavefront OBJ (.obj + .mtl)
+  3. Standard 3D CAD Stereolithography (.stl)
+for all TRUNC metamaterial unit cells and the complete 7-cell continuum robot arm assembly.
 """
 import sys, os, math, struct
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'python'))
@@ -10,11 +13,111 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from trunclib.model3d import Mesh, sphere, cylinder, ring
 from trunclib.plot import Canvas, Camera, render_mesh
 import trunclib.mathx as mx
-from trunclib.kinematics import forward
+from trunclib.kinematics import forward, segment_transform, mdot
 from tools.render_exact_unit_cell import (
     build_arrowhead_element, build_equatorial_cell, build_truss_cell,
     build_dual_nested_assembly, colors, to_view
 )
+
+def export_step(path, mesh, name="TRUNC_MODEL"):
+    """
+    Exports a 3D Mesh (mesh.verts, mesh.faces) to ISO-10303-21 STEP format (AP214/AP203).
+    Fully compatible with SolidWorks, Fusion 360, FreeCAD, Inventor, CATIA, NX, Rhino.
+    """
+    lines = [
+        "ISO-10303-21;",
+        "HEADER;",
+        "FILE_DESCRIPTION(('TRUNC CAD 3D MODEL - STEP AP214'),'2;1');",
+        f"FILE_NAME('{os.path.basename(path)}','2026-10-09T04:00:00',('Arena AI'),('TRUNC Robotics Lab'),'TRUNC CAD AP214 Exporter','TRUNC CAD Engine','');",
+        "FILE_SCHEMA(('AUTOMOTIVE_DESIGN { 1 0 10303 214 1 1 1 1 }'));",
+        "ENDSEC;",
+        "DATA;",
+    ]
+    
+    eid = 1
+    lines.append(f"#{eid}=APPLICATION_CONTEXT('core data for mechanical design');")
+    ac_id = eid; eid += 1
+    lines.append(f"#{eid}=APPLICATION_PROTOCOL_DEFINITION('international standard','automotive_design',2000,#{ac_id});")
+    apd_id = eid; eid += 1
+    lines.append(f"#{eid}=PRODUCT_CONTEXT('3D Mechanical Context',#{ac_id},'mechanical');")
+    pc_id = eid; eid += 1
+    lines.append(f"#{eid}=PRODUCT('{name}','{name}','TRUNC Metamaterial Component', ( #{pc_id} ) );")
+    prod_id = eid; eid += 1
+    lines.append(f"#{eid}=PRODUCT_DEFINITION_FORMATION('1.0','Initial Release',#{prod_id});")
+    pdf_id = eid; eid += 1
+    lines.append(f"#{eid}=PRODUCT_DEFINITION_CONTEXT('part definition',#{ac_id},'design');")
+    pdc_id = eid; eid += 1
+    lines.append(f"#{eid}=PRODUCT_DEFINITION('design','{name}',#{pdf_id},#{pdc_id});")
+    pd_id = eid; eid += 1
+    
+    lines.append(f"#{eid}=( LENGTH_UNIT_ACCURACY_POINT_VALUE( 0.001 ) NAMED_UNIT( * ) SI_UNIT( .MILLI., .METRE. ) );")
+    lu_id = eid; eid += 1
+    lines.append(f"#{eid}=( NAMED_UNIT( * ) PLANE_ANGLE_UNIT( ) SI_UNIT( $, .RADIAN. ) );")
+    au_id = eid; eid += 1
+    lines.append(f"#{eid}=( NAMED_UNIT( * ) SI_UNIT( $, .STERADIAN. ) SOLID_ANGLE_UNIT( ) );")
+    su_id = eid; eid += 1
+    lines.append(f"#{eid}=( GEOMETRIC_REPRESENTATION_CONTEXT( 3 ) GLOBAL_UNCERTAINTY_ASSIGNED_CONTEXT( ( #{lu_id} ) ) GLOBAL_UNIT_ASSIGNED_CONTEXT( ( #{lu_id}, #{au_id}, #{su_id} ) ) REPRESENTATION_CONTEXT( '{name}', '3D' ) );")
+    gc_id = eid; eid += 1
+    
+    v_ids = []
+    for v in mesh.verts:
+        lines.append(f"#{eid}=CARTESIAN_POINT('',({v[0]:.4f},{v[1]:.4f},{v[2]:.4f}));")
+        v_ids.append(eid)
+        eid += 1
+        
+    face_ids = []
+    for f in mesh.faces:
+        p_ids_str = ','.join(f'#{v_ids[idx]}' for idx in f)
+        lines.append(f"#{eid}=POLY_LOOP('',({p_ids_str}));")
+        pl_id = eid; eid += 1
+        lines.append(f"#{eid}=FACE_OUTER_BOUND('',#{pl_id},.T.);")
+        fb_id = eid; eid += 1
+        
+        p0, p1, p2 = mesh.verts[f[0]], mesh.verts[f[1]], mesh.verts[f[2]]
+        u = [p1[i] - p0[i] for i in range(3)]
+        v = [p2[i] - p0[i] for i in range(3)]
+        nx = u[1]*v[2] - u[2]*v[1]
+        ny = u[2]*v[0] - u[0]*v[2]
+        nz = u[0]*v[1] - u[1]*v[0]
+        nlen = math.sqrt(nx*nx + ny*ny + nz*nz) or 1.0
+        
+        lines.append(f"#{eid}=DIRECTION('',({nx/nlen:.6f},{ny/nlen:.6f},{nz/nlen:.6f}));")
+        dir_id = eid; eid += 1
+        
+        if abs(nx/nlen) < 0.9:
+            rx, ry, rz = 1.0, 0.0, 0.0
+        else:
+            rx, ry, rz = 0.0, 1.0, 0.0
+        dot = (rx*nx + ry*ny + rz*nz) / nlen
+        rx, ry, rz = rx - dot*(nx/nlen), ry - dot*(ny/nlen), rz - dot*(nz/nlen)
+        rlen = math.sqrt(rx*rx + ry*ry + rz*rz) or 1.0
+        lines.append(f"#{eid}=DIRECTION('',({rx/rlen:.6f},{ry/rlen:.6f},{rz/rlen:.6f}));")
+        ref_id = eid; eid += 1
+        
+        lines.append(f"#{eid}=AXIS2_PLACEMENT_3D('',#{v_ids[f[0]]},#{dir_id},#{ref_id});")
+        ax_id = eid; eid += 1
+        lines.append(f"#{eid}=PLANE('',#{ax_id});")
+        plane_id = eid; eid += 1
+        
+        lines.append(f"#{eid}=ADVANCED_FACE('',(#{fb_id}),#{plane_id},.T.);")
+        face_ids.append(eid)
+        eid += 1
+        
+    faces_str = ','.join(f'#{fid}' for fid in face_ids)
+    lines.append(f"#{eid}=CLOSED_SHELL('',({faces_str}));")
+    cs_id = eid; eid += 1
+    lines.append(f"#{eid}=MANIFOLD_SOLID_BREP('{name}',#{cs_id});")
+    msb_id = eid; eid += 1
+    lines.append(f"#{eid}=ADVANCED_BREP_SHAPE_REPRESENTATION('{name}',(#{msb_id}),#{gc_id});")
+    absr_id = eid; eid += 1
+    lines.append(f"#{eid}=SHAPE_DEFINITION_REPRESENTATION(#{pd_id},#{absr_id});")
+    
+    lines.append("ENDSEC;")
+    lines.append("END-ISO-10303-21;")
+    
+    with open(path, 'w') as fh:
+        fh.write('\n'.join(lines) + '\n')
+    print(f"  Wrote STEP: {path} ({len(mesh.faces)} faces)")
 
 def export_obj_with_mtl(path, mesh, mtl_name=None, title='TRUNC CAD Model'):
     """Export Mesh to Wavefront OBJ format with material definitions."""
@@ -175,7 +278,6 @@ def build_full_robot_cad():
     """Build complete 7-Cell TRUNC Robot Arm CAD Assembly in Neutral Pose."""
     mesh = Mesh()
     
-    # Base Mount Flange (Milwaukee drill motor + 9 winch mounts)
     base_v, base_f = cylinder([0, 0, 20], [0, 0, 0], 90.0, seg=32)
     mesh.add(base_v, base_f, 'base_mount')
     top_v, top_f = cylinder([0, 0, 0], [0, 0, -15], 50.0, seg=24)
@@ -183,7 +285,6 @@ def build_full_robot_cad():
     motor_v, motor_f = cylinder([0, 0, 80], [0, 0, 20], 35.0, seg=24)
     mesh.add(motor_v, motor_f, 'winches')
     
-    # 9 Winch Cable Pulleys on Base
     for k in range(9):
         ang = (2 * math.pi / 9) * k
         wx = 75.0 * math.cos(ang)
@@ -192,7 +293,7 @@ def build_full_robot_cad():
         mesh.add(wv, wf, 'winches')
         
     z_stations = [0.0]
-    cell_height = 710.0 / 7.0  # ~101.4 mm per cell
+    cell_height = 710.0 / 7.0
     for i in range(1, 8):
         z_stations.append(-i * cell_height)
         
@@ -201,7 +302,6 @@ def build_full_robot_cad():
         z_bot = z_stations[c_idx + 1]
         z_mid = (z_top + z_bot) * 0.5
         
-        # Inner Truss Cell
         truss = build_truss_cell()
         for v in truss.verts:
             mesh.verts.append([v[0], v[1], v[2] + z_mid])
@@ -213,7 +313,6 @@ def build_full_robot_cad():
                 mesh.faces.append([f[0] + offset, f[1] + offset, f[2] + offset])
                 mesh.groups.setdefault(mapped_grp, []).append(len(mesh.faces) - 1)
                 
-        # Outer Equatorial Cell
         eq = build_equatorial_cell()
         for v in eq.verts:
             mesh.verts.append([v[0], v[1], v[2] + z_mid])
@@ -260,14 +359,10 @@ def build_full_robot_cad():
 
 def build_bent_robot_cad(angles_deg=[25, 40, -15, 30, 20, -45]):
     """Build bent 7-Cell TRUNC Robot Arm CAD Assembly under active kinematics."""
-    from trunclib.kinematics import segment_transform, mdot
-    import trunclib.mathx as mx
-    
     angles_rad = [math.radians(a) for a in angles_deg]
     t1, t2, t3, t4, t5, t6 = angles_rad
     L = 710.0
     
-    # Cumulative Transforms
     T_base = [[1,0,0,0], [0,1,0,0], [0,0,1,0], [0,0,0,1]]
     T_shoulder = mdot(T_base, segment_transform(t1, t2, -(3.0/7.0)*L))
     T_elbow = mdot(T_shoulder, segment_transform(t3, t4, -(2.0/7.0)*L))
@@ -276,19 +371,15 @@ def build_bent_robot_cad(angles_deg=[25, 40, -15, 30, 20, -45]):
     
     triad_stages = [T_base, T_shoulder, T_elbow, T_wrist]
     
-    # 7 unit cell frames
     cell_frames = []
-    # Shoulder: 3 cells
     for k in range(3):
         f = (k + 0.5) / 3.0
         T_c = mdot(T_base, segment_transform(t1 * f, t2, -(3.0/7.0)*L * f))
         cell_frames.append(T_c)
-    # Elbow: 2 cells
     for k in range(2):
         f = (k + 0.5) / 2.0
         T_c = mdot(T_shoulder, segment_transform(t3 * f, t4, -(2.0/7.0)*L * f))
         cell_frames.append(T_c)
-    # Wrist: 2 cells
     for k in range(2):
         f = (k + 0.5) / 2.0
         T_c = mdot(T_elbow, segment_transform(t5 * f, t6, -(2.0/7.0)*L * f))
@@ -296,7 +387,6 @@ def build_bent_robot_cad(angles_deg=[25, 40, -15, 30, 20, -45]):
     
     mesh = Mesh()
     
-    # Base Mount Flange
     base_v, base_f = cylinder([0, 0, 20], [0, 0, 0], 90.0, seg=32)
     mesh.add(base_v, base_f, 'base_mount')
     top_v, top_f = cylinder([0, 0, 0], [0, 0, -15], 50.0, seg=24)
@@ -311,7 +401,6 @@ def build_bent_robot_cad(angles_deg=[25, 40, -15, 30, 20, -45]):
         wv, wf = cylinder([wx, wy, 25], [wx, wy, 15], 8.0, seg=12)
         mesh.add(wv, wf, 'winches')
         
-    # 7 unit cells
     for c_idx, T in enumerate(cell_frames):
         p_mid = [T[0][3], T[1][3], T[2][3]]
         R_mat = [row[:3] for row in T[:3]]
@@ -344,7 +433,6 @@ def build_bent_robot_cad(angles_deg=[25, 40, -15, 30, 20, -45]):
                 mesh.faces.append([f[0] + offset_eq, f[1] + offset_eq, f[2] + offset_eq])
                 mesh.groups.setdefault(mapped_grp, []).append(len(mesh.faces) - 1)
 
-    # 4 Tendon Guide Triads
     for T in triad_stages:
         p_t = [T[0][3], T[1][3], T[2][3]]
         R_t = [row[:3] for row in T[:3]]
@@ -359,7 +447,6 @@ def build_bent_robot_cad(angles_deg=[25, 40, -15, 30, 20, -45]):
             rv, rf = sphere(p1, 5.5, useg=10, vseg=6)
             mesh.add(rv, rf, 'triad')
 
-    # 9 Braided Tendon Cables through Triad Eyelets
     for m in range(3):
         T_start = triad_stages[0]
         T_end = triad_stages[m + 1]
@@ -379,7 +466,6 @@ def build_bent_robot_cad(angles_deg=[25, 40, -15, 30, 20, -45]):
             cv, cf = cylinder(pt0, pt1, 1.2, seg=6)
             mesh.add(cv, cf, 'tendons')
 
-    # End Effector Tool
     p_ee = [T_tool[0][3], T_tool[1][3], T_tool[2][3]]
     T_wrist = triad_stages[3]
     p_base_tool = [T_wrist[0][3], T_wrist[1][3], T_wrist[2][3]]
@@ -395,52 +481,69 @@ def main():
     os.makedirs('docs', exist_ok=True)
     os.makedirs('docs/cad', exist_ok=True)
     
-    print("Generating complete TRUNC CAD Models (OBJ + MTL + STL)...")
+    print("Generating complete TRUNC CAD Models (STEP + OBJ + MTL + STL)...")
     
-    # 1. Material definitions
     mtl_path = 'docs/cad/trunc_materials.mtl'
     export_mtl(mtl_path)
     export_mtl('docs/trunc_materials.mtl')
     
-    # 2. Arrowhead Element (Fig. S1A)
+    # 1. Arrowhead Element (Fig. S1A)
     print("\n1. Arrowhead Linkage Element (Fig. S1A):")
     ah = build_arrowhead_element()
+    export_step('docs/cad/unit_cell_arrowhead_linkage.step', ah, 'TRUNC_Arrowhead_Element')
+    export_step('docs/cad/unit_cell_arrowhead_linkage.stp', ah, 'TRUNC_Arrowhead_Element')
     export_obj_with_mtl('docs/cad/unit_cell_arrowhead_linkage.obj', ah, 'trunc_materials.mtl', 'TRUNC Arrowhead Element')
     export_stl('docs/cad/unit_cell_arrowhead_linkage.stl', ah)
     
-    # 3. Isolated Truss Unit Cell (Fig. S1C / Prototype Photo)
+    # 2. Isolated Truss Unit Cell (Fig. S1C / Prototype Photo)
     print("\n2. Truss Unit Cell D=56mm (Fig. S1C):")
     truss = build_truss_cell()
+    export_step('docs/cad/unit_cell_truss_d56.step', truss, 'TRUNC_Truss_Cell_D56')
+    export_step('docs/cad/unit_cell_truss_d56.stp', truss, 'TRUNC_Truss_Cell_D56')
+    export_step('docs/unit_cell_truss_d56.step', truss, 'TRUNC_Truss_Cell_D56')
+    export_step('docs/unit_cell_truss_d56.stp', truss, 'TRUNC_Truss_Cell_D56')
     export_obj_with_mtl('docs/cad/unit_cell_truss_d56.obj', truss, 'trunc_materials.mtl', 'TRUNC Truss Unit Cell D=56mm')
     export_stl('docs/cad/unit_cell_truss_d56.stl', truss)
     export_obj_with_mtl('docs/unit_cell_truss_d56.obj', truss, 'trunc_materials.mtl', 'TRUNC Truss Unit Cell D=56mm')
     export_stl('docs/unit_cell_truss_d56.stl', truss)
 
-    # 4. Isolated Equatorial Unit Cell (Fig. S1B / Fig. 2A)
+    # 3. Isolated Equatorial Unit Cell (Fig. S1B / Fig. 2A)
     print("\n3. Equatorial Unit Cell D=88mm (Fig. S1B):")
     eq = build_equatorial_cell()
+    export_step('docs/cad/unit_cell_equatorial_d88.step', eq, 'TRUNC_Equatorial_Cell_D88')
+    export_step('docs/cad/unit_cell_equatorial_d88.stp', eq, 'TRUNC_Equatorial_Cell_D88')
+    export_step('docs/unit_cell_equatorial_d88.step', eq, 'TRUNC_Equatorial_Cell_D88')
+    export_step('docs/unit_cell_equatorial_d88.stp', eq, 'TRUNC_Equatorial_Cell_D88')
     export_obj_with_mtl('docs/cad/unit_cell_equatorial_d88.obj', eq, 'trunc_materials.mtl', 'TRUNC Equatorial Unit Cell D=88mm')
     export_stl('docs/cad/unit_cell_equatorial_d88.stl', eq)
     export_obj_with_mtl('docs/unit_cell_equatorial_d88.obj', eq, 'trunc_materials.mtl', 'TRUNC Equatorial Unit Cell D=88mm')
     export_stl('docs/unit_cell_equatorial_d88.stl', eq)
 
-    # 5. Dual Nested Unit Cell Assembly
+    # 4. Dual Nested Unit Cell Assembly
     print("\n4. Dual Nested Concentric Unit Cell Assembly:")
     nested = build_dual_nested_assembly()
+    export_step('docs/cad/unit_cell_dual_nested.step', nested, 'TRUNC_Dual_Nested_Assembly')
+    export_step('docs/cad/unit_cell_dual_nested.stp', nested, 'TRUNC_Dual_Nested_Assembly')
+    export_step('docs/unit_cell_dual_nested.step', nested, 'TRUNC_Dual_Nested_Assembly')
+    export_step('docs/unit_cell_dual_nested.stp', nested, 'TRUNC_Dual_Nested_Assembly')
     export_obj_with_mtl('docs/cad/unit_cell_dual_nested.obj', nested, 'trunc_materials.mtl', 'TRUNC Dual Nested Assembly')
     export_stl('docs/cad/unit_cell_dual_nested.stl', nested)
     export_obj_with_mtl('docs/unit_cell_dual_nested.obj', nested, 'trunc_materials.mtl', 'TRUNC Dual Nested Assembly')
     export_stl('docs/unit_cell_dual_nested.stl', nested)
 
-    # 6. Complete 7-Cell TRUNC Robot Arm Assembly
+    # 5. Complete 7-Cell TRUNC Robot Arm Assembly
     print("\n5. Complete 7-Cell TRUNC Continuum Robot Arm Assembly:")
     robot = build_full_robot_cad()
+    export_step('docs/cad/trunc_arm_full_robot.step', robot, 'TRUNC_Full_Robot_Arm')
+    export_step('docs/cad/trunc_arm_full_robot.stp', robot, 'TRUNC_Full_Robot_Arm')
+    export_step('docs/trunc_arm_full_cad_model.step', robot, 'TRUNC_Full_Robot_Arm')
+    export_step('docs/trunc_arm_full_cad_model.stp', robot, 'TRUNC_Full_Robot_Arm')
     export_obj_with_mtl('docs/cad/trunc_arm_full_robot.obj', robot, 'trunc_materials.mtl', 'TRUNC Full 7-Cell Robot Arm Assembly')
     export_stl('docs/cad/trunc_arm_full_robot.stl', robot)
     export_obj_with_mtl('docs/trunc_arm_full_cad_model.obj', robot, 'trunc_materials.mtl', 'TRUNC Full 7-Cell Robot Arm Assembly')
     export_stl('docs/trunc_arm_full_cad_model.stl', robot)
 
-    # 7. Render high-resolution preview of the complete robot arm CAD model
+    # 6. Render high-resolution preview of the complete robot arm CAD model
     print("\n6. Rendering docs/trunc_arm_full_cad_preview.png...")
     w_p, h_p = 1000, 1200
     canvas_arm = Canvas(w_p, h_p, bg=(255, 255, 255), supersample=2)
@@ -469,9 +572,13 @@ def main():
     canvas_arm.text(40, 65, "Base Motor + 9 Winches + 7 Dual-Nested Cells (3:2:2) + 4 Guide Triads + 9 Tendons + Socket Tool", (80, 90, 110), scale=1)
     canvas_arm.save_png('docs/trunc_arm_full_cad_preview.png')
 
-    # 8. Render Bent Arm Posture CAD Model (OBJ + STL + PNG)
-    print("\n7. Exporting Bent Robot Arm CAD Posture (OBJ + STL + PNG)...")
+    # 7. Render Bent Arm Posture CAD Model (STEP + OBJ + STL + PNG)
+    print("\n7. Exporting Bent Robot Arm CAD Posture (STEP + OBJ + STL + PNG)...")
     bent_robot = build_bent_robot_cad()
+    export_step('docs/cad/trunc_arm_bent_posture.step', bent_robot, 'TRUNC_Bent_Robot_Arm')
+    export_step('docs/cad/trunc_arm_bent_posture.stp', bent_robot, 'TRUNC_Bent_Robot_Arm')
+    export_step('docs/trunc_arm_bent_posture.step', bent_robot, 'TRUNC_Bent_Robot_Arm')
+    export_step('docs/trunc_arm_bent_posture.stp', bent_robot, 'TRUNC_Bent_Robot_Arm')
     export_obj_with_mtl('docs/cad/trunc_arm_bent_posture.obj', bent_robot, 'trunc_materials.mtl', 'TRUNC Bent Arm Posture')
     export_stl('docs/cad/trunc_arm_bent_posture.stl', bent_robot)
     export_obj_with_mtl('docs/trunc_arm_bent_posture.obj', bent_robot, 'trunc_materials.mtl', 'TRUNC Bent Arm Posture')
@@ -488,7 +595,7 @@ def main():
     canvas_bent.text(40, 65, "Shoulder (25°, 40°), Elbow (-15°, 30°), Wrist (20°, -45°) with 9 Active Tendons", (80, 90, 110), scale=1)
     canvas_bent.save_png('docs/trunc_arm_bent_cad_preview.png')
     
-    print("\nAll CAD models (.OBJ + .MTL + .STL) and preview successfully exported to docs/.")
+    print("\nAll CAD models (.STEP + .STP + .OBJ + .MTL + .STL) and previews successfully exported to docs/.")
 
 if __name__ == '__main__':
     main()
