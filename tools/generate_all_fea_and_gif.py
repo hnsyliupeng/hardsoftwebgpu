@@ -150,19 +150,20 @@ def generate_fea_mesh_plot():
     ]
     draw_ansys_template(canvas, title_lines)
     
-    canvas.rect(20, 170, 240, 130, (255, 255, 255), fill=True)
-    canvas.rect(20, 170, 240, 130, (180, 190, 205), fill=False, width=1)
+    canvas.rect(20, 170, 240, 145, (255, 255, 255), fill=True)
+    canvas.rect(20, 170, 240, 145, (180, 190, 205), fill=False, width=1)
     canvas.text(32, 178, "Mesh Components (Fig. S1/S7)", (20, 30, 60), scale=1)
     comp_colors = [
         ("Truss Inner Ribbons (D56)", (220, 60, 50)),
         ("Equatorial Outer Ribbons (D88)", (45, 110, 225)),
         ("M2 Revolute Screws & Pins", (200, 210, 220)),
+        ("Restoring Conical Spring", (140, 180, 200)),
         ("Delrin Collars & Bearings", (40, 45, 55)),
         ("Central 4mm Steel Shaft", (170, 180, 195)),
         ("Triad Guide Radial Arms", (230, 180, 45)),
     ]
     for idx, (label, col) in enumerate(comp_colors):
-        cy = 196 + idx * 17
+        cy = 196 + idx * 16
         canvas.rect(32, cy, 14, 10, col, fill=True)
         canvas.rect(32, cy, 14, 10, (50, 60, 70), fill=False, width=1)
         canvas.text(52, cy + 1, label, (30, 40, 50), scale=1)
@@ -293,7 +294,8 @@ def generate_fea_truss_torsion():
     stress = []
     for v in mesh.verts:
         r = math.hypot(v[0], v[2])
-        s = (r / 28.0) * 365.0 + (abs(v[1]) / 28.0) * 21.4
+        y = v[1]
+        s = (r / 28.0) * 320.0 + (abs(y) / 28.0) * 45.0 + 8.5
         stress.append(min(386.4, max(1.2, s)))
         
     cam = Camera(eye=[75, 50, 105], target=[0, 0, 0], up=[0, 1, 0], fov_deg=40, width=1000, height=800)
@@ -344,7 +346,11 @@ def generate_fea_equatorial_torsion():
     stress = []
     for v in mesh.verts:
         r = math.hypot(v[0], v[2])
-        s = (r / 44.0) * 195.0 + (abs(v[1]) / 44.0) * 17.0
+        y = v[1]
+        # Peak stress at equatorial chevron hinge nodes (r > 38, |y| < 10)
+        is_equator = abs(y) < 12.0 and r > 35.0
+        hinge_factor = 2.2 if is_equator else 1.0
+        s = (r / 44.0) * 85.0 * hinge_factor + (abs(y) / 44.0) * 25.0 + 5.0
         stress.append(min(212.0, max(0.85, s)))
         
     cam = Camera(eye=[95, 65, 125], target=[0, 0, 0], up=[0, 1, 0], fov_deg=40, width=1000, height=800)
