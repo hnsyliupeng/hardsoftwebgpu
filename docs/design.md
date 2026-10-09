@@ -73,32 +73,3 @@ where each cable length is the Euclidean distance between corresponding $120^\ci
 | **Max Arm Compression** | 94.3 mm (13.3%) | 94.3 mm | 94.3 mm | **PASS** |
 | **CV-Joint Phase Lag** | 0.4% ~ 1.8% | 0.4% ~ 1.8% | < 2.0% | **PASS** |
 | **Cross-Coupling Torque** | 0.21 / 0.53 N·mm | 0.21 / 0.53 N·mm | < 2.5 N·mm | **PASS** |
-
----
-
-## 4. Finite Element Analysis (FEA) Stress & Deformation Analysis (ANSYS Workbench Style)
-
-Full static structural and torsional FEA simulations have been performed on the unit cells and continuum arm, stored in `docs/fea/`:
-
-1. **`docs/fea/ansys_truss_d56_bending_stress.png`**:
-   - Truss unit cell under $20^\circ$ bending ($M_{\text{bend}} = 10.02\text{ N}\cdot\text{mm}$). Max von Mises stress $\sigma_{\text{max}} = 142.8\text{ MPa}$ localized at equatorial pin joints.
-2. **`docs/fea/ansys_truss_d56_torsion_stress.png`**:
-   - Truss unit cell under $30^\circ$ torsion ($T_z = 783\text{ N}\cdot\text{mm}$). Max von Mises stress $\sigma_{\text{max}} = 386.4\text{ MPa}$ evenly distributed across all 32 diagonal triangulated truss strips ($52.04\times$ torque transmission).
-3. **`docs/fea/ansys_equatorial_d88_bending_stress.png`**:
-   - Equatorial unit cell under $20^\circ$ bending ($M_{\text{bend}} = 9.56\text{ N}\cdot\text{mm}$). Max stress $\sigma_{\text{max}} = 88.5\text{ MPa}$.
-4. **`docs/fea/ansys_equatorial_d88_torsion_stress.png`**:
-   - Equatorial unit cell under $30^\circ$ torsion ($T_z = 162.3\text{ N}\cdot\text{mm}$). Max stress $\sigma_{\text{max}} = 212.0\text{ MPa}$.
-5. **`docs/fea/ansys_unit_cell_axial_compression.png`**:
-   - Dual-nested cell under $\Delta z = -13.5\text{ mm}$ axial compression showing auxetic scissor lateral expansion and internal spring compression ($k = 1.22\text{ N/mm}$, $F_z = 2.78\text{ N}$).
-6. **`docs/fea/ansys_full_arm_bending_fea.png`**:
-   - Complete 7-cell continuum robot arm FEA under active tendon tension $F_{\text{tendon}} = 45.0\text{ N}$, tip deflection $\delta = 168.4\text{ mm}$, maximum stress $\sigma_{\text{max}} = 284.6\text{ MPa}$ at shoulder base.
-
----
-
-## 5. CAD 3D Model Deliverables (STEP, OBJ, STL)
-
-Full 3D CAD models are exported in `docs/cad/` and `docs/`:
-
-* **ISO-10303-21 STEP (.step / .stp)**: Direct import into SolidWorks, Inventor, Fusion 360, FreeCAD, NX, CATIA, Creo.
-* **Wavefront OBJ (.obj + .mtl)**: Material and color-coded mesh representation.
-* **Stereolithography (.stl)**: Standard binary/ASCII 3D printing and CAD triangulation mesh.

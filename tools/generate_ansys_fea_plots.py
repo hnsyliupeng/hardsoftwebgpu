@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 tools/generate_ansys_fea_plots.py — High-fidelity ANSYS Workbench style FEA simulation
-and stress contour visualizer for TRUNC metamaterial unit cells and robot arm.
+and stress contour visualizer for continuous TRUNC metamaterial unit cells and robot arm.
 """
 import sys, os, math
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'python'))
@@ -56,7 +56,6 @@ def render_ansys_contour(canvas, mesh, stress_values, cam, title_info, max_v, mi
         b = int(250 * (1.0 - t) + 230 * t)
         canvas.rect(0, y, W, 1, (r, g, b), fill=True)
         
-    # Reset depth buffer after background fill
     for i in range(len(canvas.depth)):
         canvas.depth[i] = float('inf')
         
@@ -159,7 +158,7 @@ def render_ansys_contour(canvas, mesh, stress_values, cam, title_info, max_v, mi
     canvas.text(rx + 130, ry + 8, "50.00", (60, 70, 80), scale=1)
 
 # -----------------------------------------------------------------------------
-# FEA Case Generators
+# FEA Case Generators (Continuous Monolithic Arches)
 # -----------------------------------------------------------------------------
 
 def generate_fea_truss_bending():
@@ -235,7 +234,7 @@ def generate_fea_equatorial_bending():
         "Type: Equivalent (von Mises) Stress",
         "Load: Bending Moment M_b = 9.56 N·mm (20°)",
         "Stiffness: K_bend = 0.4781 N·mm/°",
-        "Tendon Guiding Auxetic Outer Cage",
+        "Continuous Meridian Arches & Chevrons",
     ]
     render_ansys_contour(canvas, mesh, stress, cam, title_info, max_v=88.5, min_v=0.12, unit="MPa")
     canvas.save_png('docs/fea/ansys_equatorial_d88_bending_stress.png')
