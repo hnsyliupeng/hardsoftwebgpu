@@ -1,0 +1,77 @@
+# TRUNC Material Definitions
+newmtl links_truss
+Ka 0.1 0.2 0.4
+Kd 0.18 0.45 0.85
+Ks 0.5 0.5 0.6
+Ns 32.0
+d 1.0
+
+newmtl links_equatorial
+Ka 0.3 0.15 0.05
+Kd 0.85 0.48 0.18
+Ks 0.5 0.5 0.5
+Ns 32.0
+d 1.0
+
+newmtl pins
+Ka 0.2 0.2 0.2
+Kd 0.88 0.90 0.92
+Ks 0.8 0.8 0.8
+Ns 64.0
+d 1.0
+
+newmtl spring
+Ka 0.2 0.2 0.2
+Kd 0.75 0.78 0.82
+Ks 0.8 0.8 0.8
+Ns 50.0
+d 1.0
+
+newmtl collars
+Ka 0.05 0.05 0.05
+Kd 0.12 0.14 0.16
+Ks 0.2 0.2 0.2
+Ns 10.0
+d 1.0
+
+newmtl shaft
+Ka 0.2 0.2 0.2
+Kd 0.70 0.72 0.75
+Ks 0.6 0.6 0.6
+Ns 40.0
+d 1.0
+
+newmtl triad
+Ka 0.3 0.25 0.05
+Kd 0.88 0.76 0.22
+Ks 0.7 0.6 0.3
+Ns 45.0
+d 1.0
+
+newmtl base_mount
+Ka 0.05 0.05 0.05
+Kd 0.15 0.18 0.22
+Ks 0.3 0.3 0.3
+Ns 20.0
+d 1.0
+
+newmtl winches
+Ka 0.1 0.1 0.1
+Kd 0.4 0.4 0.45
+Ks 0.4 0.4 0.4
+Ns 25.0
+d 1.0
+
+newmtl tendons
+Ka 0.3 0.15 0.05
+Kd 0.92 0.60 0.15
+Ks 0.3 0.3 0.3
+Ns 15.0
+d 1.0
+
+newmtl tool
+Ka 0.2 0.2 0.2
+Kd 0.82 0.85 0.88
+Ks 0.7 0.7 0.7
+Ns 50.0
+d 1.0
