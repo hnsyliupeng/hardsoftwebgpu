@@ -18,6 +18,7 @@ from trunclib.model3d import Mesh, sphere, cylinder, ring
 from trunclib.plot import Canvas, Camera, render_mesh
 import trunclib.mathx as mx
 from trunclib.kinematics import segment_transform, mdot, eye
+from trunclib.metamaterial import solve_unit_cell_pose, cell_layout, LINK
 from tools.render_exact_unit_cell import (
     build_arrowhead_element, build_equatorial_cell, build_truss_cell,
     build_dual_nested_assembly, colors, to_view
@@ -170,25 +171,19 @@ def export_mtl(path):
     print(f"  Wrote MTL: {path}")
 
 def compute_7cell_fk_chain(angles_deg, L=710.0):
-    """
-    Computes the 8 exact node frames T_0..T_7 connecting the 7 unit cells
-    via Piecewise Constant Curvature (PCC) kinematics.
-    """
     t1, t2, t3, t4, t5, t6 = [math.radians(a) for a in angles_deg]
     nodes = []
-    
-    # Node 0: Base
     T0 = eye(4)
     nodes.append(T0)
     
-    # Nodes 1..3: Shoulder segment (3 cells, length 3/7 * L)
+    # Shoulder: 3 cells
     for i in range(1, 4):
         f = i / 3.0
         T_i = segment_transform(t1 * f, t2, -(3.0/7.0)*L * f)
         nodes.append(T_i)
     T_shoulder = nodes[3]
     
-    # Nodes 4..5: Elbow segment (2 cells, length 2/7 * L)
+    # Elbow: 2 cells
     for i in range(1, 3):
         f = i / 2.0
         T_local = segment_transform(t3 * f, t4, -(2.0/7.0)*L * f)
@@ -196,7 +191,7 @@ def compute_7cell_fk_chain(angles_deg, L=710.0):
         nodes.append(T_i)
     T_elbow = nodes[5]
     
-    # Nodes 6..7: Wrist segment (2 cells, length 2/7 * L)
+    # Wrist: 2 cells
     for i in range(1, 3):
         f = i / 2.0
         T_local = segment_transform(t5 * f, t6, -(2.0/7.0)*L * f)
@@ -204,20 +199,11 @@ def compute_7cell_fk_chain(angles_deg, L=710.0):
         nodes.append(T_i)
     T_wrist = nodes[7]
     
-    # Tool adapter
+    # Tool
     T_tool = mdot(T_wrist, segment_transform(0, 0, -83.0))
     return nodes, T_tool
 
 def build_connected_robot_arm(angles_deg=[0, 0, 0, 0, 0, 0], L=710.0):
-    """
-    Constructs the complete 7-cell TRUNC continuum robot arm:
-    - 8 continuous node frames with shared coupling collar hubs
-    - Continuous 4mm central steel torque shaft transmitting drill rotation
-    - 7 dual-nested unit cells (3 shoulder + 2 elbow + 2 wrist)
-    - 4 tendon guide triads clamped at nodes 0, 3, 5, 7
-    - 9 continuous braided tendon cables
-    - Base motor mount flange with 9 winches and end-effector socket tool
-    """
     nodes, T_tool = compute_7cell_fk_chain(angles_deg, L)
     mesh = Mesh()
     
@@ -242,13 +228,11 @@ def build_connected_robot_arm(angles_deg=[0, 0, 0, 0, 0, 0], L=710.0):
     for k, T in enumerate(nodes):
         p_node = [T[i][3] for i in range(3)]
         R_node = [row[:3] for row in T[:3]]
-        # Collar axis along local Z
         axis_z = [R_node[i][2] for i in range(3)]
         p_c1 = [p_node[i] - axis_z[i]*7.0 for i in range(3)]
         p_c2 = [p_node[i] + axis_z[i]*7.0 for i in range(3)]
         v_col, f_col = cylinder(p_c1, p_c2, 20.0, seg=18)
         mesh.add(v_col, f_col, 'collars')
-        # 6655K47 Bearing ring
         v_brg, f_brg = cylinder([p_node[i] - axis_z[i]*4.0 for i in range(3)], [p_node[i] + axis_z[i]*4.0 for i in range(3)], 6.0, seg=12)
         mesh.add(v_brg, f_brg, 'pins')
 
@@ -258,36 +242,21 @@ def build_connected_robot_arm(angles_deg=[0, 0, 0, 0, 0, 0], L=710.0):
         T_high = nodes[k+1]
         p_low = [T_low[i][3] for i in range(3)]
         p_high = [T_high[i][3] for i in range(3)]
-        R_low = [row[:3] for row in T_low[:3]]
-        R_high = [row[:3] for row in T_high[:3]]
         
-        p_mid = [(p_low[i] + p_high[i]) / 2.0 for i in range(3)]
-        axis_z = [p_high[i] - p_low[i] for i in range(3)]
-        len_z = math.sqrt(sum(c*c for c in axis_z)) or 1.0
-        axis_z = [c / len_z for c in axis_z]
+        # Exact solved geometry from kinematics
+        pose_truss = solve_unit_cell_pose(T_low, T_high, kind='truss', ballR=28.0)
+        pose_eq = solve_unit_cell_pose(T_low, T_high, kind='equatorial', ballR=44.0)
         
-        # Frame orientation
-        axis_x = [(R_low[0][i] + R_high[0][i]) / 2.0 for i in range(3)]
-        dot_xz = sum(axis_x[i] * axis_z[i] for i in range(3))
-        axis_x = [axis_x[i] - dot_xz * axis_z[i] for i in range(3)]
-        len_x = math.sqrt(sum(c*c for c in axis_x)) or 1.0
-        axis_x = [c / len_x for c in axis_x]
-        axis_y = [
-            axis_z[1]*axis_x[2] - axis_z[2]*axis_x[1],
-            axis_z[2]*axis_x[0] - axis_z[0]*axis_x[2],
-            axis_z[0]*axis_x[1] - axis_z[1]*axis_x[0]
-        ]
-        R_frame = [
-            [axis_x[0], axis_y[0], axis_z[0]],
-            [axis_x[1], axis_y[1], axis_z[1]],
-            [axis_x[2], axis_y[2], axis_z[2]]
-        ]
-        
-        # Continuous Central 4mm Steel Torque Shaft
+        # Central continuous 4mm steel torque shaft
         v_sh, f_sh = cylinder(p_low, p_high, 2.0, seg=12)
         mesh.add(v_sh, f_sh, 'shaft')
         
-        # Conical Restoring Spring (5 coils)
+        # Conical restoring spring
+        axis_z = [p_high[i] - p_low[i] for i in range(3)]
+        len_z = math.sqrt(sum(c*c for c in axis_z)) or 1.0
+        p_mid = pose_truss['p_mid']
+        R_frame = pose_truss['R_frame']
+        
         spring_pts = []
         n_coils = 5
         n_steps = 50
@@ -303,56 +272,31 @@ def build_connected_robot_arm(angles_deg=[0, 0, 0, 0, 0, 0], L=710.0):
             v_sp, f_sp = cylinder(spring_pts[s], spring_pts[s+1], 1.2, seg=6)
             mesh.add(v_sp, f_sp, 'spring')
             
-        # Inner M=3 Truss Metamaterial Cell (D=56mm, 8 curved strips, 16 M2 pins)
-        R_truss = 28.0
+        # Inner Truss Chevrons
         t_strip = 1.6
-        H_half = len_z / 2.0 - 6.0
-        for i in range(8):
-            ang = i * (2 * math.pi / 8)
-            strip_pts = []
-            for s in range(13):
-                t = s / 12.0
-                z_loc = (t - 0.5) * 2.0 * H_half
-                r_loc = 14.0 + (R_truss - 14.0) * math.sin(t * math.pi)
-                rot = mx.mXV(R_frame, [r_loc * math.cos(ang), r_loc * math.sin(ang), z_loc])
-                strip_pts.append([p_mid[k] + rot[k] for k in range(3)])
-            for s in range(12):
-                v_st, f_st = cylinder(strip_pts[s], strip_pts[s+1], t_strip, seg=6)
-                mesh.add(v_st, f_st, 'links_truss')
-                
-            for t_pin in (0.25, 0.50, 0.75):
-                z_loc = (t_pin - 0.5) * 2.0 * H_half
-                r_loc = 14.0 + (R_truss - 14.0) * math.sin(t_pin * math.pi)
-                rot = mx.mXV(R_frame, [r_loc * math.cos(ang), r_loc * math.sin(ang), z_loc])
-                p_pin = [p_mid[k] + rot[k] for k in range(3)]
-                v_p, f_p = sphere(p_pin, 1.8, useg=8, vseg=4)
-                mesh.add(v_p, f_p, 'pins')
-
-        # Outer M=2 Equatorial Metamaterial Cell (D=88mm, 8 curved strips + hoop ring)
-        R_eq = 44.0
-        for i in range(8):
-            ang = i * (2 * math.pi / 8)
-            strip_pts = []
-            for s in range(15):
-                t = s / 14.0
-                z_loc = (t - 0.5) * 2.0 * H_half
-                r_loc = 18.0 + (R_eq - 18.0) * math.sin(t * math.pi)
-                rot = mx.mXV(R_frame, [r_loc * math.cos(ang), r_loc * math.sin(ang), z_loc])
-                strip_pts.append([p_mid[k] + rot[k] for k in range(3)])
-            for s in range(14):
-                v_st, f_st = cylinder(strip_pts[s], strip_pts[s+1], t_strip, seg=6)
-                mesh.add(v_st, f_st, 'links_equatorial')
-                
-            rot_pin = mx.mXV(R_frame, [R_eq * math.cos(ang), R_eq * math.sin(ang), 0.0])
-            p_pin = [p_mid[k] + rot_pin[k] for k in range(3)]
-            v_p, f_p = sphere(p_pin, 2.2, useg=8, vseg=4)
+        for ch in pose_truss['chevrons']:
+            v_a, f_a = cylinder(ch['a'], ch['fold'], t_strip, seg=6)
+            mesh.add(v_a, f_a, 'links_truss')
+            v_b, f_b = cylinder(ch['fold'], ch['b'], t_strip, seg=6)
+            mesh.add(v_b, f_b, 'links_truss')
+            v_p, f_p = sphere(ch['fold'], 1.8, useg=8, vseg=4)
             mesh.add(v_p, f_p, 'pins')
             
+        # Outer Equatorial Chevrons
+        for ch in pose_eq['chevrons']:
+            v_a, f_a = cylinder(ch['a'], ch['fold'], t_strip, seg=6)
+            mesh.add(v_a, f_a, 'links_equatorial')
+            v_b, f_b = cylinder(ch['fold'], ch['b'], t_strip, seg=6)
+            mesh.add(v_b, f_b, 'links_equatorial')
+            v_p, f_p = sphere(ch['fold'], 2.2, useg=8, vseg=4)
+            mesh.add(v_p, f_p, 'pins')
+
+        # Equatorial Hoop Ring (D=88mm)
         ring_pts = []
         for s in range(24):
             ang = s * (2 * math.pi / 24)
-            rot = mx.mXV(R_frame, [R_eq * math.cos(ang), R_eq * math.sin(ang), 0.0])
-            ring_pts.append([p_mid[k] + rot[k] for k in range(3)])
+            rot = mx.mXV(R_frame, [44.0 * math.cos(ang), 44.0 * math.sin(ang), 0.0])
+            ring_pts.append([p_mid[k_idx] + rot[k_idx] for k_idx in range(3)])
         for s in range(24):
             v_r, f_r = cylinder(ring_pts[s], ring_pts[(s+1)%24], 2.0, seg=6)
             mesh.add(v_r, f_r, 'links_equatorial')
@@ -403,11 +347,9 @@ def build_connected_robot_arm(angles_deg=[0, 0, 0, 0, 0, 0], L=710.0):
     return mesh
 
 def build_full_robot_cad():
-    """Neutral posture (straight) robot arm CAD model."""
     return build_connected_robot_arm([0, 0, 0, 0, 0, 0])
 
 def build_bent_robot_cad(angles_deg=[25, 40, -15, 30, 20, -45]):
-    """Active 3D bending posture robot arm CAD model."""
     return build_connected_robot_arm(angles_deg)
 
 def main():

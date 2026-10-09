@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from trunclib.model3d import Mesh, sphere, cylinder, ring
 from trunclib.plot import Canvas, Camera, render_mesh
 import trunclib.mathx as mx
+from trunclib.metamaterial import solve_unit_cell_pose, cell_layout, LINK, MOLD_DIAMETER_MM
 
 colors = {
     'spring_steel': (45, 115, 220),       # Blue 1095 Spring Steel
@@ -27,17 +28,6 @@ colors = {
 def to_view(p):
     """Map CAD world coordinates (X, Y, Z-downwards) to Camera view coordinates."""
     return [p[0], -p[2], p[1]]
-
-def make_continuous_curved_strip(pts, width=5.0, thickness=1.6, seg_sides=6):
-    """Builds a monolithic 3D curved solid strip along the given centerline path."""
-    mesh = Mesh()
-    n = len(pts)
-    if n < 2:
-        return mesh
-    for i in range(n - 1):
-        v, f = cylinder(pts[i], pts[i+1], thickness, seg=seg_sides)
-        mesh.add(v, f)
-    return mesh
 
 def build_arrowhead_element(width=30.0, height=50.0):
     """Single double-arrowhead planar auxetic unit linkage (Fig. S1A)."""
@@ -71,14 +61,16 @@ def build_arrowhead_element(width=30.0, height=50.0):
 def build_truss_cell(diameter_mm=56.0, height_mm=101.43):
     """
     M=3 Truss Metamaterial Unit Cell (Fig. S1C / Prototype Photo).
-    Diameter D=56mm, Height H=101.43mm (cell pitch in 710mm 7-cell arm).
-    Features 8 monolithic continuous double-arrowhead curved strips,
-    Delrin top/bottom mounting collars with 6655K47 bearing pockets,
-    central 4mm steel torque transmission shaft, conical restoring spring,
-    and 16 M2 revolute screw pins.
+    Diameter D=56mm, Height H=101.43mm.
+    Features 16 double-arrowhead chevrons (2 rows on each side of equator),
+    M2 revolute screw pins, Delrin mounting collars, 6655K47 bearings,
+    central 4mm steel torque shaft, and conical restoring spring.
     """
+    T_low = [[1,0,0,0], [0,1,0,0], [0,0,1,-height_mm/2.0], [0,0,0,1]]
+    T_high = [[1,0,0,0], [0,1,0,0], [0,0,1,height_mm/2.0], [0,0,0,1]]
+    pose = solve_unit_cell_pose(T_low, T_high, kind='truss', ballR=diameter_mm/2.0)
+    
     mesh = Mesh()
-    R = diameter_mm / 2.0
     H_half = height_mm / 2.0
     
     # 1. Central 4mm Steel Torque Shaft
@@ -112,40 +104,31 @@ def build_truss_cell(diameter_mm=56.0, height_mm=101.43):
         v_sp, f_sp = cylinder(spring_pts[s], spring_pts[s+1], 1.2, seg=6)
         mesh.add(v_sp, f_sp, 'spring')
         
-    # 4. 8 Monolithic Continuous Curved Strips (Spring Steel 1095)
+    # 4. 16 Double-Arrowhead Chevrons (Spring Steel 1095)
     t_strip = 1.6
-    H_strip = H_half - 6.0
-    for i in range(8):
-        ang = i * (2 * math.pi / 8)
-        strip_pts = []
-        for s in range(15):
-            t = s / 14.0
-            z_loc = (t - 0.5) * 2.0 * H_strip
-            # Double-arrowhead curvature profile
-            r_loc = 14.0 + (R - 14.0) * math.sin(t * math.pi)
-            x_loc = r_loc * math.cos(ang)
-            y_loc = r_loc * math.sin(ang)
-            strip_pts.append([x_loc, y_loc, z_loc])
-        for s in range(14):
-            v_st, f_st = cylinder(strip_pts[s], strip_pts[s+1], t_strip, seg=6)
-            mesh.add(v_st, f_st, 'links_truss')
-            
-        # M2 Screw pins at quarter-latitudes and equator
-        for t_pin in (0.22, 0.50, 0.78):
-            z_loc = (t_pin - 0.5) * 2.0 * H_strip
-            r_loc = 14.0 + (R - 14.0) * math.sin(t_pin * math.pi)
-            p_pin = [r_loc * math.cos(ang), r_loc * math.sin(ang), z_loc]
-            v_p, f_p = sphere(p_pin, 1.8, useg=8, vseg=4)
-            mesh.add(v_p, f_p, 'pins')
-            # M2 Socket Screw Head
-            v_h, f_h = cylinder(p_pin, [p_pin[0] + 1.2*math.cos(ang), p_pin[1] + 1.2*math.sin(ang), p_pin[2]], 2.4, seg=8)
-            mesh.add(v_h, f_h, 'pins')
+    for ch in pose['chevrons']:
+        # strut a -> fold
+        v_a, f_a = cylinder(ch['a'], ch['fold'], t_strip, seg=6)
+        mesh.add(v_a, f_a, 'links_truss')
+        # strut fold -> b
+        v_b, f_b = cylinder(ch['fold'], ch['b'], t_strip, seg=6)
+        mesh.add(v_b, f_b, 'links_truss')
+        
+        # M2 Screw pin at fold
+        v_p, f_p = sphere(ch['fold'], 2.0, useg=8, vseg=4)
+        mesh.add(v_p, f_p, 'pins')
+        
+    # Pole pins and equator pins
+    for p in pose['ringTop'] + pose['ringBot'] + pose['equator']:
+        v_p, f_p = sphere(p, 1.8, useg=8, vseg=4)
+        mesh.add(v_p, f_p, 'pins')
 
     # Equatorial Ring
+    R_eq = diameter_mm / 2.0
     ring_pts = []
     for s in range(24):
         ang = s * (2 * math.pi / 24)
-        ring_pts.append([R * math.cos(ang), R * math.sin(ang), 0.0])
+        ring_pts.append([R_eq * math.cos(ang), R_eq * math.sin(ang), 0.0])
     for s in range(24):
         v_r, f_r = cylinder(ring_pts[s], ring_pts[(s+1)%24], 1.6, seg=6)
         mesh.add(v_r, f_r, 'links_truss')
@@ -156,12 +139,15 @@ def build_equatorial_cell(diameter_mm=88.0, height_mm=101.43):
     """
     M=2 Equatorial Metamaterial Unit Cell (Fig. S1B / Fig. 2A).
     Diameter D=88mm, Height H=101.43mm.
-    8 monolithic curved meridian strips, equatorial hoop ring,
+    8 chevrons meeting at equator, equatorial hoop ring,
     top/bottom mounting collars, central 4mm shaft, conical restoring spring,
     and M2 revolute screws.
     """
+    T_low = [[1,0,0,0], [0,1,0,0], [0,0,1,-height_mm/2.0], [0,0,0,1]]
+    T_high = [[1,0,0,0], [0,1,0,0], [0,0,1,height_mm/2.0], [0,0,0,1]]
+    pose = solve_unit_cell_pose(T_low, T_high, kind='equatorial', ballR=diameter_mm/2.0)
+    
     mesh = Mesh()
-    R = diameter_mm / 2.0
     H_half = height_mm / 2.0
     
     # 1. Central 4mm Steel Torque Shaft
@@ -189,33 +175,27 @@ def build_equatorial_cell(diameter_mm=88.0, height_mm=101.43):
         v_sp, f_sp = cylinder(spring_pts[s], spring_pts[s+1], 1.2, seg=6)
         mesh.add(v_sp, f_sp, 'spring')
         
-    # 4. 8 Monolithic Continuous Curved Meridian Strips
+    # 4. 8 Equatorial Chevrons
     t_strip = 1.6
-    H_strip = H_half - 6.0
-    for i in range(8):
-        ang = i * (2 * math.pi / 8)
-        strip_pts = []
-        for s in range(15):
-            t = s / 14.0
-            z_loc = (t - 0.5) * 2.0 * H_strip
-            r_loc = 19.0 + (R - 19.0) * math.sin(t * math.pi)
-            strip_pts.append([r_loc * math.cos(ang), r_loc * math.sin(ang), z_loc])
-        for s in range(14):
-            v_st, f_st = cylinder(strip_pts[s], strip_pts[s+1], t_strip, seg=6)
-            mesh.add(v_st, f_st, 'links_equatorial')
-            
-        # M2 Screw pin at equatorial hoop
-        p_pin = [R * math.cos(ang), R * math.sin(ang), 0.0]
-        v_p, f_p = sphere(p_pin, 2.2, useg=8, vseg=4)
+    for ch in pose['chevrons']:
+        v_a, f_a = cylinder(ch['a'], ch['fold'], t_strip, seg=6)
+        mesh.add(v_a, f_a, 'links_equatorial')
+        v_b, f_b = cylinder(ch['fold'], ch['b'], t_strip, seg=6)
+        mesh.add(v_b, f_b, 'links_equatorial')
+        
+        v_p, f_p = sphere(ch['fold'], 2.2, useg=8, vseg=4)
         mesh.add(v_p, f_p, 'pins')
-        v_h, f_h = cylinder(p_pin, [p_pin[0] + 1.5*math.cos(ang), p_pin[1] + 1.5*math.sin(ang), 0.0], 2.8, seg=8)
-        mesh.add(v_h, f_h, 'pins')
+        
+    for p in pose['ringTop'] + pose['ringBot']:
+        v_p, f_p = sphere(p, 2.0, useg=8, vseg=4)
+        mesh.add(v_p, f_p, 'pins')
         
     # Equatorial Hoop Ring (D=88mm)
+    R_eq = diameter_mm / 2.0
     ring_pts = []
     for s in range(32):
         ang = s * (2 * math.pi / 32)
-        ring_pts.append([R * math.cos(ang), R * math.sin(ang), 0.0])
+        ring_pts.append([R_eq * math.cos(ang), R_eq * math.sin(ang), 0.0])
     for s in range(32):
         v_r, f_r = cylinder(ring_pts[s], ring_pts[(s+1)%32], 2.0, seg=6)
         mesh.add(v_r, f_r, 'links_equatorial')
@@ -248,7 +228,6 @@ def build_dual_nested_assembly(height_mm=101.43):
         mesh.add(v_arm, f_arm, 'triad')
         v_eye, f_eye = sphere(p_tip, 5.2, useg=10, vseg=6)
         mesh.add(v_eye, f_eye, 'triad')
-        # Tendon Guide Eyelet Hole
         v_hole, f_hole = cylinder([p_tip[0], p_tip[1], -H_half - 4.0], [p_tip[0], p_tip[1], -H_half + 4.0], 1.5, seg=8)
         mesh.add(v_hole, f_hole, 'pins')
         
@@ -260,12 +239,11 @@ def main():
     
     print("Generating TRUNC unit cell CAD previews...")
     
-    # Render Dual-Nested Assembly Preview
     w_p, h_p = 1000, 800
     canvas = Canvas(w_p, h_p, bg=(255, 255, 255), supersample=2)
     dual = build_dual_nested_assembly()
     verts_v = [to_view(v) for v in dual.verts]
-    cam = Camera(eye=[90, 60, 125], target=[0, 0, 0], up=[0, 1, 0], fov_deg=40, width=w_p, height=h_p)
+    cam = Camera(eye=[110, 80, 150], target=[0, 0, 0], up=[0, 1, 0], fov_deg=40, width=w_p, height=h_p)
     
     render_mesh(canvas, {'verts': verts_v, 'faces': dual.faces}, cam, color=(80, 140, 220), light=[0.6, 0.8, -0.7], ambient=0.52)
     canvas.text(40, 35, "TRUNC CONCENTRIC DUAL-NESTED METAMATERIAL UNIT CELL", (20, 30, 50), scale=2)

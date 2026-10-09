@@ -139,13 +139,13 @@ def generate_fea_mesh_plot():
     mesh.verts = verts_v
     
     W, H = 1000, 800
-    canvas = Canvas(W, H, bg=(240, 245, 252), supersample=2)
+    canvas = Canvas(W, H, bg=(240, 245, 252), supersample=1)
     cam = Camera(eye=[110, 80, 150], target=[0, 0, 0], up=[0, 1, 0], fov_deg=42, width=W, height=H)
     
     title_lines = [
         "A: Mesh Discretization & Topology",
         "Element Type: Solid/Shell Continuum",
-        "Nodes: 8,014  Elements: 13,672",
+        f"Nodes: {len(mesh.verts)}  Elements: {len(mesh.faces)}",
         "Quality: Jacobian Ratio > 0.90 (Excellent)",
         "Material: 1095 Spring Steel + Delrin",
     ]
@@ -187,9 +187,10 @@ def generate_fea_mesh_plot():
         diff = max(0.0, nx*lx + ny*ly + nz*lz)
         col = (int(base_col[0] * (0.55+0.45*diff)), int(base_col[1] * (0.55+0.45*diff)), int(base_col[2] * (0.55+0.45*diff)))
         canvas.tri(s0, s1, s2, col)
-        canvas.line(s0[0], s0[1], s1[0], s1[1], (80, 100, 130), width=1)
-        canvas.line(s1[0], s1[1], s2[0], s2[1], (80, 100, 130), width=1)
-        canvas.line(s2[0], s2[1], s0[0], s0[1], (80, 100, 130), width=1)
+        if f_idx % 2 == 0:
+            canvas.line(s0[0], s0[1], s1[0], s1[1], (80, 100, 130), width=1)
+            canvas.line(s1[0], s1[1], s2[0], s2[1], (80, 100, 130), width=1)
+            canvas.line(s2[0], s2[1], s0[0], s0[1], (80, 100, 130), width=1)
 
     canvas.save_png('docs/fea/ansys_fea_mesh_model.png')
 
