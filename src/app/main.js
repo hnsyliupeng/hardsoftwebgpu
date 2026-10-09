@@ -475,12 +475,8 @@ export async function boot(hooks = {}) {
       // of the real tiling, closed to better than a nanometre, bent by the arm's
       // own kinematics. The equatorial shaft (88 mm mold) wraps the truss one.
       for (const joint of geo.joints ?? []) {
-        for (const [a, c] of joint.equatorial) {
-          scene.polyline([V3.new(...a), V3.new(...c)], [0.42, 0.48, 0.58, 1]);
-        }
-        for (const [a, c] of joint.truss) {
-          scene.polyline([V3.new(...a), V3.new(...c)], [0.66, 0.70, 0.78, 1]);
-        }
+        scene.mesh('cell_truss', { p: V3.new(...joint.centre), q: Quat.fromYTo(V3.new(...joint.dir)), scale: 1 }, [0.46, 0.51, 0.58, 1], [0.2, 0.3, 0.35, 1]);
+        scene.mesh('cell_equa', { p: V3.new(...joint.centre), q: Quat.fromYTo(V3.new(...joint.dir)), scale: 1 }, [0.34, 0.40, 0.50, 1], [0.4, 0.2, 0.15, 1]);
       }
       for (const guide of geo.cableGuides ?? []) {
         scene.mesh('guide', { p: V3.new(...guide.p), q: Quat.fromYTo(V3.new(...guide.dir)), scale: 1 }, [0.62, 0.66, 0.74, 1], [0.5, 0.3, 0.1, 1]);
