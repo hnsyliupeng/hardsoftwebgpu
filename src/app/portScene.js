@@ -193,14 +193,14 @@ export function drawScene(raster, opts) {
       for (const tip of guide.rollers ?? []) r.sphere3(tip, 0.0055, SCENE.guide, { rings: 7, segments: 10 });
     }
     for (const joint of g.joints) {
-      // the equatorial cell is the outer shell, the truss cell the inner one
-      for (const [a, c] of joint.equatorial) r.line3(a, c, SCENE.cellOuter, 2);
-      for (const [a, c] of joint.truss) r.line3(a, c, SCENE.cellInner, 2);
-      for (const pin of joint.pins) r.disc3(pin, [0, 1, 0], 0.0042, SCENE.pin, 6);
+      // the equatorial cell is the outer shell, the truss cell the inner one (drawn as solid 3D struts & pins)
+      for (const [a, c] of joint.equatorial) r.cyl3(a, c, 0.0022, SCENE.cellOuter, { segments: 6, cap: true });
+      for (const [a, c] of joint.truss) r.cyl3(a, c, 0.0026, SCENE.cellInner, { segments: 6, cap: true });
+      for (const pin of joint.pins) r.sphere3(pin, 0.0032, SCENE.pin, { rings: 6, segments: 8 });
       // the conical restoring spring inside the truss cell
       if (view.spring) {
         for (let i = 1; i < joint.spring.length; i += 1) {
-          r.line3(joint.spring[i - 1], joint.spring[i], SCENE.spring, 1);
+          r.cyl3(joint.spring[i - 1], joint.spring[i], 0.0010, SCENE.spring, { segments: 5, cap: true });
         }
       }
     }
