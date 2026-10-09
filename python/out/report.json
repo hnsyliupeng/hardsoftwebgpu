@@ -28,83 +28,83 @@
   "withdraw": {
     "source_csv": "workspace-poses.csv",
     "poses_in_file": 18300,
-    "poses_fitted": 400,
-    "stride": 45,
+    "poses_fitted": 120,
+    "stride": 152,
     "position_error_mm": {
-      "mean": 0.025201916014098224,
-      "std": 0.04106083645529951,
-      "max": 0.4523401334404476,
-      "median": 0.011919103519769955
+      "mean": 0.046269506358828476,
+      "std": 0.2456190867487296,
+      "max": 2.6256381721576942,
+      "median": 0.01153909708977468
     },
     "orientation_error_deg": {
-      "mean": 0.008078915810822934,
-      "max": 0.19874681616647946
+      "mean": 0.010237847498410049,
+      "max": 0.3711767274899416
     },
     "arm_length_mm": {
-      "mean": 709.7533225439522,
-      "min": 709.4298489815624,
-      "max": 710.1067021583408,
+      "mean": 710.5724170761112,
+      "min": 709.9949685631169,
+      "max": 715.3278554285715,
       "nominal": 710.0
     },
     "bend_deg": {
-      "mean": 30.357997437647462,
-      "max": 75.78564783619468
+      "mean": 30.666645825016364,
+      "max": 72.71408392853185
     },
     "cable_delta_rms_mm": {
-      "mean": 73.48542470972392,
-      "max": 120.47909800429184,
-      "samples": 400
+      "mean": 74.73626890881654,
+      "max": 121.8335960741388,
+      "samples": 120
     },
     "recorded_compression_ratio": [
       1.0,
-      0.786,
-      0.475
+      0.773,
+      0.455
     ],
     "length_note": "the recorded pose alone pins the end effector, not the arm length: L is a redundant coordinate for a given pose, so the fitted L stays within a few tenths of a millimetre of 710 mm while the winch columns carry the recorded compression",
     "cable_note": "the recorded l0\u2026l8 are the winch commands of the authors' own model (find_lengths: dl_offset + the 0.75 wrist coupling), so the geometry-only tendon comparison carries that calibration offset; the compression *convention* matches exactly (pure compaction of \u0394L shortens all nine commands by \u0394L in this model, too)",
     "used_cables_in_fit": false,
     "home_pose_mm": [
-      -29.32407307019455,
-      25.543226221692784,
-      345.8696420788765
+      -18.911799631081532,
+      6.1852632941057095,
+      351.5142500797908
     ],
     "home_fit": {
       "params": [
-        -0.8020598127025632,
-        0.503670704110251,
-        2.7114679298444306,
-        -0.03371409893894547,
-        -3.828632841204187,
-        -0.20866403194814004,
-        709.9787412810725
+        1.564053632718344,
+        -1.923717937922792,
+        3.541188567910868,
+        -0.5824021500889647,
+        1.9496579002669536,
+        1.9192364091534821,
+        709.9841867791675
       ],
       "t_deg": [
-        -45.95464218491017,
-        28.85820560989987,
-        155.35566866516027,
-        -1.9316755792880622,
-        -219.36450310618102,
-        -11.955568366811399
+        89.61367208686568,
+        -110.22091881658568,
+        202.89515940126884,
+        -33.3691851794424,
+        111.70716917963443,
+        109.96414613233777
       ],
-      "L": 709.9787412810725,
-      "position_error_mm": 0.016746367005777318,
+      "L": 709.9841867791675,
+      "position_error_mm": 0.01931783218359063,
       "orientation_error_deg": 0.0,
       "cable_error_mm": null,
-      "residual": 2.874581161035587,
+      "residual": 3.089393194567206,
       "capture_pose_mm": [
-        -29.32407307019455,
-        25.543226221692784,
-        345.8696420788765
+        -18.911799631081532,
+        6.1852632941057095,
+        351.5142500797908
       ]
     },
     "home_params_deg_mm": [
-      -0.8021,
-      0.5037,
-      2.7115,
-      -0.0337,
-      -3.8286,
-      -0.2087,
-      709.9787
+      1.5641,
+      -1.9237,
+      3.5412,
+      -0.5824,
+      1.9497,
+      1.9192,
+      709.9842
     ]
   },
   "workspace": {
@@ -289,5 +289,5 @@
       "std_torque_nmm": 0.3183869846361613
     }
   },
-  "runtime_s": 81.46289682388306
+  "runtime_s": 29.546087741851807
 }
