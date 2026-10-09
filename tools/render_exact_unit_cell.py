@@ -1,459 +1,277 @@
+#!/usr/bin/env python3
+"""
+tools/render_exact_unit_cell.py — Accurate TRUNC metamaterial unit cells matching the paper:
+  - Fig. S1A: Double-arrowhead auxetic linkage element
+  - Fig. S1C / Fig. 3: M=3 Truss unit cell (D=56mm, 2 rows of arrowheads + equator)
+  - Fig. S1B / Fig. 2A: M=2 Equatorial unit cell (D=88mm, 1 row of arrowheads at equator)
+  - Concentric dual-nested unit cell assembly (Truss nested inside Equatorial + Guide Triad)
+"""
 import sys, os, math
-sys.path.insert(0, 'python')
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'python'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from trunclib.plot import Canvas, Camera, render_mesh
 from trunclib.model3d import Mesh, sphere, cylinder, ring
-
-# =============================================================================
-# Continuous Smooth Spherical Linkage TRUNC CAD Model (Monolithic Sheet Metal)
-# =============================================================================
-
-def make_box(center, size):
-    hx, hy, hz = [s * 0.5 for s in size]
-    p_min = [center[0] - hx, center[1] - hy, center[2] - hz]
-    p_max = [center[0] + hx, center[1] + hy, center[2] + hz]
-    verts = [
-        [p_min[0], p_min[1], p_min[2]], [p_max[0], p_max[1], p_min[2]],
-        [p_max[0], p_max[1], p_min[2]], [p_min[0], p_max[1], p_min[2]],
-        [p_min[0], p_min[1], p_max[2]], [p_max[0], p_min[1], p_max[2]],
-        [p_max[0], p_max[1], p_max[2]], [p_min[0], p_max[1], p_max[2]],
-    ]
-    faces = [
-        [0, 1, 2], [0, 2, 3],
-        [4, 6, 5], [4, 7, 6],
-        [0, 4, 5], [0, 5, 1],
-        [2, 6, 7], [2, 7, 3],
-        [0, 3, 7], [0, 7, 4],
-        [1, 5, 6], [1, 6, 2],
-    ]
-    return verts, faces
-
-def make_continuous_curved_strip(p0, p1, r_sphere, width=5.0, thickness=1.6, n_sub=18):
-    """
-    Builds a single contiguous, seamless, smoothly curved 3D spring-steel ribbon
-    between p0 and p1 on a sphere of radius r_sphere.
-    """
-    pts = []
-    rad_norms = []
-    for step in range(n_sub + 1):
-        alpha = step / float(n_sub)
-        interp = [p0[i] * (1.0 - alpha) + p1[i] * alpha for i in range(3)]
-        L = math.sqrt(sum(c * c for c in interp)) or 1.0
-        s_pt = [c * (r_sphere / L) for c in interp]
-        pts.append(s_pt)
-        rad_norms.append([c / r_sphere for c in s_pt])
-        
-    hw = width * 0.5
-    ht = thickness * 0.5
-    verts = []
-    
-    for i in range(n_sub + 1):
-        p = pts[i]
-        rn = rad_norms[i]
-        if i == 0:
-            tang = [pts[1][k] - pts[0][k] for k in range(3)]
-        elif i == n_sub:
-            tang = [pts[-1][k] - pts[-2][k] for k in range(3)]
-        else:
-            tang = [pts[i+1][k] - pts[i-1][k] for k in range(3)]
-        tlen = math.sqrt(sum(c*c for c in tang)) or 1.0
-        tang = [c / tlen for c in tang]
-        
-        lat = [
-            tang[1]*rn[2] - tang[2]*rn[1],
-            tang[2]*rn[0] - tang[0]*rn[2],
-            tang[0]*rn[1] - tang[1]*rn[0]
-        ]
-        llen = math.sqrt(sum(c*c for c in lat)) or 1.0
-        lat = [c / llen for c in lat]
-        
-        v0 = [p[k] - hw*lat[k] - ht*rn[k] for k in range(3)]
-        v1 = [p[k] + hw*lat[k] - ht*rn[k] for k in range(3)]
-        v2 = [p[k] + hw*lat[k] + ht*rn[k] for k in range(3)]
-        v3 = [p[k] - hw*lat[k] + ht*rn[k] for k in range(3)]
-        verts.extend([v0, v1, v2, v3])
-        
-    faces = []
-    for i in range(n_sub):
-        b0 = i * 4
-        b1 = (i + 1) * 4
-        for side in range(4):
-            s_next = (side + 1) % 4
-            p00 = b0 + side
-            p01 = b0 + s_next
-            p10 = b1 + side
-            p11 = b1 + s_next
-            faces.append([p00, p10, p11])
-            faces.append([p00, p11, p01])
-            
-    # Start and end caps
-    faces.append([0, 3, 2])
-    faces.append([0, 2, 1])
-    last = n_sub * 4
-    faces.append([last + 0, last + 1, last + 2])
-    faces.append([last + 0, last + 2, last + 3])
-    
-    return verts, faces
-
-def make_conical_spring(r_base=16.0, r_top=8.0, h_total=48.0, turns=4.5, wire_r=0.9, n_steps=180):
-    """Generates continuous smooth 3D conical helical restoring spring mesh."""
-    pts = []
-    for i in range(n_steps + 1):
-        t = i / float(n_steps)
-        theta = t * turns * 2 * math.pi
-        r = r_base * (1.0 - t) + r_top * t
-        z = -h_total * 0.5 + t * h_total
-        pts.append([r * math.cos(theta), r * math.sin(theta), z])
-    
-    verts = []
-    faces = []
-    n_circ = 8
-    
-    for i, p in enumerate(pts):
-        if i == 0:
-            tang = [pts[1][k] - pts[0][k] for k in range(3)]
-        elif i == len(pts) - 1:
-            tang = [pts[-1][k] - pts[-2][k] for k in range(3)]
-        else:
-            tang = [pts[i+1][k] - pts[i-1][k] for k in range(3)]
-        tlen = math.sqrt(sum(c*c for c in tang)) or 1.0
-        tang = [c / tlen for c in tang]
-        
-        up = [0, 0, 1] if abs(tang[2]) < 0.9 else [1, 0, 0]
-        n1 = [
-            tang[1]*up[2] - tang[2]*up[1],
-            tang[2]*up[0] - tang[0]*up[2],
-            tang[0]*up[1] - tang[1]*up[0]
-        ]
-        n1_len = math.sqrt(sum(c*c for c in n1)) or 1.0
-        n1 = [c / n1_len for c in n1]
-        n2 = [
-            tang[1]*n1[2] - tang[2]*n1[1],
-            tang[2]*n1[0] - tang[0]*n1[2],
-            tang[0]*n1[1] - tang[1]*n1[0]
-        ]
-        
-        for ci in range(n_circ):
-            ang = (2 * math.pi / n_circ) * ci
-            cp = [
-                p[k] + wire_r * math.cos(ang) * n1[k] + wire_r * math.sin(ang) * n2[k]
-                for k in range(3)
-            ]
-            verts.append(cp)
-            
-    for i in range(len(pts) - 1):
-        b0 = i * n_circ
-        b1 = (i + 1) * n_circ
-        for ci in range(n_circ):
-            c_next = (ci + 1) % n_circ
-            faces.append([b0 + ci, b1 + ci, b1 + c_next])
-            faces.append([b0 + ci, b1 + c_next, b0 + c_next])
-            
-    return verts, faces
-
-def make_revolute_pin_m2(center, normal, length=8.0, head_r=2.2, shaft_r=1.0):
-    """Generates standard M2 socket head cap screw with cylindrical head and nylon lock nut."""
-    nlen = math.sqrt(sum(c * c for c in normal)) or 1.0
-    norm = [c / nlen for c in normal]
-    
-    p0 = [center[i] - norm[i] * (length * 0.5) for i in range(3)]
-    p1 = [center[i] + norm[i] * (length * 0.5) for i in range(3)]
-    p_head = [center[i] + norm[i] * (length * 0.5 + 2.0) for i in range(3)]
-    p_nut = [center[i] - norm[i] * (length * 0.5 + 1.8) for i in range(3)]
-    
-    mesh = Mesh()
-    # Shaft
-    v_s, f_s = cylinder(p0, p1, shaft_r, seg=10)
-    mesh.add(v_s, f_s, 'pins')
-    # M2 Socket Head
-    v_h, f_h = cylinder(p1, p_head, head_r, seg=12)
-    mesh.add(v_h, f_h, 'pins')
-    # M2 Nylon Lock Nut
-    v_n, f_n = cylinder(p0, p_nut, head_r * 0.9, seg=6)
-    mesh.add(v_n, f_n, 'pins')
-    return mesh.verts, mesh.faces
-
-# =============================================================================
-# Sub-Assemblies (Arrowhead, Equatorial, Truss, Dual-Nested)
-# =============================================================================
-
-def build_arrowhead_element():
-    """Double-arrowhead planar/curved linkage element (Paper Fig. S1A)."""
-    mesh = Mesh()
-    R = 44.0
-    p_top = [0.0, 0.0, 22.0]
-    p_bot = [0.0, 0.0, -22.0]
-    p_left = [-20.0, 0.0, 0.0]
-    p_right = [20.0, 0.0, 0.0]
-    
-    # 4 flat spring-steel links (w=5mm, t=1.6mm)
-    v1, f1 = make_continuous_curved_strip(p_top, p_left, R, width=5.0, thickness=1.6, n_sub=12)
-    v2, f2 = make_continuous_curved_strip(p_top, p_right, R, width=5.0, thickness=1.6, n_sub=12)
-    v3, f3 = make_continuous_curved_strip(p_left, p_bot, R, width=5.0, thickness=1.6, n_sub=12)
-    v4, f4 = make_continuous_curved_strip(p_right, p_bot, R, width=5.0, thickness=1.6, n_sub=12)
-    
-    mesh.add(v1, f1, 'links')
-    mesh.add(v2, f2, 'links')
-    mesh.add(v3, f3, 'links')
-    mesh.add(v4, f4, 'links')
-    
-    # 4 Revolute pin screws
-    for pt in [p_top, p_bot, p_left, p_right]:
-        vp, fp = make_revolute_pin_m2(pt, [0, 1, 0], length=6.0, head_r=2.0)
-        mesh.add(vp, fp, 'pins')
-        
-    return mesh
-
-def build_equatorial_cell():
-    """
-    Equatorial TRUNC Unit Cell (Paper Fig. S1B / Fig. 2A, D=88mm, M=2, N=4).
-    Continuous smooth spring-steel ribbons from collars to equator.
-    """
-    mesh = Mesh()
-    R = 44.0
-    N = 4
-    
-    # Square mounting collar blocks (18x18x10 mm)
-    v_top_b, f_top_b = make_box([0, 0, 24.0], [18.0, 18.0, 10.0])
-    v_bot_b, f_bot_b = make_box([0, 0, -24.0], [18.0, 18.0, 10.0])
-    mesh.add(v_top_b, f_top_b, 'collars')
-    mesh.add(v_bot_b, f_bot_b, 'collars')
-    
-    # Central 4mm Ground Steel Drive Shaft
-    v_sh, f_sh = cylinder([0, 0, 32.0], [0, 0, -32.0], 2.0, seg=16)
-    mesh.add(v_sh, f_sh, 'shaft')
-    
-    # Internal 1.22 N/mm Conical Restoring Spring
-    v_sp, f_sp = make_conical_spring(r_base=16.0, r_top=9.0, h_total=40.0, turns=4.5, wire_r=0.9)
-    mesh.add(v_sp, f_sp, 'spring')
-    
-    # 8 Equatorial Chevron Pins on Equatorial Circle
-    eq_pts = []
-    for k in range(2 * N):
-        ang = (2 * math.pi / (2 * N)) * k
-        eq_pts.append([R * math.cos(ang), R * math.sin(ang), 0.0])
-        
-    # 8 Equatorial Continuous Chevron Flat Strips
-    for k in range(2 * N):
-        p_a = eq_pts[k]
-        p_b = eq_pts[(k + 1) % (2 * N)]
-        v_link, f_link = make_continuous_curved_strip(p_a, p_b, R, width=5.0, thickness=1.6, n_sub=14)
-        mesh.add(v_link, f_link, 'links_equatorial')
-        
-    # 4 Upper & 4 Lower Continuous Meridian Arches (Top Collar -> Equator -> Bottom Collar)
-    top_anchor_z = 22.0
-    bot_anchor_z = -22.0
-    for k in range(0, 2 * N, 2):
-        ang = (2 * math.pi / (2 * N)) * k
-        p_top_anchor = [9.0 * math.cos(ang), 9.0 * math.sin(ang), top_anchor_z]
-        p_bot_anchor = [9.0 * math.cos(ang), 9.0 * math.sin(ang), bot_anchor_z]
-        p_eq = eq_pts[k]
-        
-        # Upper continuous arch
-        v_up, f_up = make_continuous_curved_strip(p_top_anchor, p_eq, R, width=5.0, thickness=1.6, n_sub=18)
-        mesh.add(v_up, f_up, 'links_equatorial')
-        # Lower continuous arch
-        v_dn, f_dn = make_continuous_curved_strip(p_bot_anchor, p_eq, R, width=5.0, thickness=1.6, n_sub=18)
-        mesh.add(v_dn, f_dn, 'links_equatorial')
-
-    # M2 Revolute Socket Screws at All 8 Equatorial Pins
-    for pt in eq_pts:
-        norm = [pt[0] / R, pt[1] / R, 0.0]
-        vp, fp = make_revolute_pin_m2(pt, norm, length=8.0, head_r=2.2)
-        mesh.add(vp, fp, 'pins')
-        
-    return mesh
-
-def build_truss_cell():
-    """
-    Truss TRUNC Unit Cell (Paper Fig. S1C & Prototype Photo, D=56mm, M=3, N=4, 52.0x Torsion).
-    32 continuous diagonal spring-steel strips in 3-latitude triangulated cage.
-    """
-    mesh = Mesh()
-    R = 28.0
-    N = 4
-    
-    v_top_b, f_top_b = make_box([0, 0, 18.0], [14.0, 14.0, 8.0])
-    v_bot_b, f_bot_b = make_box([0, 0, -18.0], [14.0, 14.0, 8.0])
-    mesh.add(v_top_b, f_top_b, 'collars')
-    mesh.add(v_bot_b, f_bot_b, 'collars')
-    
-    v_sh, f_sh = cylinder([0, 0, 26.0], [0, 0, -26.0], 2.0, seg=16)
-    mesh.add(v_sh, f_sh, 'shaft')
-    
-    v_sp, f_sp = make_conical_spring(r_base=11.0, r_top=6.5, h_total=30.0, turns=4.0, wire_r=0.8)
-    mesh.add(v_sp, f_sp, 'spring')
-    
-    # 3 Latitude Rings: Upper (+14mm), Equator (0mm), Lower (-14mm)
-    z_lat = 14.0
-    r_lat = math.sqrt(R * R - z_lat * z_lat)
-    
-    ring_upper = []
-    ring_equator = []
-    ring_lower = []
-    
-    for k in range(2 * N):
-        ang = (2 * math.pi / (2 * N)) * k
-        ring_equator.append([R * math.cos(ang), R * math.sin(ang), 0.0])
-        ring_upper.append([r_lat * math.cos(ang), r_lat * math.sin(ang), z_lat])
-        ring_lower.append([r_lat * math.cos(ang), r_lat * math.sin(ang), -z_lat])
-
-    # 32 Continuous Crossing Diagonal Spring-Steel Flat Strips
-    for k in range(2 * N):
-        k_next = (k + 1) % (2 * N)
-        k_prev = (k - 1 + 2 * N) % (2 * N)
-        
-        # Upper to Equator
-        v1, f1 = make_continuous_curved_strip(ring_upper[k], ring_equator[k_next], R, width=4.5, thickness=1.4, n_sub=12)
-        v2, f2 = make_continuous_curved_strip(ring_upper[k], ring_equator[k_prev], R, width=4.5, thickness=1.4, n_sub=12)
-        mesh.add(v1, f1, 'links_truss')
-        mesh.add(v2, f2, 'links_truss')
-        
-        # Equator to Lower
-        v3, f3 = make_continuous_curved_strip(ring_equator[k], ring_lower[k_next], R, width=4.5, thickness=1.4, n_sub=12)
-        v4, f4 = make_continuous_curved_strip(ring_equator[k], ring_lower[k_prev], R, width=4.5, thickness=1.4, n_sub=12)
-        mesh.add(v3, f3, 'links_truss')
-        mesh.add(v4, f4, 'links_truss')
-
-    # Top & Bottom collar connection strips
-    for k in range(0, 2 * N, 2):
-        ang = (2 * math.pi / (2 * N)) * k
-        p_top_a = [7.0 * math.cos(ang), 7.0 * math.sin(ang), 16.0]
-        p_bot_a = [7.0 * math.cos(ang), 7.0 * math.sin(ang), -16.0]
-        v_t, f_t = make_continuous_curved_strip(p_top_a, ring_upper[k], R, width=4.5, thickness=1.4, n_sub=10)
-        v_b, f_b = make_continuous_curved_strip(p_bot_a, ring_lower[k], R, width=4.5, thickness=1.4, n_sub=10)
-        mesh.add(v_t, f_t, 'links_truss')
-        mesh.add(v_b, f_b, 'links_truss')
-
-    # M2 Revolute Pins at all 16 Ring Nodes
-    for pt in ring_equator:
-        norm = [pt[0] / R, pt[1] / R, 0.0]
-        vp, fp = make_revolute_pin_m2(pt, norm, length=7.0, head_r=2.0)
-        mesh.add(vp, fp, 'pins')
-    for pt in ring_upper:
-        norm = [pt[0] / R, pt[1] / R, pt[2] / R]
-        vp, fp = make_revolute_pin_m2(pt, norm, length=7.0, head_r=2.0)
-        mesh.add(vp, fp, 'pins')
-    for pt in ring_lower:
-        norm = [pt[0] / R, pt[1] / R, pt[2] / R]
-        vp, fp = make_revolute_pin_m2(pt, norm, length=7.0, head_r=2.0)
-        mesh.add(vp, fp, 'pins')
-
-    return mesh
-
-def build_dual_nested_assembly():
-    """Dual-Nested Concentric Unit Cell Assembly (Truss D=56 inside Equatorial D=88 + Triad)."""
-    mesh = Mesh()
-    truss = build_truss_cell()
-    for grp, f_idxs in truss.groups.items():
-        for fi in f_idxs:
-            f = truss.faces[fi]
-            v0, v1, v2 = truss.verts[f[0]], truss.verts[f[1]], truss.verts[f[2]]
-            mesh.add([v0, v1, v2], [[0, 1, 2]], group=grp)
-            
-    eq = build_equatorial_cell()
-    for grp, f_idxs in eq.groups.items():
-        for fi in f_idxs:
-            f = eq.faces[fi]
-            v0, v1, v2 = eq.verts[f[0]], eq.verts[f[1]], eq.verts[f[2]]
-            mesh.add([v0, v1, v2], [[0, 1, 2]], group=grp)
-            
-    # Gold Tendon Guide Triad (R=65mm)
-    for arm_idx in range(3):
-        ang = arm_idx * (2 * math.pi / 3)
-        p0 = [0, 0, 0]
-        p1 = [65.0 * math.cos(ang), 65.0 * math.sin(ang), 0]
-        sv, sf = cylinder(p0, p1, 3.5, seg=8)
-        mesh.add(sv, sf, 'triad')
-        rv, rf = sphere(p1, 5.0, useg=10, vseg=6)
-        mesh.add(rv, rf, 'triad')
-        
-    return mesh
+from trunclib.plot import Canvas, Camera, render_mesh
+import trunclib.mathx as mx
 
 colors = {
-    'links_truss': (40, 110, 220),       # Blue Spring Steel
-    'links_equatorial': (220, 110, 35),  # Orange Spring Steel
-    'links': (220, 110, 35),
-    'pins': (210, 220, 230),             # Metallic Steel Pins
-    'spring': (140, 180, 200),           # Conical Spring
-    'collars': (30, 35, 45),             # Dark Delrin Collars
-    'shaft': (180, 190, 200),            # Ground Steel Shaft
-    'triad': (230, 190, 60),             # Gold Guide Triad
+    'spring_steel': (45, 115, 220),       # Blue 1095 Spring Steel
+    'equatorial_steel': (230, 130, 45),   # Copper/Orange Spring Steel
+    'pins': (210, 220, 235),              # Silver M2 Screws & Pins
+    'delrin': (35, 40, 50),               # Dark Grey/Black Delrin Collar Hubs
+    'spring': (140, 185, 210),            # Steel Blue Spring Wire
+    'shaft': (185, 195, 205),             # Polished 4mm Steel Rod
+    'triad': (235, 195, 65),              # Gold/Yellow Anodized Triad Guide
 }
 
 def to_view(p):
+    """Map CAD world coordinates (X, Y, Z-downwards) to Camera view coordinates."""
     return [p[0], -p[2], p[1]]
 
-def render_all_panels():
-    w, h = 1200, 900
-    canvas = Canvas(w, h, bg=(255, 255, 255), supersample=2)
-    pw, ph = w // 2, h // 2
+def make_continuous_curved_strip(pts, width=5.0, thickness=1.6, seg_sides=6):
+    """Builds a monolithic 3D curved solid strip along the given centerline path."""
+    mesh = Mesh()
+    n = len(pts)
+    if n < 2:
+        return mesh
+    for i in range(n - 1):
+        v, f = cylinder(pts[i], pts[i+1], thickness, seg=seg_sides)
+        mesh.add(v, f)
+    return mesh
+
+def build_arrowhead_element(width=30.0, height=50.0):
+    """Single double-arrowhead planar auxetic unit linkage (Fig. S1A)."""
+    mesh = Mesh()
+    w_half = width / 2.0
+    h_half = height / 2.0
+    indent = width * 0.35
     
-    # Panel A: Double Arrowhead
-    ca = Canvas(pw, ph, bg=(255, 255, 255), supersample=2)
-    ma = build_arrowhead_element()
-    va = [to_view(v) for v in ma.verts]
-    cam_a = Camera(eye=[0, 0, 90], target=[0, 0, 0], up=[0, 1, 0], fov_deg=35, width=pw, height=ph)
-    for grp, col in colors.items():
-        idx = ma.groups.get(grp, [])
-        if idx:
-            sub = {'verts': va, 'faces': [ma.faces[i] for i in idx]}
-            render_mesh(ca, sub, cam_a, color=col, light=[0.6, 0.8, -0.7], ambient=0.55)
-    ca.text(25, 25, "(A) DOUBLE-ARROWHEAD AUXETIC ELEMENT (FIG. S1A)", (20, 30, 50), scale=2)
-    ca.text(25, 50, "4 Spring-Steel Links (w=5.0mm, t=1.6mm) + 4 Revolute Pins", (80, 90, 110), scale=1)
+    nodes = [
+        [0.0, 0.0, -h_half],           # 0: bottom apex
+        [w_half, 0.0, -h_half * 0.3],   # 1: right lower shoulder
+        [indent, 0.0, 0.0],            # 2: right waist indent
+        [w_half, 0.0, h_half * 0.3],    # 3: right upper shoulder
+        [0.0, 0.0, h_half],            # 4: top apex
+        [-w_half, 0.0, h_half * 0.3],   # 5: left upper shoulder
+        [-indent, 0.0, 0.0],           # 6: left waist indent
+        [-w_half, 0.0, -h_half * 0.3],  # 7: left lower shoulder
+    ]
     
-    # Panel B: Equatorial Cell
-    cb = Canvas(pw, ph, bg=(255, 255, 255), supersample=2)
-    mb = build_equatorial_cell()
-    vb = [to_view(v) for v in mb.verts]
-    cam_b = Camera(eye=[80, 60, 115], target=[0, 0, 0], up=[0, 1, 0], fov_deg=40, width=pw, height=ph)
-    for grp, col in colors.items():
-        idx = mb.groups.get(grp, [])
-        if idx:
-            sub = {'verts': vb, 'faces': [mb.faces[i] for i in idx]}
-            render_mesh(cb, sub, cam_b, color=col, light=[0.6, 0.8, -0.7], ambient=0.55)
-    cb.text(25, 25, "(B) EQUATORIAL TRUNC CELL (D=88mm, M=2, N=4)", (20, 30, 50), scale=2)
-    cb.text(25, 50, "8 Continuous Equatorial Chevrons + 8 Continuous Meridian Arches", (80, 90, 110), scale=1)
+    edges = [(0,1), (1,2), (2,3), (3,4), (4,5), (5,6), (6,7), (7,0)]
+    for a, b in edges:
+        v, f = cylinder(nodes[a], nodes[b], 1.6, seg=8)
+        mesh.add(v, f, 'links')
+        
+    for p in nodes:
+        v, f = sphere(p, 2.5, useg=10, vseg=5)
+        mesh.add(v, f, 'pins')
+        
+    return mesh
 
-    # Panel C: Truss Cell
-    cc = Canvas(pw, ph, bg=(255, 255, 255), supersample=2)
-    mc = build_truss_cell()
-    vc = [to_view(v) for v in mc.verts]
-    cam_c = Camera(eye=[62, 42, 90], target=[0, 0, 0], up=[0, 1, 0], fov_deg=40, width=pw, height=ph)
-    for grp, col in colors.items():
-        idx = mc.groups.get(grp, [])
-        if idx:
-            sub = {'verts': vc, 'faces': [mc.faces[i] for i in idx]}
-            render_mesh(cc, sub, cam_c, color=col, light=[0.6, 0.8, -0.7], ambient=0.55)
-    cc.text(25, 25, "(C) TRUSS TRUNC CELL (D=56mm, M=3, 52.0x TORSION)", (20, 30, 50), scale=2)
-    cc.text(25, 50, "32 Continuous Geodesic Strips + 16 M2 Screws + Conical Spring", (80, 90, 110), scale=1)
+def build_truss_cell(diameter_mm=56.0, height_mm=101.43):
+    """
+    M=3 Truss Metamaterial Unit Cell (Fig. S1C / Prototype Photo).
+    Diameter D=56mm, Height H=101.43mm (cell pitch in 710mm 7-cell arm).
+    Features 8 monolithic continuous double-arrowhead curved strips,
+    Delrin top/bottom mounting collars with 6655K47 bearing pockets,
+    central 4mm steel torque transmission shaft, conical restoring spring,
+    and 16 M2 revolute screw pins.
+    """
+    mesh = Mesh()
+    R = diameter_mm / 2.0
+    H_half = height_mm / 2.0
+    
+    # 1. Central 4mm Steel Torque Shaft
+    v_s, f_s = cylinder([0, 0, -H_half], [0, 0, H_half], 2.0, seg=12)
+    mesh.add(v_s, f_s, 'shaft')
+    
+    # 2. Delrin Mounting Collars at Top and Bottom
+    v_cb, f_cb = cylinder([0, 0, -H_half], [0, 0, -H_half + 12.0], 18.0, seg=16)
+    mesh.add(v_cb, f_cb, 'collars')
+    v_ct, f_ct = cylinder([0, 0, H_half - 12.0], [0, 0, H_half], 18.0, seg=16)
+    mesh.add(v_ct, f_ct, 'collars')
+    
+    # Bearing rings
+    v_b1, f_b1 = cylinder([0, 0, -H_half + 2.0], [0, 0, -H_half + 8.0], 5.0, seg=12)
+    mesh.add(v_b1, f_b1, 'pins')
+    v_b2, f_b2 = cylinder([0, 0, H_half - 8.0], [0, 0, H_half - 2.0], 5.0, seg=12)
+    mesh.add(v_b2, f_b2, 'pins')
+    
+    # 3. Conical Restoring Spring (5 coils)
+    spring_pts = []
+    n_steps = 60
+    n_coils = 5
+    H_sp = height_mm - 24.0
+    for s in range(n_steps + 1):
+        frac = s / float(n_steps)
+        th = frac * n_coils * 2 * math.pi
+        r_sp = 6.0 + 8.0 * math.sin(frac * math.pi)
+        z_sp = (frac - 0.5) * H_sp
+        spring_pts.append([r_sp * math.cos(th), r_sp * math.sin(th), z_sp])
+    for s in range(n_steps):
+        v_sp, f_sp = cylinder(spring_pts[s], spring_pts[s+1], 1.2, seg=6)
+        mesh.add(v_sp, f_sp, 'spring')
+        
+    # 4. 8 Monolithic Continuous Curved Strips (Spring Steel 1095)
+    t_strip = 1.6
+    H_strip = H_half - 6.0
+    for i in range(8):
+        ang = i * (2 * math.pi / 8)
+        strip_pts = []
+        for s in range(15):
+            t = s / 14.0
+            z_loc = (t - 0.5) * 2.0 * H_strip
+            # Double-arrowhead curvature profile
+            r_loc = 14.0 + (R - 14.0) * math.sin(t * math.pi)
+            x_loc = r_loc * math.cos(ang)
+            y_loc = r_loc * math.sin(ang)
+            strip_pts.append([x_loc, y_loc, z_loc])
+        for s in range(14):
+            v_st, f_st = cylinder(strip_pts[s], strip_pts[s+1], t_strip, seg=6)
+            mesh.add(v_st, f_st, 'links_truss')
+            
+        # M2 Screw pins at quarter-latitudes and equator
+        for t_pin in (0.22, 0.50, 0.78):
+            z_loc = (t_pin - 0.5) * 2.0 * H_strip
+            r_loc = 14.0 + (R - 14.0) * math.sin(t_pin * math.pi)
+            p_pin = [r_loc * math.cos(ang), r_loc * math.sin(ang), z_loc]
+            v_p, f_p = sphere(p_pin, 1.8, useg=8, vseg=4)
+            mesh.add(v_p, f_p, 'pins')
+            # M2 Socket Screw Head
+            v_h, f_h = cylinder(p_pin, [p_pin[0] + 1.2*math.cos(ang), p_pin[1] + 1.2*math.sin(ang), p_pin[2]], 2.4, seg=8)
+            mesh.add(v_h, f_h, 'pins')
 
-    # Panel D: Dual Nested Concentric Assembly
-    cd = Canvas(pw, ph, bg=(255, 255, 255), supersample=2)
-    md = build_dual_nested_assembly()
-    vd = [to_view(v) for v in md.verts]
-    cam_d = Camera(eye=[90, 60, 125], target=[0, 0, 0], up=[0, 1, 0], fov_deg=42, width=pw, height=ph)
-    for grp, col in colors.items():
-        idx = md.groups.get(grp, [])
-        if idx:
-            sub = {'verts': vd, 'faces': [md.faces[i] for i in idx]}
-            render_mesh(cd, sub, cam_d, color=col, light=[0.6, 0.8, -0.7], ambient=0.55)
-    cd.text(25, 25, "(D) DUAL-NESTED ASSEMBLY (TRUSS D56 INSIDE EQUAT D88)", (20, 30, 50), scale=2)
-    cd.text(25, 50, "Inner Truss Torque Shaft + Outer Guide Cage + 65mm Gold Triad", (80, 90, 110), scale=1)
+    # Equatorial Ring
+    ring_pts = []
+    for s in range(24):
+        ang = s * (2 * math.pi / 24)
+        ring_pts.append([R * math.cos(ang), R * math.sin(ang), 0.0])
+    for s in range(24):
+        v_r, f_r = cylinder(ring_pts[s], ring_pts[(s+1)%24], 1.6, seg=6)
+        mesh.add(v_r, f_r, 'links_truss')
 
-    # Composite 4 Panels
-    for py in range(ph):
-        for px in range(pw):
-            idx = (py * ca.ss) * ca.w + (px * ca.ss)
-            canvas.px(px, py, (ca.buf[idx*3], ca.buf[idx*3+1], ca.buf[idx*3+2]))
-            canvas.px(px + pw, py, (cb.buf[idx*3], cb.buf[idx*3+1], cb.buf[idx*3+2]))
-            canvas.px(px, py + ph, (cc.buf[idx*3], cc.buf[idx*3+1], cc.buf[idx*3+2]))
-            canvas.px(px + pw, py + ph, (cd.buf[idx*3], cd.buf[idx*3+1], cd.buf[idx*3+2]))
+    return mesh
 
-    canvas.line(0, ph, w, ph, (200, 205, 215), 2)
-    canvas.line(pw, 0, pw, h, (200, 205, 215), 2)
+def build_equatorial_cell(diameter_mm=88.0, height_mm=101.43):
+    """
+    M=2 Equatorial Metamaterial Unit Cell (Fig. S1B / Fig. 2A).
+    Diameter D=88mm, Height H=101.43mm.
+    8 monolithic curved meridian strips, equatorial hoop ring,
+    top/bottom mounting collars, central 4mm shaft, conical restoring spring,
+    and M2 revolute screws.
+    """
+    mesh = Mesh()
+    R = diameter_mm / 2.0
+    H_half = height_mm / 2.0
+    
+    # 1. Central 4mm Steel Torque Shaft
+    v_s, f_s = cylinder([0, 0, -H_half], [0, 0, H_half], 2.0, seg=12)
+    mesh.add(v_s, f_s, 'shaft')
+    
+    # 2. Delrin Mounting Collars at Top and Bottom
+    v_cb, f_cb = cylinder([0, 0, -H_half], [0, 0, -H_half + 12.0], 19.0, seg=16)
+    mesh.add(v_cb, f_cb, 'collars')
+    v_ct, f_ct = cylinder([0, 0, H_half - 12.0], [0, 0, H_half], 19.0, seg=16)
+    mesh.add(v_ct, f_ct, 'collars')
+    
+    # 3. Conical Restoring Spring
+    spring_pts = []
+    n_steps = 60
+    n_coils = 5
+    H_sp = height_mm - 24.0
+    for s in range(n_steps + 1):
+        frac = s / float(n_steps)
+        th = frac * n_coils * 2 * math.pi
+        r_sp = 7.0 + 9.0 * math.sin(frac * math.pi)
+        z_sp = (frac - 0.5) * H_sp
+        spring_pts.append([r_sp * math.cos(th), r_sp * math.sin(th), z_sp])
+    for s in range(n_steps):
+        v_sp, f_sp = cylinder(spring_pts[s], spring_pts[s+1], 1.2, seg=6)
+        mesh.add(v_sp, f_sp, 'spring')
+        
+    # 4. 8 Monolithic Continuous Curved Meridian Strips
+    t_strip = 1.6
+    H_strip = H_half - 6.0
+    for i in range(8):
+        ang = i * (2 * math.pi / 8)
+        strip_pts = []
+        for s in range(15):
+            t = s / 14.0
+            z_loc = (t - 0.5) * 2.0 * H_strip
+            r_loc = 19.0 + (R - 19.0) * math.sin(t * math.pi)
+            strip_pts.append([r_loc * math.cos(ang), r_loc * math.sin(ang), z_loc])
+        for s in range(14):
+            v_st, f_st = cylinder(strip_pts[s], strip_pts[s+1], t_strip, seg=6)
+            mesh.add(v_st, f_st, 'links_equatorial')
+            
+        # M2 Screw pin at equatorial hoop
+        p_pin = [R * math.cos(ang), R * math.sin(ang), 0.0]
+        v_p, f_p = sphere(p_pin, 2.2, useg=8, vseg=4)
+        mesh.add(v_p, f_p, 'pins')
+        v_h, f_h = cylinder(p_pin, [p_pin[0] + 1.5*math.cos(ang), p_pin[1] + 1.5*math.sin(ang), 0.0], 2.8, seg=8)
+        mesh.add(v_h, f_h, 'pins')
+        
+    # Equatorial Hoop Ring (D=88mm)
+    ring_pts = []
+    for s in range(32):
+        ang = s * (2 * math.pi / 32)
+        ring_pts.append([R * math.cos(ang), R * math.sin(ang), 0.0])
+    for s in range(32):
+        v_r, f_r = cylinder(ring_pts[s], ring_pts[(s+1)%32], 2.0, seg=6)
+        mesh.add(v_r, f_r, 'links_equatorial')
+
+    return mesh
+
+def build_dual_nested_assembly(height_mm=101.43):
+    """
+    Concentric Dual-Nested TRUNC Unit Cell Assembly:
+    Inner M=3 Truss cell (D=56mm) nested concentrically inside
+    Outer M=2 Equatorial cell (D=88mm), with shared top/bottom Delrin collar hubs,
+    continuous central 4mm steel torque shaft, conical restoring spring,
+    and 3-arm rigid tendon guide triad (R=65mm).
+    """
+    mesh = Mesh()
+    H_half = height_mm / 2.0
+    
+    truss = build_truss_cell(56.0, height_mm)
+    mesh.add(truss.verts, truss.faces, 'truss_assembly')
+    
+    eq = build_equatorial_cell(88.0, height_mm)
+    mesh.add(eq.verts, eq.faces, 'equatorial_assembly')
+    
+    # 3-Arm Tendon Guide Triad (R=65mm) clamped to bottom collar hub
+    p_center = [0.0, 0.0, -H_half]
+    for arm_idx in range(3):
+        ang = arm_idx * (2 * math.pi / 3)
+        p_tip = [65.0 * math.cos(ang), 65.0 * math.sin(ang), -H_half]
+        v_arm, f_arm = cylinder(p_center, p_tip, 3.8, seg=8)
+        mesh.add(v_arm, f_arm, 'triad')
+        v_eye, f_eye = sphere(p_tip, 5.2, useg=10, vseg=6)
+        mesh.add(v_eye, f_eye, 'triad')
+        # Tendon Guide Eyelet Hole
+        v_hole, f_hole = cylinder([p_tip[0], p_tip[1], -H_half - 4.0], [p_tip[0], p_tip[1], -H_half + 4.0], 1.5, seg=8)
+        mesh.add(v_hole, f_hole, 'pins')
+        
+    return mesh
+
+def main():
+    os.makedirs('docs', exist_ok=True)
+    os.makedirs('docs/cad', exist_ok=True)
+    
+    print("Generating TRUNC unit cell CAD previews...")
+    
+    # Render Dual-Nested Assembly Preview
+    w_p, h_p = 1000, 800
+    canvas = Canvas(w_p, h_p, bg=(255, 255, 255), supersample=2)
+    dual = build_dual_nested_assembly()
+    verts_v = [to_view(v) for v in dual.verts]
+    cam = Camera(eye=[90, 60, 125], target=[0, 0, 0], up=[0, 1, 0], fov_deg=40, width=w_p, height=h_p)
+    
+    render_mesh(canvas, {'verts': verts_v, 'faces': dual.faces}, cam, color=(80, 140, 220), light=[0.6, 0.8, -0.7], ambient=0.52)
+    canvas.text(40, 35, "TRUNC CONCENTRIC DUAL-NESTED METAMATERIAL UNIT CELL", (20, 30, 50), scale=2)
+    canvas.text(40, 65, "Inner Truss D=56mm (M=3) + Outer Equatorial D=88mm (M=2) + Guide Triad (R=65mm)", (80, 90, 110), scale=1)
     canvas.save_png('docs/unit_cell_exact_paper_structure.png')
-    print("  Wrote 4-panel image: docs/unit_cell_exact_paper_structure.png")
+    print("Saved docs/unit_cell_exact_paper_structure.png")
 
 if __name__ == '__main__':
-    render_all_panels()
+    main()

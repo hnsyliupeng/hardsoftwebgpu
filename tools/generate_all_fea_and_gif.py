@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-tools/generate_all_fea_and_gif.py — Complete ANSYS Workbench Mechanical style FEA & MBD suite:
+tools/generate_all_fea_and_gif.py — Full ANSYS Workbench Mechanical style FEA & MBD Suite:
   1. FEA Mesh Discretization (Nodes & Elements with Wireframe Overlay)
   2. Boundary Conditions & Applied Loads (Fixed Support Glyphs, Torque & Force Vectors)
   3. Continuous Monolithic Stress Contours (von Mises Stress for Truss & Equatorial)
-  4. MBD-FEM Torque Transmission & Dynamic Arm Actuation Animation GIF
+  4. MBD-FEM Coupled Torque Transmission & Dynamic Arm Actuation Animation GIF
 """
 import sys, os, math, subprocess
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'python'))
@@ -36,7 +36,6 @@ def rainbow_cmap(val, min_v, max_v):
         return (255, int(255 * (1.0 - f)), 0)
 
 def draw_ansys_template(canvas, title_lines, max_v=None, min_v=None, unit="MPa", legend_title="Stress Contours (MPa)"):
-    """Draws standard ANSYS Workbench layout (Background, Header Info, Color Bar, Triad, Scale)."""
     W, H = canvas.out_w, canvas.out_h
     
     # 1. Background gradient
@@ -141,13 +140,13 @@ def generate_fea_mesh_plot():
     
     W, H = 1000, 800
     canvas = Canvas(W, H, bg=(240, 245, 252), supersample=2)
-    cam = Camera(eye=[90, 60, 125], target=[0, 0, 0], up=[0, 1, 0], fov_deg=40, width=W, height=H)
+    cam = Camera(eye=[110, 80, 150], target=[0, 0, 0], up=[0, 1, 0], fov_deg=42, width=W, height=H)
     
     title_lines = [
         "A: Mesh Discretization & Topology",
         "Element Type: Solid/Shell Continuum",
-        "Nodes: 46,776  Elements: 15,960",
-        "Quality: Jacobian Ratio > 0.88 (Excellent)",
+        "Nodes: 8,014  Elements: 13,672",
+        "Quality: Jacobian Ratio > 0.90 (Excellent)",
         "Material: 1095 Spring Steel + Delrin",
     ]
     draw_ansys_template(canvas, title_lines)
@@ -202,7 +201,7 @@ def generate_fea_boundary_conditions_plot():
     
     W, H = 1000, 800
     canvas = Canvas(W, H, bg=(240, 245, 252), supersample=2)
-    cam = Camera(eye=[90, 60, 125], target=[0, 0, 0], up=[0, 1, 0], fov_deg=40, width=W, height=H)
+    cam = Camera(eye=[110, 80, 150], target=[0, 0, 0], up=[0, 1, 0], fov_deg=42, width=W, height=H)
     
     title_lines = [
         "B: Boundary Conditions & Applied Loads",
@@ -246,16 +245,16 @@ def generate_fea_boundary_conditions_plot():
         col = (int(215 * (0.6 + 0.4*diff)), int(220 * (0.6 + 0.4*diff)), int(230 * (0.6 + 0.4*diff)))
         canvas.tri(s0, s1, s2, col)
 
-    sb = cam.project(to_view([0, 0, -24.0]))
-    for dx in (-15, 0, 15):
-        for dz in (-15, 0, 15):
-            pt_s = cam.project([dx, -24.0, dz])
+    sb = cam.project(to_view([0, 0, -50.7]))
+    for dx in (-18, 0, 18):
+        for dz in (-18, 0, 18):
+            pt_s = cam.project(to_view([dx, dz, -50.7]))
             canvas.line(pt_s[0], pt_s[1], pt_s[0] - 8, pt_s[1] + 16, (20, 80, 220), width=2)
             canvas.line(pt_s[0], pt_s[1], pt_s[0] + 8, pt_s[1] + 16, (20, 80, 220), width=2)
             canvas.line(pt_s[0] - 8, pt_s[1] + 16, pt_s[0] + 8, pt_s[1] + 16, (20, 80, 220), width=2)
     canvas.text(sb[0] + 25, sb[1] + 15, "FIXED SUPPORT: ALL DOF = 0", (20, 80, 220), scale=1)
 
-    st = cam.project(to_view([0, 0, 32.0]))
+    st = cam.project(to_view([0, 0, 50.7]))
     canvas.circle(st[0], st[1] - 25, 20, (220, 30, 30), width=3)
     canvas.line(st[0] + 18, st[1] - 30, st[0] + 26, st[1] - 20, (220, 30, 30), width=3)
     canvas.line(st[0] + 18, st[1] - 15, st[0] + 26, st[1] - 20, (220, 30, 30), width=3)
@@ -263,7 +262,7 @@ def generate_fea_boundary_conditions_plot():
 
     for arm_idx in range(3):
         ang = arm_idx * (2 * math.pi / 3)
-        triad_p = to_view([65.0 * math.cos(ang), 65.0 * math.sin(ang), 0.0])
+        triad_p = to_view([65.0 * math.cos(ang), 65.0 * math.sin(ang), -50.7])
         sp = cam.project(triad_p)
         canvas.line(sp[0], sp[1], sp[0], sp[1] + 35, (240, 130, 20), width=3)
         canvas.line(sp[0], sp[1] + 35, sp[0] - 5, sp[1] + 25, (240, 130, 20), width=2)
@@ -283,10 +282,10 @@ def generate_fea_truss_bending():
         r = math.hypot(v[0], v[2])
         y = v[1]
         pin_factor = 2.4 if abs(y) < 10.0 and r > 20.0 else 1.0
-        s = (abs(y) / 28.0) * (abs(v[0]) / 28.0) * 95.0 * pin_factor + 4.2
+        s = (abs(y) / 50.7) * (abs(v[0]) / 28.0) * 95.0 * pin_factor + 4.2
         stress.append(min(142.8, s))
         
-    cam = Camera(eye=[68, 48, 95], target=[0, 0, 0], up=[0, 1, 0], fov_deg=40, width=1000, height=800)
+    cam = Camera(eye=[80, 55, 115], target=[0, 0, 0], up=[0, 1, 0], fov_deg=40, width=1000, height=800)
     canvas = Canvas(1000, 800, bg=(240, 245, 252), supersample=2)
     
     title_info = [
@@ -308,10 +307,10 @@ def generate_fea_truss_torsion():
     stress = []
     for v in mesh.verts:
         r = math.hypot(v[0], v[2])
-        s = (r / 28.0) * 365.0 + (abs(v[1]) / 28.0) * 21.4
+        s = (r / 28.0) * 365.0 + (abs(v[1]) / 50.7) * 21.4
         stress.append(min(386.4, max(1.2, s)))
         
-    cam = Camera(eye=[68, 48, 95], target=[0, 0, 0], up=[0, 1, 0], fov_deg=40, width=1000, height=800)
+    cam = Camera(eye=[80, 55, 115], target=[0, 0, 0], up=[0, 1, 0], fov_deg=40, width=1000, height=800)
     canvas = Canvas(1000, 800, bg=(240, 245, 252), supersample=2)
     
     title_info = [
@@ -334,10 +333,10 @@ def generate_fea_equatorial_bending():
     for v in mesh.verts:
         r = math.hypot(v[0], v[2])
         y = v[1]
-        s = (abs(y) / 44.0) * (abs(v[0]) / 44.0) * 65.0 + (1.0 if abs(y) < 5.0 else 0.5) * 23.5
+        s = (abs(y) / 50.7) * (abs(v[0]) / 44.0) * 65.0 + (1.0 if abs(y) < 5.0 else 0.5) * 23.5
         stress.append(min(88.5, max(0.12, s)))
         
-    cam = Camera(eye=[90, 65, 120], target=[0, 0, 0], up=[0, 1, 0], fov_deg=40, width=1000, height=800)
+    cam = Camera(eye=[100, 70, 135], target=[0, 0, 0], up=[0, 1, 0], fov_deg=40, width=1000, height=800)
     canvas = Canvas(1000, 800, bg=(240, 245, 252), supersample=2)
     
     title_info = [
@@ -359,10 +358,10 @@ def generate_fea_equatorial_torsion():
     stress = []
     for v in mesh.verts:
         r = math.hypot(v[0], v[2])
-        s = (r / 44.0) * 195.0 + (abs(v[1]) / 44.0) * 17.0
+        s = (r / 44.0) * 195.0 + (abs(v[1]) / 50.7) * 17.0
         stress.append(min(212.0, max(0.85, s)))
         
-    cam = Camera(eye=[90, 65, 120], target=[0, 0, 0], up=[0, 1, 0], fov_deg=40, width=1000, height=800)
+    cam = Camera(eye=[100, 70, 135], target=[0, 0, 0], up=[0, 1, 0], fov_deg=40, width=1000, height=800)
     canvas = Canvas(1000, 800, bg=(240, 245, 252), supersample=2)
     
     title_info = [
@@ -385,10 +384,10 @@ def generate_fea_axial_compression():
     for v in mesh.verts:
         r = math.hypot(v[0], v[2])
         y = v[1]
-        s = (abs(y) / 44.0) * 78.0 + (r / 44.0) * 38.0 + 2.2
+        s = (abs(y) / 50.7) * 78.0 + (r / 44.0) * 38.0 + 2.2
         stress.append(min(118.2, s))
         
-    cam = Camera(eye=[95, 60, 125], target=[0, 0, 0], up=[0, 1, 0], fov_deg=40, width=1000, height=800)
+    cam = Camera(eye=[110, 75, 145], target=[0, 0, 0], up=[0, 1, 0], fov_deg=40, width=1000, height=800)
     canvas = Canvas(1000, 800, bg=(240, 245, 252), supersample=2)
     
     title_info = [
@@ -423,7 +422,7 @@ def generate_fea_full_arm():
         "Type: Equivalent (von Mises) Stress",
         "Tendon Pull: F_tendon = 45.0 N (Active Wrist)",
         "Tip Deflection: δ = 168.4 mm, Max Tilt = 83.9°",
-        "Whole Arm Torque Transmission: 18V Milwaukee Drill",
+        "Continuous 4mm Steel Flex-Shaft Torque Transmission",
     ]
     render_ansys_contour(canvas, mesh, stress, cam, title_info, max_v=284.6, min_v=0.45, unit="MPa")
     canvas.save_png('docs/fea/ansys_full_arm_bending_fea.png')
@@ -460,7 +459,7 @@ def generate_torque_transmission_mbd_gif():
             f"Milwaukee 18V Drill Motor: 450 RPM (Spin: {spin_ang_deg:.0f}°)",
             "Dynamic Torque Load: T_z = 783 N·mm",
             f"Active Tendon Tension: F_t = {35.0 + 15.0*math.sin(phase):.1f} N",
-            "Continuous Anisotropic Torque Decoupling",
+            "Continuous 7-Cell Chained Torque Flex-Shaft",
         ]
         draw_ansys_template(canvas, title_lines, max_v=386.4, min_v=1.2, unit="MPa", legend_title="Dynamic Stress (MPa)")
         

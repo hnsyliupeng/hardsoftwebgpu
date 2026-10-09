@@ -47,7 +47,6 @@ class Frame3DSolver:
         Solves static equilibrium [K]{u} = {F} with boundary constraints.
         applied_forces: dict {node_idx: [Fx, Fy, Fz, Mx, My, Mz]}
         """
-        # In this linear elastic solver, we construct reduced system or compute analytical stiffness
         u = [0.0] * self.dof
         for node_idx, f_vec in applied_forces.items():
             if node_idx not in fixed_node_indices:
@@ -58,24 +57,14 @@ class Frame3DSolver:
         # Compute maximum von Mises stress from strain and element moments
         max_von_mises = 0.0
         for elem in self.elements:
-            # element length
-            p0 = self.nodes[elem.node_i]
-            p1 = self.nodes[elem.node_j]
-            L = math.sqrt(sum((p1[k]-p0[k])**2 for k in range(3))) or 1.0
-            
-            # extract forces at nodes
             fi = applied_forces.get(elem.node_i, [0.0]*6)
             fj = applied_forces.get(elem.node_j, [0.0]*6)
             
-            # Axial stress sigma_axial = F_axial / A
             sigma_axial = (abs(fi[2]) + abs(fj[2])) / (2.0 * max(1e-6, elem.A))
-            # Bending stress sigma_b = M * y / I
             sigma_bx = (abs(fi[3]) + abs(fj[3])) * (5.0 / (2.0 * max(1e-6, elem.Iz)))
             sigma_by = (abs(fi[4]) + abs(fj[4])) * (1.6 / (2.0 * max(1e-6, elem.Iy)))
-            # Torsional shear tau = T * r / J
             tau_xy = (abs(fi[5]) + abs(fj[5])) * (2.5 / max(1e-6, elem.J))
             
-            # Equivalent von Mises stress: sqrt(sigma^2 + 3*tau^2)
             sigma_tot = sigma_axial + sigma_bx + sigma_by
             s_vm = math.sqrt(sigma_tot**2 + 3.0 * (tau_xy**2))
             if s_vm > max_von_mises:
@@ -83,7 +72,7 @@ class Frame3DSolver:
                 
         return u, max_von_mises
 
-def create_trunc_cell_fem(diameter_mm=56.0, height_mm=56.0):
+def create_trunc_cell_fem(diameter_mm=56.0, height_mm=101.43):
     R = diameter_mm / 2.0
     nodes = [
         [0.0, 0.0, -height_mm / 2.0],
