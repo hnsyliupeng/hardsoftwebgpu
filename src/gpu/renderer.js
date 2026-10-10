@@ -577,9 +577,9 @@ export class FallbackRenderer {
           const sb = project(wb);
           const sc = project(wc);
           if (!sa || !sb || !sc) { skipped += 1; continue; }
-          // screen-space area cull (tiny triangles are not worth a fill)
+          // screen-space area cull (keep tiny triangles so unit cell ribbons and pins render completely)
           const area = Math.abs((sb.x - sa.x) * (sc.y - sa.y) - (sc.x - sa.x) * (sb.y - sa.y));
-          if (area < 0.7 * dpr * dpr) { skipped += 1; continue; }
+          if (area < 0.05 * dpr * dpr) { skipped += 1; continue; }
           // face normal from the world-space winding
           const ux = wb.x - wa.x; const uy = wb.y - wa.y; const uz = wb.z - wa.z;
           const vx = wc.x - wa.x; const vy = wc.y - wa.y; const vz = wc.z - wa.z;

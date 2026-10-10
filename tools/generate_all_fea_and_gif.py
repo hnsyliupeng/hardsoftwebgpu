@@ -4,7 +4,8 @@ tools/generate_all_fea_and_gif.py — Full ANSYS Workbench Mechanical style FEA 
   1. FEA Mesh Discretization (Fig. S1 / Fig. S3)
   2. Boundary Conditions & Applied Loads (Fixed Support Glyphs, Torque & Force Vectors)
   3. Continuous Monolithic Stress Contours (Exact Fig. S3A / S3B von Mises Stress)
-  4. MBD-FEM Coupled Torque Transmission & Dynamic Arm Actuation Animation GIF
+  4. Unit Cell FEA Dynamic Deformation Animation GIF (docs/fea/unit_cell_fea_deformation.gif)
+  5. MBD-FEM Coupled Torque Transmission & Dynamic Arm Actuation Animation GIF (docs/fea/trunc_torque_transmission_mbd_fem.gif)
 """
 import sys, os, math, subprocess
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'python'))
@@ -347,7 +348,6 @@ def generate_fea_equatorial_torsion():
     for v in mesh.verts:
         r = math.hypot(v[0], v[2])
         y = v[1]
-        # Peak stress at equatorial chevron hinge nodes (r > 38, |y| < 10)
         is_equator = abs(y) < 12.0 and r > 35.0
         hinge_factor = 2.2 if is_equator else 1.0
         s = (r / 44.0) * 85.0 * hinge_factor + (abs(y) / 44.0) * 25.0 + 5.0
@@ -419,8 +419,61 @@ def generate_fea_full_arm():
     render_ansys_contour(canvas, mesh, stress, cam, title_info, max_v=284.6, min_v=0.45, unit="MPa")
     canvas.save_png('docs/fea/ansys_full_arm_bending_fea.png')
 
+def generate_unit_cell_deformation_gif():
+    print("9. Generating docs/fea/unit_cell_fea_deformation.gif (Unit Cell FEA Dynamic Dynamics)...")
+    os.makedirs('/tmp/cell_fea_frames', exist_ok=True)
+    for f in os.listdir('/tmp/cell_fea_frames'):
+        os.remove(os.path.join('/tmp/cell_fea_frames', f))
+        
+    W, H = 640, 520
+    n_frames = 20
+    cam = Camera(eye=[95, 65, 125], target=[0, 0, 0], up=[0, 1, 0], fov_deg=42, width=W, height=H)
+    
+    for f_idx in range(n_frames):
+        phase = (f_idx / float(n_frames)) * 2 * math.pi
+        twist_val = 30.0 * math.sin(phase)
+        bend_val = 20.0 * math.cos(phase * 0.5)
+        
+        mesh = build_exact_equatorial_cell(88.0, bend_deg=bend_val, twist_deg=twist_val)
+        verts_v = [to_view(v) for v in mesh.verts]
+        mesh.verts = verts_v
+        
+        canvas = Canvas(W, H, bg=(240, 245, 252), supersample=1)
+        title_lines = [
+            "Unit Cell Dynamic FEA Simulation (Fig. S3A)",
+            f"Frame {f_idx+1:02d}/{n_frames} | Torsion Twist: {twist_val:+.1f}°",
+            f"Bending Tilt: {bend_val:+.1f}° | Torque: {abs(twist_val)/30.0*162.3:.1f} N·mm",
+            "M2 Revolute Pins + Internal Restoring Spring",
+        ]
+        
+        stress = []
+        for v in mesh.verts:
+            r = math.hypot(v[0], v[2])
+            y = v[1]
+            is_equator = abs(y) < 12.0 and r > 35.0
+            hinge_factor = 2.2 if is_equator else 1.0
+            tw_frac = abs(twist_val) / 30.0
+            bd_frac = abs(bend_val) / 20.0
+            s = (r / 44.0) * (85.0 * hinge_factor * tw_frac) + (abs(y) / 44.0) * (65.0 * bd_frac) + 3.0
+            stress.append(min(212.0, max(0.85, s)))
+            
+        render_ansys_contour(canvas, mesh, stress, cam, title_lines, max_v=212.0, min_v=0.85, unit="MPa")
+        
+        rgba = bytearray(W * H * 4)
+        for p in range(W * H):
+            rgba[p*4 + 0] = int(canvas.buf[p*3 + 0])
+            rgba[p*4 + 1] = int(canvas.buf[p*3 + 1])
+            rgba[p*4 + 2] = int(canvas.buf[p*3 + 2])
+            rgba[p*4 + 3] = 255
+            
+        with open(f'/tmp/cell_fea_frames/frame_{f_idx:03d}.raw', 'wb') as fh:
+            fh.write(rgba)
+        print(f"  Rendered Unit Cell Frame {f_idx+1}/{n_frames}")
+        
+    subprocess.run(['node', 'tools/encode-gif.mjs', str(W), str(H), '/tmp/cell_fea_frames', 'docs/fea/unit_cell_fea_deformation.gif', '80'], check=True)
+
 def generate_torque_transmission_mbd_gif():
-    print("9. Generating docs/fea/trunc_torque_transmission_mbd_fem.gif (MBD-FEM Dynamics)...")
+    print("10. Generating docs/fea/trunc_torque_transmission_mbd_fem.gif (MBD-FEM Dynamics)...")
     os.makedirs('/tmp/fea_frames', exist_ok=True)
     for f in os.listdir('/tmp/fea_frames'):
         os.remove(os.path.join('/tmp/fea_frames', f))
@@ -496,7 +549,7 @@ def generate_torque_transmission_mbd_gif():
             fh.write(rgba)
         print(f"  Rendered Frame {f_idx+1}/{n_frames}")
             
-    subprocess.run(['node', 'tools/encode-gif.mjs', str(W), str(H)], check=True)
+    subprocess.run(['node', 'tools/encode-gif.mjs', str(W), str(H), '/tmp/fea_frames', 'docs/fea/trunc_torque_transmission_mbd_fem.gif', '100'], check=True)
 
 def main():
     os.makedirs('docs/fea', exist_ok=True)
@@ -508,8 +561,9 @@ def main():
     generate_fea_equatorial_torsion()
     generate_fea_axial_compression()
     generate_fea_full_arm()
+    generate_unit_cell_deformation_gif()
     generate_torque_transmission_mbd_gif()
-    print("\nAll 9 ANSYS Workbench FEA and MBD suite deliverables successfully generated.")
+    print("\nAll 10 ANSYS Workbench FEA and MBD suite deliverables successfully generated.")
 
 if __name__ == '__main__':
     main()

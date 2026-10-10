@@ -193,14 +193,41 @@ export function drawScene(raster, opts) {
       for (const tip of guide.rollers ?? []) r.sphere3(tip, 0.0055, SCENE.guide, { rings: 7, segments: 10 });
     }
     for (const joint of g.joints) {
-      // the equatorial cell is the outer shell, the truss cell the inner one (drawn as solid 3D struts & pins)
-      for (const [a, c] of joint.equatorial) r.cyl3(a, c, 0.0022, SCENE.cellOuter, { segments: 6, cap: true });
-      for (const [a, c] of joint.truss) r.cyl3(a, c, 0.0026, SCENE.cellInner, { segments: 6, cap: true });
-      for (const pin of joint.pins) r.sphere3(pin, 0.0032, SCENE.pin, { rings: 6, segments: 8 });
-      // the conical restoring spring inside the truss cell
-      if (view.spring) {
+      // 1. Central 4 mm steel torque flex shaft segment
+      const shaftHalf = joint.dir ? mul(joint.dir, (joint.axial || 0.05) * 0.5) : [0, 0.025, 0];
+      const shaftBottom = sub(joint.centre, shaftHalf);
+      const shaftTop = add(joint.centre, shaftHalf);
+      r.cyl3(shaftBottom, shaftTop, 0.0022, [180, 190, 205], { segments: 8, cap: true });
+
+      // 2. Delrin collar rings at low and high poles
+      if (joint.ringLow && joint.ringLow.length > 2) {
+        for (let i = 0; i < joint.ringLow.length; i++) {
+          const pA = joint.ringLow[i];
+          const pB = joint.ringLow[(i + 1) % joint.ringLow.length];
+          r.cyl3(pA, pB, 0.0032, SCENE.baseTop, { segments: 6, cap: true });
+        }
+      }
+      if (joint.ringHigh && joint.ringHigh.length > 2) {
+        for (let i = 0; i < joint.ringHigh.length; i++) {
+          const pA = joint.ringHigh[i];
+          const pB = joint.ringHigh[(i + 1) % joint.ringHigh.length];
+          r.cyl3(pA, pB, 0.0032, SCENE.baseTop, { segments: 6, cap: true });
+        }
+      }
+
+      // 3. Equatorial outer double-arrowhead ribbons & chevrons
+      for (const [a, c] of joint.equatorial) r.cyl3(a, c, 0.0025, SCENE.cellOuter, { segments: 6, cap: true });
+
+      // 4. Truss inner crossing ribbons
+      for (const [a, c] of joint.truss) r.cyl3(a, c, 0.0028, SCENE.cellInner, { segments: 6, cap: true });
+
+      // 5. M2 revolute pin bosses & pins
+      for (const pin of joint.pins) r.sphere3(pin, 0.0036, SCENE.pin, { rings: 6, segments: 8 });
+
+      // 6. Conical restoring spring coiled around shaft
+      if (view.spring !== false && joint.spring) {
         for (let i = 1; i < joint.spring.length; i += 1) {
-          r.cyl3(joint.spring[i - 1], joint.spring[i], 0.0010, SCENE.spring, { segments: 5, cap: true });
+          r.cyl3(joint.spring[i - 1], joint.spring[i], 0.0012, SCENE.spring, { segments: 5, cap: true });
         }
       }
     }
