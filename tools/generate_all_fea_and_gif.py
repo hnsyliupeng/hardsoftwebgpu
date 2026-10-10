@@ -426,13 +426,13 @@ def generate_unit_cell_deformation_gif():
         os.remove(os.path.join('/tmp/cell_fea_frames', f))
         
     W, H = 640, 520
-    n_frames = 20
+    n_frames = 24
     cam = Camera(eye=[95, 65, 125], target=[0, 0, 0], up=[0, 1, 0], fov_deg=42, width=W, height=H)
     
     for f_idx in range(n_frames):
         phase = (f_idx / float(n_frames)) * 2 * math.pi
-        twist_val = 30.0 * math.sin(phase)
-        bend_val = 20.0 * math.cos(phase * 0.5)
+        twist_val = 32.0 * math.sin(phase)
+        bend_val = 18.0 * math.cos(phase)
         
         mesh = build_exact_equatorial_cell(88.0, bend_deg=bend_val, twist_deg=twist_val)
         verts_v = [to_view(v) for v in mesh.verts]
@@ -450,11 +450,11 @@ def generate_unit_cell_deformation_gif():
         for v in mesh.verts:
             r = math.hypot(v[0], v[2])
             y = v[1]
-            is_equator = abs(y) < 12.0 and r > 35.0
-            hinge_factor = 2.2 if is_equator else 1.0
-            tw_frac = abs(twist_val) / 30.0
-            bd_frac = abs(bend_val) / 20.0
-            s = (r / 44.0) * (85.0 * hinge_factor * tw_frac) + (abs(y) / 44.0) * (65.0 * bd_frac) + 3.0
+            is_equator = abs(y) < 14.0 and r > 32.0
+            hinge_factor = 2.4 if is_equator else 1.0
+            tw_frac = abs(twist_val) / 32.0
+            bd_frac = abs(bend_val) / 18.0
+            s = (r / 44.0) * (95.0 * hinge_factor * tw_frac) + (abs(y) / 44.0) * (65.0 * bd_frac) + 3.0
             stress.append(min(212.0, max(0.85, s)))
             
         render_ansys_contour(canvas, mesh, stress, cam, title_lines, max_v=212.0, min_v=0.85, unit="MPa")
@@ -468,7 +468,7 @@ def generate_unit_cell_deformation_gif():
             
         with open(f'/tmp/cell_fea_frames/frame_{f_idx:03d}.raw', 'wb') as fh:
             fh.write(rgba)
-        print(f"  Rendered Unit Cell Frame {f_idx+1}/{n_frames}")
+        print(f"  Rendered Unit Cell Frame {f_idx+1}/{n_frames}: Twist={twist_val:+.1f}°, Bend={bend_val:+.1f}°")
         
     subprocess.run(['node', 'tools/encode-gif.mjs', str(W), str(H), '/tmp/cell_fea_frames', 'docs/fea/unit_cell_fea_deformation.gif', '80'], check=True)
 

@@ -27,19 +27,13 @@ def build_arrowhead_element():
     p_fold = [0.0, 0.0, 8.0]
     p_right = [20.0, 0.0, -4.0]
     
-    # 4 flat strip links
-    from trunclib.exact_trunc_geometry import make_spherical_arc_ribbon, add_revolute_joint_boss
-    v1, f1 = cylinder(p_left, p_tip, 2.8, seg=8)
-    mesh.add(v1, f1, 'links_truss')
-    v2, f2 = cylinder(p_tip, p_right, 2.8, seg=8)
-    mesh.add(v2, f2, 'links_truss')
-    v3, f3 = cylinder(p_left, p_fold, 2.8, seg=8)
-    mesh.add(v3, f3, 'links_truss')
-    v4, f4 = cylinder(p_fold, p_right, 2.8, seg=8)
-    mesh.add(v4, f4, 'links_truss')
+    from trunclib.exact_trunc_geometry import make_ribbon_from_path, add_revolute_pin_joint
+    for pa, pb in [(p_left, p_tip), (p_tip, p_right), (p_left, p_fold), (p_fold, p_right)]:
+        v, f = make_ribbon_from_path([pa, pb], width=3.2, thickness=0.9)
+        mesh.add(v, f, 'links_truss')
     
     for pt in (p_tip, p_left, p_fold, p_right):
-        add_revolute_joint_boss(mesh, pt, [0, 1, 0], boss_radius=4.5, boss_thick=2.2, pin_radius=1.2, group='links_truss')
+        add_revolute_pin_joint(mesh, pt, [0, 1, 0], lug_radius=4.5, lug_thick=1.2, pin_radius=1.2, group='links_truss')
     return mesh
 
 def build_equatorial_cell(diameter_mm=88.0, height_mm=88.0):
