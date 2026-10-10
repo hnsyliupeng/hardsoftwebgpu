@@ -4,12 +4,11 @@ trunclib/exact_trunc_geometry.py — Exact Analytical Spherical Double-Arrowhead
 Metamaterial Geometry for TRUNC Soft Continuum Robot (Carton et al., Fig. S1, S3, S7).
 
 Features:
-  1. Full non-linear kinematic deformation under Torsion (theta_twist) and Bending (theta_bend):
-     - Spiral helical meridian arc twisting around sphere.
-     - Auxetic chevron scissoring (+/- delta_alpha) at equatorial and latitude bands.
-     - Dynamic angular coiling of the internal restoring spring around the 4mm steel torque shaft.
-  2. Authentic M2 revolute pin joints (Fig. S1A): overlapping circular eyelet lugs pinned by M2 socket screws.
-  3. Continuous monolithic ribbon surfaces with finite width w and thickness t.
+  1. Full non-linear kinematic deformation under Torsion (theta_twist) and Bending (theta_bend).
+  2. Absolute geometric consistency: Every curved ribbon starts and ends strictly at its joint node.
+  3. Authentic M2 revolute pin joints (Fig. S1A): Overlapping circular eyelet lugs concentric with M2 socket screws.
+  4. Continuous monolithic ribbon surfaces with finite width w and thickness t.
+  5. Internal helical/conical restoring spring (k = 1.22 N/mm) coiled around the 4mm central steel torque shaft.
 """
 
 import math
@@ -27,6 +26,12 @@ def rot_y_pt(pt, ang):
 def rot_z_pt(pt, ang):
     ca, sa = math.cos(ang), math.sin(ang)
     return [pt[0]*ca - pt[1]*sa, pt[0]*sa + pt[1]*ca, pt[2]]
+
+def normalize_v(v):
+    l = math.sqrt(sum(c*c for c in v))
+    if l < 1e-9:
+        return [0.0, 0.0, 1.0]
+    return [c / l for c in v]
 
 def make_ribbon_from_path(spine_pts, width=3.4, thickness=0.85):
     """
@@ -51,13 +56,11 @@ def make_ribbon_from_path(spine_pts, width=3.4, thickness=0.85):
             tang = [spine_pts[n_pts-1][k] - spine_pts[n_pts-2][k] for k in range(3)]
         else:
             tang = [spine_pts[i+1][k] - spine_pts[i-1][k] for k in range(3)]
-        tlen = math.sqrt(sum(c*c for c in tang)) or 1.0
-        T = [c / tlen for c in tang]
+        T = normalize_v(tang)
         
         # Outward radial normal from spine position
         p = spine_pts[i]
         rad = [p[0], p[1], p[2]]
-        # Remove component along T
         dot_tr = sum(T[k] * rad[k] for k in range(3))
         N_raw = [rad[k] - T[k] * dot_tr for k in range(3)]
         nlen = math.sqrt(sum(c*c for c in N_raw))
@@ -67,8 +70,7 @@ def make_ribbon_from_path(spine_pts, width=3.4, thickness=0.85):
             arb = [1, 0, 0] if abs(T[0]) < 0.8 else [0, 1, 0]
             dot_ta = sum(T[k] * arb[k] for k in range(3))
             N_raw = [arb[k] - T[k] * dot_ta for k in range(3)]
-            nlen = math.sqrt(sum(c*c for c in N_raw)) or 1.0
-            N = [c / nlen for c in N_raw]
+            N = normalize_v(N_raw)
             
         # Lateral binormal vector
         B = [
@@ -76,8 +78,7 @@ def make_ribbon_from_path(spine_pts, width=3.4, thickness=0.85):
             T[2]*N[0] - T[0]*N[2],
             T[0]*N[1] - T[1]*N[0]
         ]
-        blen = math.sqrt(sum(c*c for c in B)) or 1.0
-        B = [c / blen for c in B]
+        B = normalize_v(B)
         frames.append((T, N, B))
         
     ring_stride = 4
@@ -85,7 +86,6 @@ def make_ribbon_from_path(spine_pts, width=3.4, thickness=0.85):
         p = spine_pts[i]
         T, N, B = frames[i]
         frac = i / float(n_pts - 1)
-        # Taper slightly at the very ends to blend with circular eyelet lugs
         w_curr = w_half * (1.0 + 0.35 * (1.0 - math.sin(frac * math.pi)))
         
         p_ol = [p[k] + B[k]*w_curr + N[k]*t_half for k in range(3)]
@@ -108,12 +108,34 @@ def make_ribbon_from_path(spine_pts, width=3.4, thickness=0.85):
         
     return verts, faces
 
-def add_revolute_pin_joint(mesh, center_pt, normal_dir, lug_radius=4.0, lug_thick=1.2, pin_radius=1.0, pin_len=4.5, group='pins'):
-    """Adds a realistic M2 revolute screw pin through the joint eyelets (Fig. S1A)."""
-    norm = math.sqrt(sum(c*c for c in normal_dir)) or 1.0
-    n = [c / norm for c in normal_dir]
+def interpolate_spherical_arc(p_start, p_end, center, R, n_sub=14, camber=0.10):
+    """
+    Interpolates a smooth 3D curved arc between p_start and p_end.
+    Guarantees path[0] == p_start and path[-1] == p_end strictly without any offsets.
+    """
+    path = []
+    r_start = math.sqrt(sum((p_start[k] - center[k])**2 for k in range(3)))
+    r_end = math.sqrt(sum((p_end[k] - center[k])**2 for k in range(3)))
     
-    # 2 Overlapping Eyelet Boss Discs (Fig. S1A)
+    for s in range(n_sub + 1):
+        frac = s / float(n_sub)
+        # Linear base point
+        p_lin = [p_start[k]*(1.0 - frac) + p_end[k]*frac for k in range(3)]
+        v_rad = [p_lin[k] - center[k] for k in range(3)]
+        u_rad = normalize_v(v_rad)
+        
+        # Exact boundary-preserving radius interpolation
+        r_target = r_start * (1.0 - frac) + r_end * frac + camber * R * math.sin(frac * math.pi)
+        p_curr = [center[k] + u_rad[k] * r_target for k in range(3)]
+        path.append(p_curr)
+        
+    return path
+
+def add_revolute_pin_joint(mesh, center_pt, normal_dir, lug_radius=4.2, lug_thick=1.2, pin_radius=1.0, pin_len=4.8, group='pins'):
+    """Adds a realistic M2 revolute screw pin through the joint eyelets (Fig. S1A)."""
+    n = normalize_v(normal_dir)
+    
+    # 2 Overlapping Eyelet Boss Discs concentric with joint node (Fig. S1A)
     p_disc1_b = [center_pt[i] - n[i] * (lug_thick) for i in range(3)]
     p_disc1_t = [center_pt[i] for i in range(3)]
     v_d1, f_d1 = cylinder(p_disc1_b, p_disc1_t, lug_radius, seg=16)
@@ -124,7 +146,7 @@ def add_revolute_pin_joint(mesh, center_pt, normal_dir, lug_radius=4.0, lug_thic
     v_d2, f_d2 = cylinder(p_disc2_b, p_disc2_t, lug_radius, seg=16)
     mesh.add(v_d2, f_d2, 'links_truss' if 'truss' in group else 'links_equatorial')
     
-    # M2 Steel Pin Shank
+    # M2 Steel Pin Shank passing directly through eyelets
     p_p0 = [center_pt[i] - n[i] * (pin_len / 2.0) for i in range(3)]
     p_p1 = [center_pt[i] + n[i] * (pin_len / 2.0) for i in range(3)]
     vp, fp = cylinder(p_p0, p_p1, pin_radius, seg=12)
@@ -143,32 +165,28 @@ def add_helical_restoring_spring(mesh, p_bot, p_top, twist_rad=0.0, d_wire=1.4, 
     """
     Internal conical/helical restoring spring (k = 1.22 N/mm)
     coiled smoothly around the central 4mm steel torque shaft between bottom and top hubs.
-    Twists with the applied torsion angle.
     """
     axis = [p_top[i] - p_bot[i] for i in range(3)]
     L_spring = math.sqrt(sum(c*c for c in axis)) or 1.0
     u_z = [c / L_spring for c in axis]
     
     arb = [1, 0, 0] if abs(u_z[0]) < 0.8 else [0, 1, 0]
-    u_x = [
+    u_x = normalize_v([
         arb[1]*u_z[2] - arb[2]*u_z[1],
         arb[2]*u_z[0] - arb[0]*u_z[2],
         arb[0]*u_z[1] - arb[1]*u_z[0]
-    ]
-    u_x_len = math.sqrt(sum(c*c for c in u_x)) or 1.0
-    u_x = [c / u_x_len for c in u_x]
-    u_y = [
+    ])
+    u_y = normalize_v([
         u_z[1]*u_x[2] - u_z[2]*u_x[1],
         u_z[2]*u_x[0] - u_z[0]*u_x[2],
         u_z[0]*u_x[1] - u_z[1]*u_x[0]
-    ]
+    ])
     
     r_sp_base = d_spring / 2.0
     spring_pts = []
     for s in range(n_steps + 1):
         frac = s / float(n_steps)
         r_sp = r_sp_base * (1.0 + 0.25 * math.sin(frac * math.pi))
-        # Spring coils twist with applied torsion
         th = frac * n_coils * 2.0 * math.pi + frac * twist_rad
         z_curr = frac * L_spring
         
@@ -189,9 +207,8 @@ def build_exact_equatorial_cell(diameter_mm=88.0, center=[0,0,0], bend_deg=0.0, 
     """
     Exact Equatorial TRUNC Cell (N=4, M=2, Fig. S1B / Fig. S3A / Fig. S7A):
     - Radius R = diameter / 2 = 44mm.
-    - True analytical large-displacement kinematic deformation under Torsion (twist_deg) and Bending (bend_deg).
-    - Spiral helical meridian arc twisting around sphere.
-    - Auxetic chevron scissoring (+/- delta_alpha) at equator.
+    - True non-linear kinematic deformation under Torsion (twist_deg) and Bending (bend_deg).
+    - Absolute node-path connectivity: Ribbons and pins share identical 3D node coordinates.
     - M2 Revolute Pin Joints with dual overlapping eyelet lugs (Fig. S1A).
     - Internal 1.22 N/mm restoring spring around central 4mm steel torque transmission shaft.
     """
@@ -207,7 +224,7 @@ def build_exact_equatorial_cell(diameter_mm=88.0, center=[0,0,0], bend_deg=0.0, 
     p_top_center_orig = [0.0, 0.0, R]
     p_bot_center_orig = [0.0, 0.0, -R]
     
-    # Top Delrin Collar tilts and rotates around Z
+    # Top Delrin Collar tilts and rotates with the applied twist and bend
     p_top_rel = rot_z_pt(rot_x_pt(p_top_center_orig, bend_rad), twist_rad)
     p_top = [center[0] + p_top_rel[0], center[1] + p_top_rel[1], center[2] + p_top_rel[2]]
     p_bot = [center[0] + p_bot_center_orig[0], center[1] + p_bot_center_orig[1], center[2] + p_bot_center_orig[2]]
@@ -229,7 +246,7 @@ def build_exact_equatorial_cell(diameter_mm=88.0, center=[0,0,0], bend_deg=0.0, 
     for k in (0, 2, 4, 6):
         ang_top = k * (math.pi / 4.0) + twist_rad
         pt_raw = [r_hub * math.cos(ang_top), r_hub * math.sin(ang_top), R]
-        pt_def = rot_z_pt(rot_x_pt(pt_raw, bend_rad), 0.0) # ang_top already contains twist_rad
+        pt_def = rot_z_pt(rot_x_pt(pt_raw, bend_rad), 0.0)
         p_lug = [center[0] + pt_def[0], center[1] + pt_def[1], center[2] + pt_def[2]]
         top_lugs[k] = p_lug
         n_pin = rot_z_pt(rot_x_pt([0, 0, 1], bend_rad), 0.0)
@@ -245,13 +262,12 @@ def build_exact_equatorial_cell(diameter_mm=88.0, center=[0,0,0], bend_deg=0.0, 
 
     # 2. 8 Equatorial Nodes at latitude phi=0 with Torsional Auxetic Scissoring
     eq_nodes = []
-    # Auxetic scissoring angle under torsion: chevron links scissor in pairs
-    scissor_amp = twist_rad * 0.40
+    scissor_amp = twist_rad * 0.35
     eq_rot_mean = twist_rad * 0.50
     for k in range(8):
         ang_base = k * (math.pi / 4.0)
         ang_eq = ang_base + eq_rot_mean + (scissor_amp if k % 2 == 0 else -scissor_amp)
-        r_eq = R * (1.0 + 0.06 * abs(twist_rad))
+        r_eq = R * (1.0 + 0.04 * abs(twist_rad))
         
         pt_orig = [r_eq * math.cos(ang_eq), r_eq * math.sin(ang_eq), 0.0]
         pt_def = rot_z_pt(rot_x_pt(pt_orig, bend_rad * 0.50), 0.0)
@@ -264,70 +280,24 @@ def build_exact_equatorial_cell(diameter_mm=88.0, center=[0,0,0], bend_deg=0.0, 
         add_revolute_pin_joint(mesh, [px, py, pz], n_rad, lug_radius=4.2, lug_thick=1.1, pin_radius=1.0, group='links_equatorial')
 
     # 3. 4 Upper Helical Spiral Meridian Ribbons (Top Collar Lug -> Equatorial Nodes 0, 2, 4, 6)
-    # Under torsion twist, ribbon follows a 3D helical spiral trajectory connecting rotating top lug to sheared equator node
-    n_sub = 16
+    # Strictly connects top_lugs[k] directly to eq_nodes[k] without any position gap
     for k in (0, 2, 4, 6):
-        path = []
-        ang_top = k * (math.pi / 4.0) + twist_rad
-        ang_eq = k * (math.pi / 4.0) + eq_rot_mean + scissor_amp
-        
-        for s in range(n_sub + 1):
-            frac = s / float(n_sub) # frac=0 at top lug, frac=1 at equator
-            # Elevation angle along meridian: pi/2 at top -> 0 at equator
-            phi_s = (1.0 - frac) * (math.pi / 2.0)
-            # Radial distance: r_hub at top -> R at equator with spherical bulge
-            r_s = r_hub * (1.0 - frac) + R * math.cos(phi_s) * (1.0 + 0.12 * math.sin(frac * math.pi))
-            z_s = R * math.sin(phi_s)
-            # Azimuth angle spirals helically between ang_top and ang_eq
-            theta_s = ang_top * (1.0 - frac) + ang_eq * frac
-            
-            p_s_orig = [r_s * math.cos(theta_s), r_s * math.sin(theta_s), z_s]
-            # Interpolate bending tilt
-            bend_s = bend_rad * (1.0 - 0.5 * frac)
-            p_s_def = rot_z_pt(rot_x_pt(p_s_orig, bend_s), 0.0)
-            path.append([center[0] + p_s_def[0], center[1] + p_s_def[1], center[2] + p_s_def[2]])
-            
+        path = interpolate_spherical_arc(top_lugs[k], eq_nodes[k], center, R, n_sub=16, camber=0.12)
         vr, fr = make_ribbon_from_path(path, width=w_strip, thickness=t_strip)
         mesh.add(vr, fr, 'links_equatorial')
         
     # 4. 4 Lower Helical Spiral Meridian Ribbons (Bottom Collar Lug -> Equatorial Nodes 1, 3, 5, 7)
+    # Strictly connects bot_lugs[k] directly to eq_nodes[k]
     for k in (1, 3, 5, 7):
-        path = []
-        ang_bot = k * (math.pi / 4.0)
-        ang_eq = k * (math.pi / 4.0) + eq_rot_mean - scissor_amp
-        
-        for s in range(n_sub + 1):
-            frac = s / float(n_sub) # frac=0 at bottom lug, frac=1 at equator
-            phi_s = (1.0 - frac) * (-math.pi / 2.0)
-            r_s = r_hub * (1.0 - frac) + R * math.cos(phi_s) * (1.0 + 0.12 * math.sin(frac * math.pi))
-            z_s = R * math.sin(phi_s)
-            theta_s = ang_bot * (1.0 - frac) + ang_eq * frac
-            
-            p_s_orig = [r_s * math.cos(theta_s), r_s * math.sin(theta_s), z_s]
-            bend_s = bend_rad * (0.5 * frac)
-            p_s_def = rot_z_pt(rot_x_pt(p_s_orig, bend_s), 0.0)
-            path.append([center[0] + p_s_def[0], center[1] + p_s_def[1], center[2] + p_s_def[2]])
-            
+        path = interpolate_spherical_arc(bot_lugs[k], eq_nodes[k], center, R, n_sub=16, camber=0.12)
         vr, fr = make_ribbon_from_path(path, width=w_strip, thickness=t_strip)
         mesh.add(vr, fr, 'links_equatorial')
         
     # 5. 8 Equatorial Chevron Chord Ribbons (Connecting 0-1, 1-2, ..., 7-0)
+    # Strictly connects eq_nodes[k] directly to eq_nodes[k+1]
     for k in range(8):
         k_next = (k + 1) % 8
-        path = []
-        p0 = eq_nodes[k]
-        p1 = eq_nodes[k_next]
-        n_ch = 10
-        for s in range(n_ch + 1):
-            frac = s / float(n_ch)
-            pm = [p0[i]*(1.0 - frac) + p1[i]*frac for i in range(3)]
-            # Outward chord camber
-            v_rad = [pm[0] - center[0], pm[1] - center[1], 0.0]
-            vlen = math.hypot(v_rad[0], v_rad[1]) or 1.0
-            bulge = 1.0 + 0.06 * math.sin(frac * math.pi)
-            pm[0] = center[0] + (v_rad[0] / vlen) * (R * bulge)
-            pm[1] = center[1] + (v_rad[1] / vlen) * (R * bulge)
-            path.append(pm)
+        path = interpolate_spherical_arc(eq_nodes[k], eq_nodes[k_next], center, R, n_sub=10, camber=0.06)
         vr, fr = make_ribbon_from_path(path, width=w_strip, thickness=t_strip)
         mesh.add(vr, fr, 'links_equatorial')
         
@@ -337,9 +307,9 @@ def build_exact_truss_cell(diameter_mm=56.0, center=[0,0,0], bend_deg=0.0, twist
     """
     Exact Truss TRUNC Cell (N=4, M=3, Fig. S1C / Fig. S3B / Fig. S7A):
     - Radius R = diameter / 2 = 28mm.
-    - True analytical large-displacement kinematic deformation under Torsion (twist_deg) and Bending (bend_deg).
-    - 32 Curved Ribbon Links with 18 M2 Revolute Pin Joints (Fig. S1A/S1C).
-    - Spiral helical meridian twisting and diagonal truss locking.
+    - True non-linear kinematic deformation under Torsion (twist_deg) and Bending (bend_deg).
+    - Absolute node-path connectivity: All 32 ribbon links terminate strictly on the 18 pin joint nodes.
+    - M2 Revolute Pin Joints with dual overlapping eyelet lugs (Fig. S1A/S1C).
     - Internal 1.22 N/mm restoring spring around central 4mm steel torque transmission shaft.
     """
     mesh = Mesh()
@@ -394,7 +364,7 @@ def build_exact_truss_cell(diameter_mm=56.0, center=[0,0,0], bend_deg=0.0, twist
 
     # 2. 8 Upper Latitude Nodes (phi = +28°)
     upper_nodes = []
-    scissor_upper = twist_rad * 0.30
+    scissor_upper = twist_rad * 0.25
     upper_rot_mean = twist_rad * 0.75
     for k in range(8):
         ang_base = k * (math.pi / 4.0)
@@ -411,7 +381,7 @@ def build_exact_truss_cell(diameter_mm=56.0, center=[0,0,0], bend_deg=0.0, twist
 
     # 3. 8 Lower Latitude Nodes (phi = -28°, staggered by 22.5°)
     lower_nodes = []
-    scissor_lower = twist_rad * 0.30
+    scissor_lower = twist_rad * 0.25
     lower_rot_mean = twist_rad * 0.25
     for k in range(8):
         ang_base = (k + 0.5) * (math.pi / 4.0)
@@ -427,99 +397,37 @@ def build_exact_truss_cell(diameter_mm=56.0, center=[0,0,0], bend_deg=0.0, twist
         add_revolute_pin_joint(mesh, [px, py, pz], n_rad, lug_radius=3.5, lug_thick=1.0, pin_radius=0.9, group='links_truss')
 
     # 4. Upper Band: Top Pole Lugs -> 4 Apex Nodes on Upper Latitude (0, 2, 4, 6)
-    n_sub = 14
+    # Strictly connects top_lugs[k] to upper_nodes[k]
     for k in (0, 2, 4, 6):
-        path = []
-        ang_top = k * (math.pi / 4.0) + twist_rad
-        ang_up = k * (math.pi / 4.0) + upper_rot_mean + scissor_upper
-        for s in range(n_sub + 1):
-            frac = s / float(n_sub)
-            phi_s = (math.pi / 2.0) * (1.0 - frac) + phi_lat * frac
-            r_s = r_hub * (1.0 - frac) + R * math.cos(phi_s) * (1.0 + 0.08 * math.sin(frac * math.pi))
-            z_s = R * math.sin(phi_s)
-            theta_s = ang_top * (1.0 - frac) + ang_up * frac
-            
-            p_s_orig = [r_s * math.cos(theta_s), r_s * math.sin(theta_s), z_s]
-            bend_s = bend_rad * (1.0 - 0.25 * frac)
-            p_s_def = rot_z_pt(rot_x_pt(p_s_orig, bend_s), 0.0)
-            path.append([center[0] + p_s_def[0], center[1] + p_s_def[1], center[2] + p_s_def[2]])
+        path = interpolate_spherical_arc(top_lugs[k], upper_nodes[k], center, R, n_sub=12, camber=0.08)
         vr, fr = make_ribbon_from_path(path, width=w_strip, thickness=t_strip)
         mesh.add(vr, fr, 'links_truss')
         
     # Upper Band Chevrons (connecting adjacent upper nodes: 0-1, 1-2, ..., 7-0)
     for k in range(8):
-        path = []
-        p0 = upper_nodes[k]
-        p1 = upper_nodes[(k + 1) % 8]
-        for s in range(9):
-            frac = s / 8.0
-            pm = [p0[i]*(1.0 - frac) + p1[i]*frac for i in range(3)]
-            path.append(pm)
+        path = interpolate_spherical_arc(upper_nodes[k], upper_nodes[(k+1)%8], center, R, n_sub=8, camber=0.05)
         vr, fr = make_ribbon_from_path(path, width=w_strip, thickness=t_strip)
         mesh.add(vr, fr, 'links_truss')
 
     # 5. Middle Truss Diagonal Crossing Ribbons (16 diagonal links)
     for k in range(8):
-        # Diagonal link 1: upper_nodes[k] -> lower_nodes[k]
-        path1 = []
-        p0 = upper_nodes[k]
-        p1 = lower_nodes[k]
-        for s in range(12):
-            frac = s / 11.0
-            pm = [p0[i]*(1.0 - frac) + p1[i]*frac for i in range(3)]
-            # Slight outward camber
-            v_rad = [pm[0] - center[0], pm[1] - center[1], 0.0]
-            vlen = math.hypot(v_rad[0], v_rad[1]) or 1.0
-            bulge = 1.0 + 0.08 * math.sin(frac * math.pi)
-            pm[0] = center[0] + (v_rad[0] / vlen) * (r_lat * bulge)
-            pm[1] = center[1] + (v_rad[1] / vlen) * (r_lat * bulge)
-            path1.append(pm)
+        path1 = interpolate_spherical_arc(upper_nodes[k], lower_nodes[k], center, R, n_sub=10, camber=0.08)
         vr1, fr1 = make_ribbon_from_path(path1, width=w_strip, thickness=t_strip)
         mesh.add(vr1, fr1, 'links_truss')
         
-        # Diagonal link 2: upper_nodes[k] -> lower_nodes[(k-1)%8]
-        path2 = []
-        p2 = lower_nodes[(k - 1) % 8]
-        for s in range(12):
-            frac = s / 11.0
-            pm = [p0[i]*(1.0 - frac) + p2[i]*frac for i in range(3)]
-            v_rad = [pm[0] - center[0], pm[1] - center[1], 0.0]
-            vlen = math.hypot(v_rad[0], v_rad[1]) or 1.0
-            bulge = 1.0 + 0.08 * math.sin(frac * math.pi)
-            pm[0] = center[0] + (v_rad[0] / vlen) * (r_lat * bulge)
-            pm[1] = center[1] + (v_rad[1] / vlen) * (r_lat * bulge)
-            path2.append(pm)
+        path2 = interpolate_spherical_arc(upper_nodes[k], lower_nodes[(k-1)%8], center, R, n_sub=10, camber=0.08)
         vr2, fr2 = make_ribbon_from_path(path2, width=w_strip, thickness=t_strip)
         mesh.add(vr2, fr2, 'links_truss')
 
     # 6. Lower Band Chevrons (connecting adjacent lower nodes)
     for k in range(8):
-        path = []
-        p0 = lower_nodes[k]
-        p1 = lower_nodes[(k + 1) % 8]
-        for s in range(9):
-            frac = s / 8.0
-            pm = [p0[i]*(1.0 - frac) + p1[i]*frac for i in range(3)]
-            path.append(pm)
+        path = interpolate_spherical_arc(lower_nodes[k], lower_nodes[(k+1)%8], center, R, n_sub=8, camber=0.05)
         vr, fr = make_ribbon_from_path(path, width=w_strip, thickness=t_strip)
         mesh.add(vr, fr, 'links_truss')
 
     # 7. Lower Band: Bottom Pole Lugs -> 4 Apex Nodes on Lower Latitude (1, 3, 5, 7)
     for k in (1, 3, 5, 7):
-        path = []
-        ang_bot = k * (math.pi / 4.0)
-        ang_low = k * (math.pi / 4.0) + lower_rot_mean - scissor_lower
-        for s in range(n_sub + 1):
-            frac = s / float(n_sub)
-            phi_s = (-math.pi / 2.0) * (1.0 - frac) + (-phi_lat) * frac
-            r_s = r_hub * (1.0 - frac) + R * math.cos(phi_s) * (1.0 + 0.08 * math.sin(frac * math.pi))
-            z_s = R * math.sin(phi_s)
-            theta_s = ang_bot * (1.0 - frac) + ang_low * frac
-            
-            p_s_orig = [r_s * math.cos(theta_s), r_s * math.sin(theta_s), z_s]
-            bend_s = bend_rad * (0.25 * frac)
-            p_s_def = rot_z_pt(rot_x_pt(p_s_orig, bend_s), 0.0)
-            path.append([center[0] + p_s_def[0], center[1] + p_s_def[1], center[2] + p_s_def[2]])
+        path = interpolate_spherical_arc(bot_lugs[k], lower_nodes[k], center, R, n_sub=12, camber=0.08)
         vr, fr = make_ribbon_from_path(path, width=w_strip, thickness=t_strip)
         mesh.add(vr, fr, 'links_truss')
         
