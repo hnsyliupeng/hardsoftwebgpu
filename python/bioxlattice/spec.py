@@ -37,6 +37,8 @@ class Lattice:
     # L3 graded strut radius by depth below the envelope surface (cortical-like gradient)
     tier_depths: list[float] = field(default_factory=lambda: [4.0, 7.0])
     tier_radii: list[float] = field(default_factory=lambda: [0.8, 0.6, 0.45])
+    # lattice origin offset in mm (x, y, z). [0, 0, 0] keeps nodes on integer multiples of the cell.
+    phase: list[float] = field(default_factory=lambda: [0.0, 0.0, 0.0])
 
 
 @dataclass
@@ -64,6 +66,8 @@ class CoupledSpec:
             raise ValueError("skin thickness below the 0.4 mm printable floor")
         if l.cell <= 0 or l.overlap <= 0 or l.overlap >= s.thickness:
             raise ValueError("cell must be > 0 and overlap in (0, skin thickness)")
+        if len(l.phase) != 3:
+            raise ValueError("lattice.phase must have 3 components (mm)")
         if len(l.tier_radii) != len(l.tier_depths) + 1:
             raise ValueError("need len(tier_radii) == len(tier_depths) + 1")
         if any(r < 0.2 for r in l.tier_radii):

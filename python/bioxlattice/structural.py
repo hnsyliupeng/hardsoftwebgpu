@@ -65,13 +65,15 @@ def _tier_counts_from_spec(spec: CoupledSpec) -> tuple[list[int], int]:
     clip_z = (e.height - 2 * t + 2 * ov) / 2
     rc = math.hypot(clip_x, clip_y) + 0.9 * a
     zc = clip_z + 0.6 * a
-    lo = (math.floor(-rc / a) - 1, math.floor(-rc / a) - 1, math.floor(-zc / a) - 1)
-    hi = (math.ceil(rc / a) + 1, math.ceil(rc / a) + 1, math.ceil(zc / a) + 1)
+    ph = [float(c) for c in l.phase]
+    extra = math.ceil(max(abs(c) for c in ph) / a) if any(ph) else 0
+    lo = (math.floor(-rc / a) - 1 - extra, math.floor(-rc / a) - 1 - extra, math.floor(-zc / a) - 1 - extra)
+    hi = (math.ceil(rc / a) + 1 + extra, math.ceil(rc / a) + 1 + extra, math.ceil(zc / a) + 1 + extra)
     counts = [0] * len(l.tier_radii)
     kept = 0
     for p0, p1 in lattice_segments(l.topology, lo, hi):
-        w0 = [c * a for c in p0]
-        w1 = [c * a for c in p1]
+        w0 = [p0[i] * a + ph[i] for i in range(3)]
+        w1 = [p1[i] * a + ph[i] for i in range(3)]
         mx, my, mz = ((w0[0] + w1[0]) / 2, (w0[1] + w1[1]) / 2, (w0[2] + w1[2]) / 2)
         if math.hypot(mx, my) > rc or abs(mz) > zc:
             continue

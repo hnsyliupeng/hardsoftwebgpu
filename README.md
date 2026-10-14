@@ -83,7 +83,7 @@ A second, high-resolution path built with CadQuery / OpenCASCADE: a 2 mm skin wi
 
 Every build also writes `structural_tests.json`: multi-level checks (L0 envelope, L1 skin, L2 lattice, L3 tiers, coupling, printability, export), each against a closed form or an independent re-derivation. See `docs/COUPLED_LATTICE.md`.
 
-A second test model, `examples/fcc_graded_test/` (FCC, no twist, 30 × 30 × 16 mm), exercises the same pipeline. Its structural report fails one gate: 60 sealed micro-pockets (1.05 mm³ in total) at the cavity walls, which the bottom vents do not reach. The failure is pinned by the `FccKnownDefect` test; the design choice is still open.
+A second test model, `examples/fcc_graded_test/` (FCC, no twist, 30 × 30 × 16 mm), exercises the same pipeline. At phase 0 its structural report failed one gate: 60 sealed micro-pockets at the cavity walls. A lattice phase of (3, 3, 0) mm removes them; the structural report now passes all levels (`FccPhase` test).
 
 ```
 bash scripts/python_env.sh

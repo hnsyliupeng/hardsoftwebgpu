@@ -91,13 +91,15 @@ def build(spec: CoupledSpec) -> BuildResult:
     # strut length (<= 0.87 a) of it; 0.9 a keeps every such strut
     rc = math.hypot(clip_x, clip_y) + 0.9 * a
     zc = clip_z + 0.6 * a  # z extent of every strut is <= a/2, so its midpoint is within a/4 of the clip
-    lo = (math.floor(-rc / a) - 1, math.floor(-rc / a) - 1, math.floor(-zc / a) - 1)
-    hi = (math.ceil(rc / a) + 1, math.ceil(rc / a) + 1, math.ceil(zc / a) + 1)
+    ph = tuple(float(c) for c in l.phase)
+    extra = math.ceil(max(abs(c) for c in ph) / a) if any(ph) else 0  # index range widened by the phase
+    lo = (math.floor(-rc / a) - 1 - extra, math.floor(-rc / a) - 1 - extra, math.floor(-zc / a) - 1 - extra)
+    hi = (math.ceil(rc / a) + 1 + extra, math.ceil(rc / a) + 1 + extra, math.ceil(zc / a) + 1 + extra)
     raw = lattice_segments(l.topology, lo, hi)
     kappa = math.radians(l.twist_deg_per_mm)  # rad per mm of z (continuous helical twist map)
 
     def world(p):
-        return (p[0] * a, p[1] * a, p[2] * a)
+        return (p[0] * a + ph[0], p[1] * a + ph[1], p[2] * a + ph[2])
 
     def twist(p):
         # helical (Bouligand-like) coupling: each node rotates about z by kappa * z, so
@@ -162,5 +164,6 @@ def build(spec: CoupledSpec) -> BuildResult:
         "tier_radii_mm": list(l.tier_radii),
         "tier_depths_mm": list(l.tier_depths),
         "twist_deg_per_mm": l.twist_deg_per_mm,
+        "phase_mm": list(ph),
     }
     return BuildResult(part=part, skin=skin, core=core, outer=outer, timeline=timeline, lattice=lattice_info)

@@ -245,13 +245,12 @@ class MultiLevel(unittest.TestCase):
         self.assertAlmostEqual(overlap, identity, delta=1e-3)
 
 
-class FccKnownDefect(unittest.TestCase):
-    """examples/fcc_graded_test has 60 sealed micro-pockets at the lateral walls (a real, reported defect).
+class FccPhase(unittest.TestCase):
+    """examples/fcc_graded_test: lattice phase (3, 3, 0) mm removes the 60 wall pockets found at phase 0.
 
-    The test pins the defect: every other level must pass and only the enclosed-void gate may fail,
-    with exactly 60 pockets (20 against the lateral walls at mid-height, 40 in the cavity edges where
-    the lateral walls meet the top and bottom inner walls), totalling well under 2 mm^3. When the design is
-    fixed, this test must be updated: the gate then passes and the failed list must be empty.
+    The phase-0 design had 60 sealed micro-pockets (20 at lateral walls, 40 at cavity edges). Phase
+    (3, 3, 0) gives 0 enclosed voids and every structural level passes. Overlap, clip box and layer seams
+    did not change the count at phase 0 (see docs/COUPLED_LATTICE.md), so the phase is the fix.
     """
 
     @classmethod
@@ -261,18 +260,16 @@ class FccKnownDefect(unittest.TestCase):
         cls.result = build(cls.spec)
         cls.report = _structural_report(cls.spec, cls.result)
 
-    def test_only_enclosed_void_gate_fails(self):
-        self.assertEqual(self.report["failed_checks"], ["printability.enclosed_voids"])
-        for name, lv in self.report["levels"].items():
-            if name != "printability":
-                self.assertTrue(lv["pass"], name)
+    def test_phase_is_recorded(self):
+        self.assertEqual(self.spec.lattice.phase, [3.0, 3.0, 0.0])
+        self.assertEqual(self.result.lattice["phase_mm"], [3.0, 3.0, 0.0])
 
-    def test_pockets_are_counted_and_located(self):
-        voids = self.report["voids"]
-        self.assertEqual(len(voids), 60)
-        from collections import Counter
-        self.assertEqual(Counter(v["location"] for v in voids), Counter({"lateral wall": 20, "edge": 40}))
-        self.assertLess(sum(v["volume_mm3"] for v in voids), 2.0)
+    def test_every_level_passes(self):
+        self.assertEqual(self.report["failed_checks"], [], self.report["failed_checks"])
+        self.assertTrue(self.report["pass"])
+
+    def test_no_enclosed_voids(self):
+        self.assertEqual(self.report["voids"], [])
 
     def test_all_vents_open(self):
         vent_checks = [c for c in self.report["levels"]["printability"]["checks"] if c["id"].endswith("_open")]

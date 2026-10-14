@@ -73,31 +73,44 @@ The sandbox has no libGL. `scripts/make_gl_stub.sh` builds a stub `libGL.so.1` t
 
 ## Test model 2: FCC graded scaffold (`examples/fcc_graded_test/`)
 
-A second, smaller test of the same pipeline with a different topology, no twist, a different envelope and different tiers. Build: `cd python && ../.venv/bin/python -m bioxlattice build ../examples/fcc_graded_test/spec.json ../examples/fcc_graded_test`. The STL (14 MB) is written to `artifacts/` and is not committed.
+A second test of the same pipeline with a different topology, no twist, a different envelope, different tiers, and a lattice phase offset. Build: `cd python && ../.venv/bin/python -m bioxlattice build ../examples/fcc_graded_test/spec.json ../examples/fcc_graded_test`. The STL (14 MB) is written to `artifacts/` and is not committed.
 
 | Parameter | Value |
 |---|---|
 | envelope | 30 × 30 × 16 mm, edge fillet 2 mm |
 | skin | 1.5 mm boolean cut |
-| lattice | FCC, cell 6 mm, twist 0 deg/mm, overlap 0.2 mm |
+| lattice | FCC, cell 6 mm, twist 0 deg/mm, overlap 0.2 mm, **phase (3, 3, 0) mm** |
 | tiers | depths 3 and 6 mm, radii 0.9 / 0.6 / 0.4 mm |
 | vents | 4 × Ø1.6 mm at (±7, ±7) |
 
 | Metric | Value |
 |---|---|
-| volume | 7 567.6 mm³ (envelope 14 345.1, skin 4 858.8, core 3 021.3, overlap 312.5) |
-| surface area | 10 886.2 mm² |
+| volume | 7408.9 mm³ (envelope 14345.1, skin 4858.8, core 2842.7, overlap 292.5) |
+| surface area | 10 777.8 mm² |
 | min wall (B-Rep proxy) | 0.8 mm (≥ 0.4 mm floor) |
-| struts | 1 920 kept of 11 520 unique candidates; per tier 1 536 / 276 / 108 |
-| porosity | 0.4725 |
-| STEP | 25.6 MB, 1 `MANIFOLD_SOLID_BREP`, re-import volume error 1.0e-8 |
-| mesh | 280 108 triangles, watertight, 0 non-manifold edges |
-| build | 61.6 s build, 1.7 s STEP, 3.8 s tessellation |
+| struts | 1 920 kept; per tier 1 600 / 188 / 132 |
+| porosity | 0.4835 |
+| enclosed voids | 0 |
+| genus (outer boundary) | 306 |
+| STEP | 1 `MANIFOLD_SOLID_BREP`, re-import volume error 1.3e-8 |
+| mesh | 262 700 triangles, watertight |
+| structural tests | all levels PASS (`structural_tests.json`) |
 
-**Finding (corrected): the 60 enclosed voids are wedge pockets against the cavity walls, and the bottom vents reach none of them.** See "Multi-level structural tests" below for the evidence. The earlier wording that the vents "open some of the gaps" was wrong.
+Screenshots: `fcc_graded_test_cutaway.png` (near half removed, so the internal lattice is visible) and `fcc_graded_test_exterior.png` (the real outside: bottom skin and four vents, with no lattice visible by design).
 
-Screenshots: `fcc_graded_test_cutaway.png` (near half removed, so the internal lattice is visible) and `fcc_graded_test_exterior.png` (the real outside: the bottom skin and its four vents, with no lattice visible by design).
+### Defect found at phase 0, and the fix
 
+At phase 0 the same model had 60 sealed micro-pockets (see the investigation below). The phase offset (3, 3, 0) mm removes them. A scan of four candidate phases gave:
+
+| Phase (mm) | Enclosed voids | Volume (mm³) | Struts kept |
+|---|---|---|---|
+| (0, 0, 0) | 60 | 7 567.6 | 1 920 |
+| (3, 3, 3) | 0 | 6 949.8 | 2 128 |
+| **(3, 3, 0)** | **0** | **7 408.9** | **1 920** |
+| (0, 0, 3) | 40 | 7 108.2 | 2 128 |
+| (3, 0, 0) | 24 | 7 479.8 | 1 920 |
+
+(3, 3, 0) was chosen: zero voids, the smallest volume change (−2.1 %), and the same strut count. The z-layers are unchanged.
 
 ## Multi-level structural tests (`python/bioxlattice/structural.py`)
 
@@ -115,7 +128,7 @@ Every build writes `structural_tests.json`. Each level has checks with an observ
 
 Every void component is written to `voids[]` with its bounding box, centroid, volume and location (lateral wall, bottom/top wall, edge, or interior).
 
-Tests: `MultiLevel` (small reference part, all levels pass), `FccKnownDefect` (pins the FCC defect: only the void gate fails, 60 pockets, 20 lateral + 40 edge, total < 2 mm³), `VoidLocation` (classifier).
+Tests: `MultiLevel` (small reference part, all levels pass), `FccPhase` (FCC model with phase (3, 3, 0): all levels pass, zero enclosed voids, all vents open), `VoidLocation` (classifier).
 
 ### Investigation of the FCC pockets
 
@@ -130,4 +143,4 @@ Experiments that did not remove them (all 60, same geometry):
 | z-layer seams shifted by a/4 and a/2 | 60 (volume unchanged, 7567.57 mm³) |
 | clip box = cavity, no outward growth | 60 |
 
-So the cause is not the clip, the overlap, or the layer grouping. The remaining options each change the design, and the choice is open: (a) side vents through the lateral walls at the 60 positions, (b) a thin inner liner (about 0.3 mm, roughly +400 mm³), (c) a documented micro-pocket tolerance, which would relax the gate, or (d) changing the lattice phase so no node meets the wall. The gate is kept strict until the choice is made.
+So the cause is not the clip, the overlap, or the layer grouping. The options were: (a) side vents at the 60 positions, (b) a thin inner liner (about 0.3 mm, roughly +400 mm³), (c) a documented micro-pocket tolerance, or (d) changing the lattice phase so no node sits against the wall. The user chose (d). The phase scan above shows that (3, 3, 0) removes all 60 pockets with a 2.1 % volume change.

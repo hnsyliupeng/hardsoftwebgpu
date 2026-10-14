@@ -27,6 +27,11 @@
           0.9,
           0.6,
           0.4
+        ],
+        "phase": [
+          3.0,
+          3.0,
+          0.0
         ]
       },
       "vents": {
@@ -104,13 +109,13 @@
       "kernel": "OpenCASCADE via CadQuery 2.8 (exact B-Rep)"
     }
   },
-  "code": "\"\"\"Copy-executable parametric build (run from this folder: python design_code.py).\n\nNeeds cadquery 2.8 (see python/requirements.txt). The spec below is the DesignState parameter set.\n\"\"\"\nimport json, os, sys\nHERE = os.path.dirname(os.path.abspath(__file__))\nsys.path.insert(0, os.path.join(HERE, \"..\", \"..\", \"python\"))\nfrom bioxlattice.spec import CoupledSpec\nfrom bioxlattice.build import build\nfrom bioxlattice.exporter import write_step\n\nSPEC = json.loads('{\"name\": \"fcc_graded_test\", \"envelope\": {\"length\": 30.0, \"width\": 30.0, \"height\": 16.0, \"edge_fillet\": 2.0}, \"skin\": {\"thickness\": 1.5}, \"lattice\": {\"topology\": \"fcc\", \"cell\": 6.0, \"twist_deg_per_mm\": 0.0, \"overlap\": 0.2, \"tier_depths\": [3.0, 6.0], \"tier_radii\": [0.9, 0.6, 0.4]}, \"vents\": {\"enabled\": true, \"diameter\": 1.6, \"positions\": [[-7.0, -7.0], [7.0, -7.0], [-7.0, 7.0], [7.0, 7.0]]}, \"tessellation\": {\"deflection_mm\": 0.02, \"angular_rad\": 0.1}}')\n\nif __name__ == \"__main__\":\n    spec = CoupledSpec.from_dict(SPEC)\n    result = build(spec)\n    write_step(result.part, os.path.join(HERE, spec.name + \".step\"))\n    print(\"volume_mm3\", round(result.part.Volume(), 3), \"solids\", len(result.part.Solids()))\n",
+  "code": "\"\"\"Copy-executable parametric build (run from this folder: python design_code.py).\n\nNeeds cadquery 2.8 (see python/requirements.txt). The spec below is the DesignState parameter set.\n\"\"\"\nimport json, os, sys\nHERE = os.path.dirname(os.path.abspath(__file__))\nsys.path.insert(0, os.path.join(HERE, \"..\", \"..\", \"python\"))\nfrom bioxlattice.spec import CoupledSpec\nfrom bioxlattice.build import build\nfrom bioxlattice.exporter import write_step\n\nSPEC = json.loads('{\"name\": \"fcc_graded_test\", \"envelope\": {\"length\": 30.0, \"width\": 30.0, \"height\": 16.0, \"edge_fillet\": 2.0}, \"skin\": {\"thickness\": 1.5}, \"lattice\": {\"topology\": \"fcc\", \"cell\": 6.0, \"twist_deg_per_mm\": 0.0, \"overlap\": 0.2, \"tier_depths\": [3.0, 6.0], \"tier_radii\": [0.9, 0.6, 0.4], \"phase\": [3.0, 3.0, 0.0]}, \"vents\": {\"enabled\": true, \"diameter\": 1.6, \"positions\": [[-7.0, -7.0], [7.0, -7.0], [-7.0, 7.0], [7.0, 7.0]]}, \"tessellation\": {\"deflection_mm\": 0.02, \"angular_rad\": 0.1}}')\n\nif __name__ == \"__main__\":\n    spec = CoupledSpec.from_dict(SPEC)\n    result = build(spec)\n    write_step(result.part, os.path.join(HERE, spec.name + \".step\"))\n    print(\"volume_mm3\", round(result.part.Volume(), 3), \"solids\", len(result.part.Solids()))\n",
   "metrics": {
-    "volume": 7567.57,
-    "surface_area": 10886.245,
+    "volume": 7408.93,
+    "surface_area": 10777.791,
     "min_wall_thickness": 0.8,
     "connectivity": true,
-    "genus": 286
+    "genus": 306
   },
   "render_preview": null,
   "repair_history": [],
@@ -119,8 +124,7 @@
     "no twist applied; the lattice is a plain straight-strut topology",
     "single-body result is checked for connectivity but the lattice is clipped to the cavity, so struts end on the skin overlap",
     "STL is a tessellation at the given deflection; STEP is exact B-Rep",
-    "shell() is not used for the skin because it exports as a shell-based surface model; a boolean cut is used",
-    "60 internal void(s) remain enclosed by the skin and the vents do not reach them; they cannot drain during printing, so the vent layout is not sufficient for this topology"
+    "shell() is not used for the skin because it exports as a shell-based surface model; a boolean cut is used"
   ],
   "unknowns": [
     "printability and mechanical response are not simulated",
@@ -134,12 +138,12 @@
     "timeline": "timeline.json"
   },
   "metrics_detail": {
-    "volume": 7567.57,
-    "surface_area": 10886.245,
+    "volume": 7408.93,
+    "surface_area": 10777.791,
     "center_of_mass": [
       -0.0,
       0.0,
-      0.0102
+      0.0105
     ],
     "bbox_mm": [
       30.01,
@@ -149,83 +153,22 @@
     "min_wall_thickness": 0.8,
     "min_wall_definition": "min(skin thickness, 2 * smallest used strut radius); B-Rep proxy, not ray-based",
     "connectivity": true,
-    "genus": 286,
-    "euler_characteristic": -450,
-    "boundary_components": 61,
-    "internal_void_count": 60,
-    "internal_void_genera": [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ],
+    "genus": 306,
+    "euler_characteristic": -610,
+    "boundary_components": 1,
+    "internal_void_count": 0,
+    "internal_void_genera": [],
     "boundary_watertight": true,
-    "porosity": 0.4725,
+    "porosity": 0.4835,
     "levels": {
       "L0_envelope_volume": 14345.062,
       "L1_skin_volume": 4858.788,
-      "L2_lattice_core_volume": 3021.314,
-      "overlap_skin_core": 312.532
+      "L2_lattice_core_volume": 2842.674,
+      "overlap_skin_core": 292.532
     },
     "face_types": {
-      "CYLINDER": 1608,
-      "PLANE": 294
+      "CYLINDER": 1204,
+      "PLANE": 550
     },
     "analytic_face_fraction": 1.0,
     "strut_radii_mm": [
@@ -234,20 +177,20 @@
       0.4
     ],
     "topology_counts": {
-      "vertices": 3652,
-      "edges": 5988,
-      "faces": 1902
+      "vertices": 3742,
+      "edges": 6086,
+      "faces": 1754
     }
   },
   "lattice": {
     "topology": "fcc",
     "cell_mm": 6.0,
-    "struts_raw_unique": 11520,
+    "struts_raw_unique": 20496,
     "struts_kept": 1920,
     "struts_per_tier": [
-      1536,
-      276,
-      108
+      1600,
+      188,
+      132
     ],
     "tier_radii_mm": [
       0.9,
@@ -258,11 +201,16 @@
       3.0,
       6.0
     ],
-    "twist_deg_per_mm": 0.0
+    "twist_deg_per_mm": 0.0,
+    "phase_mm": [
+      3.0,
+      3.0,
+      0.0
+    ]
   },
   "timing_s": {
-    "build": 61.64,
-    "step_write": 1.5,
-    "tessellate": 4.13
+    "build": 63.56,
+    "step_write": 1.51,
+    "tessellate": 3.92
   }
 }
