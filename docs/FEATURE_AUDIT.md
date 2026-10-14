@@ -16,6 +16,8 @@ npx tsc --noEmit -p tsconfig.json         # type check
 node --experimental-strip-types --no-warnings scripts/selftest.ts    # 64 checks, writes artifacts/selftest/report.json
 node --experimental-strip-types --no-warnings scripts/pipeline_bench.ts 48   # 320 prompts through the full chain
 npm run build:web                          # dist/web bundle (served by npm run serve)
+node --experimental-strip-types --no-warnings scripts/screenshots.ts 800   # 800 px model screenshots -> artifacts/screenshots/
+# optional, headless Chromium against the running web app (see header of scripts/browser_check.mjs)
 ```
 
 Evidence files: `artifacts/selftest/report.json`, `artifacts/pipeline_benchmark/{summary,rows}.json`,
@@ -46,7 +48,7 @@ Evidence files: `artifacts/selftest/report.json`, `artifacts/pipeline_benchmark/
 | R19 | SolidCraft / SolveCraft parametric timeline | Not used; repository named | The timeline here is our own TypeScript implementation. No SolidCraft code was built or used. | The correct repository is **github.com/bherbruck/solidcraft** (Rust desktop CAD with a parametric timeline; read only, not built or used here). |
 | R20 | Fully local: no cloud APIs, no Blender, no external servers, no non-local resources | Done | `grep -rn "fetch(\|XMLHttpRequest\|WebSocket\|https\?://" src web scripts` finds no runtime network calls; smlibwasm is served from `dist/web/vendor/` | |
 | R21 | All functions tested in CPU-only mode | Done | `npm test` 53/53; selftest 64/64; 320-prompt sweep | |
-| R22 | Web app: WebGPU → WebGL2 → CPU fallback | **Partial** | `chooseBackend` tests (`tests/viewer.test.ts`, 4 cases, incl. forced CPU); bundle built; worker executed under Node with the built code | No browser exists in the sandbox, so WebGPU and WebGL2 rendering were not executed. |
+| R22 | Web app: WebGPU → WebGL2 → CPU fallback | **Partial** | `chooseBackend` tests (`tests/viewer.test.ts`, 4 cases). Headless Chromium 153 (`scripts/browser_check.mjs`): default model generates on load ("Done in 1492 ms"), renderer = WebGL2, canvas shows the helical model, no page errors. | WebGPU was not available in the headless browser ("No available adapters"), so the WebGPU path is still unexecuted. The WebGL2 path ran on SwiftShader (software GL). |
 | R23 | Review of the full feature checklist (this document plus test evidence) | Done | this file | |
 
 ## 2. Timeline operations (feature programs)
