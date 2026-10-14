@@ -21,6 +21,8 @@ export interface PipelineOptions {
   exportFiles?: boolean;
   /** Feature program (timeline mode): bypasses the IntentHarness; the prompt is kept for the record. */
   program?: FeatureProgram;
+  /** A prepared DesignSpec (e.g. a fusion of two designs); bypasses the IntentHarness. */
+  spec?: DesignSpec;
 }
 
 export interface PipelineResult {
@@ -38,7 +40,9 @@ function uniq(xs: string[]): string[] {
 }
 
 export async function runPipeline(prompt: string, opts: PipelineOptions = {}): Promise<PipelineResult> {
-  const intent = opts.program
+  const intent = opts.spec
+    ? { harness: "IntentHarness", ok: true, data: opts.spec, observations: ["Prepared design specification supplied directly."], limitations: [] as string[], unknowns: [] as string[], evidence: { reproducible_params: { prompt }, source: "prepared spec" } }
+    : opts.program
     ? { harness: "IntentHarness", ok: true, data: makeProgramSpec(opts.program), observations: ["Feature program supplied directly (timeline mode)."], limitations: [] as string[], unknowns: [] as string[], evidence: { reproducible_params: { program: opts.program }, source: "user JSON" } }
     : parseIntent(prompt);
   const spec: DesignSpec = structuredClone(intent.data);

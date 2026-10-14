@@ -37,8 +37,8 @@ function firstIndex(text: string, re: RegExp): number {
 }
 
 const RE = {
-  tpms: /\btpms\b|triply[- ]periodic|periodic minimal|gyroid|schwarz|minimal surface|螺旋曲面|三周期|极小曲面/,
-  lattice: /lattice|点阵|晶格|\bbcc\b|\bfcc\b|\bfbcc\b|simple[- ]cubic|\bsc\b|金刚石|\bstrut/,
+  tpms: /\btpms\b|triply[- ]periodic|periodic minimal|gyroid|schwarz|neovius|\biwp\b|lidinoid|minimal surface|螺旋曲面|三周期|极小曲面/,
+  lattice: /lattice|点阵|晶格|\bbcc\b|\bfcc\b|\bfbcc\b|\bbccz\b|kelvin|tetrakaidecahedr|simple[- ]cubic|\bsc\b|金刚石|\bstrut/,
   helical: /helic|bouligand|螺旋|twist|\bply\b|\bplies\b/,
   cellular: /cellular|foam|voronoi|honeycomb|蜂窝|泡沫|sandwich|夹层|三明治/,
   tubular: /tubul|\btubes?\b|\bholes?\b|\bpores?\b|channel|管|孔/,
@@ -74,6 +74,8 @@ function latticeVariant(text: string): LatticeType | null {
   if (/\bfcc\b|face[- ]centered/.test(text)) return "fcc";
   if (/simple[- ]cubic|\bsc\b|cubic lattice|立方/.test(text)) return "sc";
   if (/diamond|金刚石/.test(text)) return "diamond";
+  if (/kelvin|tetrakaidecahedr|truncated octahedr|开尔文/.test(text)) return "kelvin";
+  if (/\bbccz\b|bcc[- ]?z\b|vertical reinforc/.test(text)) return "bccz";
   return null;
 }
 
@@ -81,6 +83,9 @@ function tpmsVariant(text: string): TpmsType | null {
   if (/gyroid|螺旋曲面/.test(text)) return "gyroid";
   if (/schwarz[ _-]?p\b|schwarz p|primitive/.test(text)) return "schwarz_p";
   if (/schwarz[ _-]?d\b|schwarz d|diamond (surface|tpms)/.test(text)) return "schwarz_d";
+  if (/neovius/.test(text)) return "neovius";
+  if (/\biwp\b|i-?wp|wrapped surface/.test(text)) return "iwp";
+  if (/lidinoid/.test(text)) return "lidinoid";
   return null;
 }
 

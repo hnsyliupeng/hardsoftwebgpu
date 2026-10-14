@@ -29,6 +29,7 @@ const heterogeneity_field = ${h ? JSON.stringify(h) : "null"};
 // ---- Design specification (IntentHarness output, with the constants above applied) ----------
 const spec: DesignSpec = {
   topology: ${JSON.stringify(spec.topology)},${spec.program ? "\n  program: program as unknown as NonNullable<DesignSpec[\"program\"]>," : ""}
+  ${spec.fusion ? `fusion: ${JSON.stringify(spec.fusion)} as unknown as NonNullable<DesignSpec["fusion"]>,` : ""}
   bio_motif: ${JSON.stringify(spec.bio_motif)},
   family: ${JSON.stringify(spec.family)},
   variant: ${JSON.stringify(spec.variant)},
@@ -69,6 +70,8 @@ function describeSdf(spec: DesignSpec): string {
       return `min over strut capsules of the ${spec.variant} pattern (distance to segment - r(x))`;
     case "hybrid":
       return `min(strut lattice SDF, ${spec.bio_motif} SDF)`;
+    case "fusion":
+      return `fusion (${spec.fusion?.mode}) of two designs; field = ${spec.fusion?.mode === "zoned" ? "min(max(A, z - zc - o/2), max(B, zc - o/2 - z))" : spec.fusion?.mode === "intersect" ? "max(A, B)" : "min(A, B)"}`;
     default:
       return `${spec.bio_motif} SDF (family-specific; see src/bio/families.ts)`;
   }

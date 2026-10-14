@@ -1,10 +1,23 @@
 // Shared contracts for the Bioinspired123D-WASM multi-harness pipeline.
 // Units: millimetres (mm), mm^3 for volume, mm^2 for area, unless a field says otherwise.
 
-export type Topology = "tubular" | "helical" | "cellular" | "lattice" | "tpms" | "hybrid" | "program";
+export type Topology = "tubular" | "helical" | "cellular" | "lattice" | "tpms" | "hybrid" | "program" | "fusion";
 
-export type LatticeType = "sc" | "bcc" | "fcc" | "fbcc" | "diamond";
-export type TpmsType = "gyroid" | "schwarz_p" | "schwarz_d";
+export type LatticeType = "sc" | "bcc" | "fcc" | "fbcc" | "diamond" | "kelvin" | "bccz";
+export type TpmsType = "gyroid" | "schwarz_p" | "schwarz_d" | "neovius" | "iwp" | "lidinoid";
+
+/** Fusion of two complete designs (see FusionSpec.mode). */
+export interface FusionSpec {
+  /** union: min of the fields; intersect: max; zoned: A below mid-height, B above, with an overlap band. */
+  mode: "union" | "intersect" | "zoned";
+  /** Zoned fusion: thickness of the overlap band around the split plane (mm). */
+  overlap_mm?: number;
+  a: DesignSpec;
+  /** Second design; omit it to use A alone (e.g. A with an envelope skin). */
+  b?: DesignSpec;
+  /** Optional closed solid skin (mm) unioned with the result, so a lattice core is attached to an envelope. */
+  skin_mm?: number;
+}
 
 export type HeterogeneityRule = "uniform" | "linear" | "sin" | "parabola" | "expr";
 export type Axis = "x" | "y" | "z";
@@ -78,6 +91,8 @@ export interface DesignSpec {
   topology: Topology;
   /** Feature program (topology "program" only): the parametric timeline executed by GeometryHarness. */
   program?: import("./program/types.ts").FeatureProgram;
+  /** Fusion of two designs (topology "fusion" only). */
+  fusion?: FusionSpec;
   bio_motif: string;
   family: string;
   variant: string;

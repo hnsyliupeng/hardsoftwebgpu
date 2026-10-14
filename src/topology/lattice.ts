@@ -73,6 +73,49 @@ function diamondSegs(): Seg[] {
   return segs;
 }
 
+/**
+ * Kelvin foam (truncated octahedra on a BCC arrangement). Unit cell edge = 1: one truncated octahedron
+ * at the cell corner and one at the body centre. Vertices are the 24 permutations of (0, +-1, +-2)/4;
+ * edges join vertices at squared distance 2/16 (36 edges, each vertex has three).
+ */
+function kelvinSegs(): Seg[] {
+  // All distinct permutations of (0, +-1, +-2), scaled by 1/4: the 24 vertices of one truncated octahedron.
+  const verts: [number, number, number][] = [];
+  const perms = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]];
+  for (const pm of perms)
+    for (const sa of [-1, 1]) for (const sb of [-1, 1]) {
+      const a = [0, sa, 2 * sb];
+      verts.push([a[pm[0]] / 4, a[pm[1]] / 4, a[pm[2]] / 4]);
+    }
+  const uniq = verts;
+  const segs: Seg[] = [];
+  const sq = (a: number[], b: number[]) => (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2;
+  const edgeLen2 = 2 / 16;
+  const sites: [number, number, number][] = [
+    [0, 0, 0],
+    [0.5, 0.5, 0.5],
+  ];
+  // Edges shared by two neighbouring truncated octahedra appear once per site: keep unique edges only.
+  const seen = new Set<string>();
+  for (const site of sites) {
+    const vs = uniq.map((v) => [v[0] + site[0], v[1] + site[1], v[2] + site[2]]);
+    for (let i = 0; i < vs.length; i++)
+      for (let j = i + 1; j < vs.length; j++) {
+        if (Math.abs(sq(vs[i], vs[j]) - edgeLen2) > 1e-12) continue;
+        const a = vs[i].map((c) => c.toFixed(6)).join(",");
+        const b = vs[j].map((c) => c.toFixed(6)).join(",");
+        const key = a < b ? `${a}|${b}` : `${b}|${a}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        // Periodic images of one edge are represented once: keep the edge whose midpoint lies in [0,1)^3.
+        const mid = [0, 1, 2].map((k) => (vs[i][k] + vs[j][k]) / 2);
+        if (mid.some((m) => m < 0 || m >= 1)) continue;
+        segs.push([vs[i][0], vs[i][1], vs[i][2], vs[j][0], vs[j][1], vs[j][2]] as unknown as Seg);
+      }
+  }
+  return segs;
+}
+
 export function latticePattern(type: LatticeType): Seg[] {
   switch (type) {
     case "sc":
@@ -90,6 +133,11 @@ export function latticePattern(type: LatticeType): Seg[] {
       ];
     case "diamond":
       return diamondSegs();
+    case "bccz":
+      // BCC body-centre struts plus the four vertical cube edges (cell-edge reinforcement along z).
+      return [...bccSegs(), ...cubeEdges().filter((s) => s[2] !== s[5])];
+    case "kelvin":
+      return kelvinSegs();
     default: {
       const never: never = type;
       throw new Error(`unknown lattice ${String(never)}`);
@@ -211,6 +259,32 @@ export function tpmsValueGrad(type: TpmsType, X: number, Y: number, Z: number): 
       const gz = sX * sY * cZ - sX * cY * sZ - cX * sY * sZ + cX * cY * cZ;
       return [F, gx, gy, gz];
     }
+    case "neovius": {
+      // F = 3(cosX + cosY + cosZ) + 4 cosX cosY cosZ
+      const F = 3 * (cX + cY + cZ) + 4 * cX * cY * cZ;
+      return [F, -sX * (3 + 4 * cY * cZ), -sY * (3 + 4 * cX * cZ), -sZ * (3 + 4 * cX * cY)];
+    }
+    case "iwp": {
+      // F = 2(cosXcosY + cosYcosZ + cosZcosX) - (cos2X + cos2Y + cos2Z)
+      const c2X = Math.cos(2 * X), c2Y = Math.cos(2 * Y), c2Z = Math.cos(2 * Z);
+      const F = 2 * (cX * cY + cY * cZ + cZ * cX) - (c2X + c2Y + c2Z);
+      return [
+        F,
+        -2 * sX * (cY + cZ) + 2 * Math.sin(2 * X),
+        -2 * sY * (cZ + cX) + 2 * Math.sin(2 * Y),
+        -2 * sZ * (cX + cY) + 2 * Math.sin(2 * Z),
+      ];
+    }
+    case "lidinoid": {
+      // F = sin2X cosY sinZ + sin2Y cosZ sinX + sin2Z cosX sinY - cos2X cos2Y - cos2Y cos2Z - cos2Z cos2X + 0.3
+      const s2X = Math.sin(2 * X), s2Y = Math.sin(2 * Y), s2Z = Math.sin(2 * Z);
+      const c2X = Math.cos(2 * X), c2Y = Math.cos(2 * Y), c2Z = Math.cos(2 * Z);
+      const F = s2X * cY * sZ + s2Y * cZ * sX + s2Z * cX * sY - c2X * c2Y - c2Y * c2Z - c2Z * c2X + 0.15;
+      const gx = 2 * c2X * cY * sZ + cX * s2Y * cZ - sX * s2Z * sY + 2 * s2X * (c2Y + c2Z);
+      const gy = 2 * c2Y * cZ * sX + cY * s2Z * cX - sY * s2X * sZ + 2 * s2Y * (c2Z + c2X);
+      const gz = 2 * c2Z * cX * sY + cZ * s2X * cY - sZ * s2Y * sX + 2 * s2Z * (c2X + c2Y);
+      return [F, gx, gy, gz];
+    }
     default: {
       const never: never = type;
       throw new Error(`unknown tpms ${String(never)}`);
@@ -222,6 +296,9 @@ export const TPMS_EXPR: Record<TpmsType, string> = {
   gyroid: "sin X cos Y + sin Y cos Z + sin Z cos X",
   schwarz_p: "cos X + cos Y + cos Z",
   schwarz_d: "sin X sin Y sin Z + sin X cos Y cos Z + cos X sin Y cos Z + cos X cos Y sin Z",
+  neovius: "3 (cos X + cos Y + cos Z) + 4 cos X cos Y cos Z",
+  iwp: "2 (cos X cos Y + cos Y cos Z + cos Z cos X) - (cos 2X + cos 2Y + cos 2Z)",
+  lidinoid: "sin 2X cos Y sin Z + sin 2Y cos Z sin X + sin 2Z cos X sin Y - cos 2X cos 2Y - cos 2Y cos 2Z - cos 2Z cos 2X + 0.15",
 };
 
 export interface TpmsOptions {

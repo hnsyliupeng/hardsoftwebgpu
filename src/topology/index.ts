@@ -4,7 +4,7 @@
 
 import type { BrepPlan } from "../bio/families.ts";
 import { buildBio, toMillimetres, type BioBuild } from "../bio/families.ts";
-import { clipToBox, sdUnion, type Field } from "./fields.ts";
+import { clipToBox, sdBox, sdUnion, type Field } from "./fields.ts";
 import { makeHeterogeneity } from "./heterogeneous.ts";
 import { strutLattice, tpmsShell, TPMS_EXPR } from "./lattice.ts";
 import type { DesignSpec, HarnessResult, HeterogeneityField, LatticeType, TpmsType } from "../types.ts";
@@ -29,8 +29,8 @@ export interface TopologyBuild {
   programApproximate: string[];
 }
 
-export const LATTICE_TYPES: LatticeType[] = ["sc", "bcc", "fcc", "fbcc", "diamond"];
-export const TPMS_TYPES: TpmsType[] = ["gyroid", "schwarz_p", "schwarz_d"];
+export const LATTICE_TYPES: LatticeType[] = ["sc", "bcc", "fcc", "fbcc", "diamond", "kelvin", "bccz"];
+export const TPMS_TYPES: TpmsType[] = ["gyroid", "schwarz_p", "schwarz_d", "neovius", "iwp", "lidinoid"];
 
 const DEFAULTS = {
   cell_size_mm: 4,
@@ -157,6 +157,64 @@ export function buildTopology(spec: DesignSpec): HarnessResult<TopologyBuild> {
       limitations.push(`SDF approximation for ops ${compiled.approximate.join(", ")}: the B-Rep is the reference; the cross-check reports the deviation.`);
     }
     limitations.push("Feature programs: all coordinates are absolute millimetres; the kernel is smlibwasm (no re-centring).");
+  } else if (spec.topology === "fusion") {
+    // Fusion of two complete designs. Each part is built by the same TopologyHarness with the
+    // parent's size and constraints, so the parts stay in one coordinate frame (mm, box [0, L]^3).
+    if (!spec.fusion) throw new Error("topology \"fusion\" requires spec.fusion");
+    const fa = buildTopology(spec.fusion.a).data;
+    const fbb = spec.fusion.b ? buildTopology(spec.fusion.b).data : null;
+    const mode = spec.fusion.mode;
+    const fbA = fa.field;
+    const fbB = fbb ? fbb.field : fbA;
+    let field: Field;
+    if (!fbb) {
+      field = fbA;
+    } else if (mode === "union") {
+      field = { bounds: { min: [0, 0, 0], max: [L, L, L] }, expr: `min( A , B )  [A: ${fbA.expr}] [B: ${fbB.expr}]`, eval: (x, y, z) => Math.min(fbA.eval(x, y, z), fbB.eval(x, y, z)) };
+    } else if (mode === "intersect") {
+      field = { bounds: { min: [0, 0, 0], max: [L, L, L] }, expr: `max( A , B )  [A: ${fbA.expr}] [B: ${fbB.expr}]`, eval: (x, y, z) => Math.max(fbA.eval(x, y, z), fbB.eval(x, y, z)) };
+    } else {
+      // zoned: A keeps the region z <= zc + o/2 and B keeps z >= zc - o/2 (zc = L/2, o = overlap band).
+      // Each part is cut by its own half-space with max(), and the two parts are united with min().
+      const zc = L / 2;
+      const o = spec.fusion.overlap_mm ?? 1.0;
+      field = {
+        bounds: { min: [0, 0, 0], max: [L, L, L] },
+        expr: `min( max(A, z - (zc + o/2)) , max(B, (zc - o/2) - z) ), zc=${zc} mm, overlap ${o} mm  [A: ${fbA.expr}] [B: ${fbB.expr}]`,
+        eval: (x, y, z) => Math.min(Math.max(fbA.eval(x, y, z), z - (zc + o / 2)), Math.max(fbB.eval(x, y, z), zc - o / 2 - z)),
+      };
+    }
+    if (spec.fusion.skin_mm && spec.fusion.skin_mm > 0) {
+      // Closed skin of thickness t on the envelope [0, L]^3: |d + t/2| - t/2 with d the box distance.
+      const t = spec.fusion.skin_mm;
+      const core = field;
+      const skinField: Field = {
+        bounds: { min: [0, 0, 0], max: [L, L, L] },
+        expr: `|sdBox(p) + t/2| - t/2, t=${t} mm (envelope skin)`,
+        eval: (x, y, z) => Math.abs(sdBox(x - L / 2, y - L / 2, z - L / 2, L / 2, L / 2, L / 2) + t / 2) - t / 2,
+      };
+      field = {
+        bounds: { min: [0, 0, 0], max: [L, L, L] },
+        expr: `min( core , skin )  [core: ${core.expr}] [skin: ${skinField.expr}]`,
+        eval: (x, y, z) => Math.min(core.eval(x, y, z), skinField.eval(x, y, z)),
+      };
+      observations.push(`Envelope skin ${t} mm unioned with the fused core so that every strut is attached to the envelope.`);
+    }
+    build = {
+      field,
+      parts: { A: fbA, B: fbB },
+      smoothPasses: 0,
+      brep: null,
+      bio: null,
+      cells: null,
+      cellSize: null,
+      program: null,
+      programNotes: {},
+      programApproximate: [],
+      description: fbb ? `fusion (${mode}): [${fa.description}] with [${fbb.description}]` : `${fa.description} with envelope skin`,
+    };
+    observations.push(fbb ? `Fusion ${mode} of two designs: A = ${fa.description}; B = ${fbb.description}.` : `Single design with envelope skin: ${fa.description}.`);
+    limitations.push("Fusion geometry is SDF-only. Zoned fusion cuts each part with a half-space and unites them over an overlap band; the seam is a planar cut, not an exact B-Rep boolean.");
   } else {
     // hybrid: union of a strut/TPMS lattice and a bioinspired base structure (both in mm).
     const variant = spec.variant.includes(":") ? spec.variant.split(":")[1] : spec.variant;
