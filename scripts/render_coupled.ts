@@ -1,6 +1,6 @@
 // Renders a CPU screenshot of a bioxlattice mesh.bin (same software rasteriser as the other
 // screenshots, no GPU). Usage:
-//   node --experimental-strip-types scripts/render_coupled.ts MESH.bin OUT.png [size] [full|cut]
+//   node --experimental-strip-types scripts/render_coupled.ts MESH.bin OUT.png [size=1600] [full|cut]; env RENDER_SS=2
 // "cut" removes the upper half (z > 0, triangle centroids) so the internal lattice shows from above.
 import { readFileSync, writeFileSync } from "node:fs";
 import { parseMeshBin } from "../web/coupled.ts";
@@ -8,8 +8,10 @@ import { rasterisePreview } from "../src/render/preview.ts";
 import { encodePngCompressed } from "../src/render/png.ts";
 
 const [, , meshPath, outPath, sizeArg, modeArg] = process.argv;
-if (!meshPath || !outPath) throw new Error("usage: render_coupled.ts MESH.bin OUT.png [size] [full|cut]");
-const size = Number(sizeArg ?? 800);
+if (!meshPath || !outPath) throw new Error("usage: render_coupled.ts MESH.bin OUT.png [size=1600] [full|cut]; env RENDER_SS=2");
+const size = Number(sizeArg ?? 1600);
+// Supersampling factor: render at size*SS, then box-filter down to size (anti-aliased edges).
+const SS = Math.max(1, Math.round(Number(process.env.RENDER_SS ?? 2)));
 const raw = readFileSync(meshPath);
 const full = parseMeshBin(raw.buffer.slice(raw.byteOffset, raw.byteOffset + raw.byteLength));
 let mesh = full;
@@ -60,6 +62,19 @@ if (modeArg === "cut") {
   };
 }
 const t0 = Date.now();
-const img = rasterisePreview(mesh, size);
+const big = rasterisePreview(mesh, size * SS);
+const out = new Uint8Array(size * size * 4);
+for (let y = 0; y < size; y++)
+  for (let x = 0; x < size; x++) {
+    let r = 0, g = 0, b = 0, n = 0;
+    for (let dy = 0; dy < SS; dy++)
+      for (let dx = 0; dx < SS; dx++) {
+        const k = ((y * SS + dy) * size * SS + (x * SS + dx)) * 4;
+        r += big.rgba[k]; g += big.rgba[k + 1]; b += big.rgba[k + 2]; n++;
+      }
+    const o = (y * size + x) * 4;
+    out[o] = Math.round(r / n); out[o + 1] = Math.round(g / n); out[o + 2] = Math.round(b / n); out[o + 3] = 255;
+  }
+const img = { rgba: out, coverage: big.coverage };
 writeFileSync(outPath, encodePngCompressed(size, size, img.rgba));
-console.log(`${outPath}: ${mesh.indices.length / 3} triangles after cut (input ${full.indices.length / 3}), ${size} px, coverage ${img.coverage.toFixed(3)}, ${Date.now() - t0} ms`);
+console.log(`${outPath}: ${mesh.indices.length / 3} triangles after cut (input ${full.indices.length / 3}), ${size} px (supersample ${SS}x), coverage ${img.coverage.toFixed(3)}, ${Date.now() - t0} ms`);

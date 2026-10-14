@@ -12,7 +12,7 @@ Each folder holds one generated design, produced by the CPU pipeline (`src/api.t
 | [gyroid_repair](gyroid_repair/) | gyroid TPMS, 2 accepted repairs | 2482.8 | 0.41 | 970 | 2 | design only (STL ≈ 200 MB, regenerable) |
 
 Each folder contains:
-- `screenshot.png`: 800 px CPU render of the generated mesh (isometric, no GPU).
+- `screenshot.png`: 800 px CPU render of the generated mesh (isometric, no GPU). The coupled-lattice renders (`render_coupled.ts`) are 1600 px with 2x supersampling.
 - `design.ts`: copy-executable parametric program (run with `node --experimental-strip-types`).
 - `<name>.design.json`: full DesignState (prompt, design_spec, code, metrics, render_preview, repair_history, limitations, unknowns).
 
