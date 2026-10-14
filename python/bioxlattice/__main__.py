@@ -152,6 +152,15 @@ def cmd_build(args) -> None:
           f"solids {'1' if metrics['connectivity'] else 'n'}; build {build_s:.1f}s; "
           f"triangles {len(tris)}", flush=True)
     cmd_verify(argparse.Namespace(out=out, _verts=verts, _tris=tris))
+    # multi-level structural checks (L0-L3, coupling, printability, export); see structural.py
+    from .structural import run_checks
+    with open(os.path.join(out, "verify.json"), encoding="utf8") as fh:
+        ver = json.load(fh)
+    report = run_checks(spec, result, verts, tris, ver["step"])
+    report["model"] = name
+    with open(os.path.join(out, "structural_tests.json"), "w", encoding="utf8") as fh:
+        json.dump(report, fh, indent=2)
+    print("structural:", "PASS" if report["pass"] else "FAIL", "failed:", report["failed_checks"], flush=True)
 
 
 def cmd_verify(args) -> None:

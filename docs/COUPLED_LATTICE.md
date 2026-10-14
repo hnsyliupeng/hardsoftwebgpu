@@ -5,7 +5,7 @@ This is the high-resolution path of the app. Geometry is built as an exact OpenC
 
 - Code: `python/bioxlattice/` (builder, timeline, metrics, exporter, verifier, CLI)
 - Tests: `python/tests/test_bioxlattice.py` (19 tests, including the smlibpy cross-check) and `tests/coupled.test.ts` (4 tests)
-- Result: `examples/coupled_bio_lattice/` (STEP, mesh.bin, design.json, verify.json, timeline.json, design_code.py, screenshots)
+- Result: `examples/coupled_bio_lattice/` (STEP, mesh.bin, design.json, verify.json, structural_tests.json, timeline.json, design_code.py, spec.json, screenshots)
 - Web: choose "Coupled bio-lattice" in the input panel and press Generate. The page loads the verified build outputs.
 
 ## Architecture
@@ -94,6 +94,40 @@ A second, smaller test of the same pipeline with a different topology, no twist,
 | mesh | 280 108 triangles, watertight, 0 non-manifold edges |
 | build | 61.6 s build, 1.7 s STEP, 3.8 s tessellation |
 
-**Finding: the vent layout is not sufficient for this topology.** `internal_void_count` is 60. The four vents open only some of the enclosed FCC gaps, so 60 sealed cavities remain inside the skin. The CLI now writes this into `design.json` `limitations`. The coupled BCC example has 0 internal voids, so it is not affected. The fix (more or differently placed vents, or a smaller strut overlap) is not done in this commit.
+**Finding (corrected): the 60 enclosed voids are wedge pockets against the cavity walls, and the bottom vents reach none of them.** See "Multi-level structural tests" below for the evidence. The earlier wording that the vents "open some of the gaps" was wrong.
 
-Screenshots: `fcc_graded_test.png` (cutaway, far half kept) and `fcc_graded_test_full.png`.
+Screenshots: `fcc_graded_test_cutaway.png` (near half removed, so the internal lattice is visible) and `fcc_graded_test_exterior.png` (the real outside: the bottom skin and its four vents, with no lattice visible by design).
+
+
+## Multi-level structural tests (`python/bioxlattice/structural.py`)
+
+Every build writes `structural_tests.json`. Each level has checks with an observed value, an expected value (a closed form, or an independent re-derivation from the spec), a tolerance and a pass flag. A level passes only if all its checks pass.
+
+| Level | Checks | Expected value source |
+|---|---|---|
+| L0 envelope | bbox x/y/z; outer volume | `LWH − (4 − π) r² H` |
+| L1 skin | skin volume; single solid | `envelope − cavity − n·π(d/2)²·t`, cavity `(L−2t)(W−2t)(H−2t) − (4 − π) r_in² (H−2t)` |
+| L2 lattice | core inside the clip box; core volume ≤ clip box; struts kept = tier sum | clip box geometry |
+| L3 tiers | per-tier counts and total re-derived from the spec | independent re-run of the strut selection |
+| coupling | skin ∩ core (direct) = skin + core − part; overlap bounds; single solid | OCC, two routes |
+| printability | watertight; enclosed voids = 0 (gate); minimum wall proxy ≥ 0.4 mm; each vent open | mesh analysis |
+| export | STEP re-import volume error; editable B-Rep; no shell-based model | `verify_step` |
+
+Every void component is written to `voids[]` with its bounding box, centroid, volume and location (lateral wall, bottom/top wall, edge, or interior).
+
+Tests: `MultiLevel` (small reference part, all levels pass), `FccKnownDefect` (pins the FCC defect: only the void gate fails, 60 pockets, 20 lateral + 40 edge, total < 2 mm³), `VoidLocation` (classifier).
+
+### Investigation of the FCC pockets
+
+The pockets are not bulk voids. Each one is about 0.6 × 0.2 × 0.6 mm, with volume 0.0175 mm³, and the 60 total 1.05 mm³ (0.014 % of the part). A two-strut wedge that meets the inner wall at a node is sealed by that wall. Locations: 20 on the lateral walls at z = 0 (5 per wall) and 40 in the cavity edges at z = ±6, where the lateral walls meet the top and bottom inner walls.
+
+Experiments that did not remove them (all 60, same geometry):
+
+| Change | Voids |
+|---|---|
+| overlap 0.8 mm | 60 |
+| overlap 1.2 mm | 60 |
+| z-layer seams shifted by a/4 and a/2 | 60 (volume unchanged, 7567.57 mm³) |
+| clip box = cavity, no outward growth | 60 |
+
+So the cause is not the clip, the overlap, or the layer grouping. The remaining options each change the design, and the choice is open: (a) side vents through the lateral walls at the 60 positions, (b) a thin inner liner (about 0.3 mm, roughly +400 mm³), (c) a documented micro-pocket tolerance, which would relax the gate, or (d) changing the lattice phase so no node meets the wall. The gate is kept strict until the choice is made.

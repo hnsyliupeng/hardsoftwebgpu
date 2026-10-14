@@ -81,7 +81,9 @@ Parameter ranges and base-code semantics come from `lamm-mit/Bioinspired123D` (A
 
 A second, high-resolution path built with CadQuery / OpenCASCADE: a 2 mm skin with four printability vents, a twisted BCC lattice core, and three depth-graded strut radii. See `docs/COUPLED_LATTICE.md`. Outputs are in `examples/coupled_bio_lattice/`, and the web app's "Coupled bio-lattice" mode loads them.
 
-A second test model, `examples/fcc_graded_test/` (FCC, no twist, 30 × 30 × 16 mm), exercises the same pipeline. It has 60 enclosed voids that the vents do not reach; see `docs/COUPLED_LATTICE.md`.
+Every build also writes `structural_tests.json`: multi-level checks (L0 envelope, L1 skin, L2 lattice, L3 tiers, coupling, printability, export), each against a closed form or an independent re-derivation. See `docs/COUPLED_LATTICE.md`.
+
+A second test model, `examples/fcc_graded_test/` (FCC, no twist, 30 × 30 × 16 mm), exercises the same pipeline. Its structural report fails one gate: 60 sealed micro-pockets (1.05 mm³ in total) at the cavity walls, which the bottom vents do not reach. The failure is pinned by the `FccKnownDefect` test; the design choice is still open.
 
 ```
 bash scripts/python_env.sh

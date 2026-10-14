@@ -198,3 +198,96 @@ class ExampleSpecs(unittest.TestCase):
         default_prompt, _ = describe(CoupledSpec(), None, None)
         self.assertIn("BCC", default_prompt)
         self.assertIn("helical", default_prompt)
+
+
+def _structural_report(spec, result):
+    """Tessellate and STEP-verify a built part, then run every structural level (structural.py)."""
+    from bioxlattice.structural import run_checks
+    verts, tris = tessellate_merged(result.part, spec.tessellation.deflection_mm, spec.tessellation.angular_rad)
+    tmp = tempfile.mkdtemp()
+    step = os.path.join(tmp, "m.step")
+    write_step(result.part, step)
+    ver = verify_step(step, result.part.Volume())
+    return run_checks(spec, result, verts, tris, ver)
+
+
+class MultiLevel(unittest.TestCase):
+    """Every structural level passes on the small reference part."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.spec = small_spec()
+        cls.result = build(cls.spec)
+        cls.report = _structural_report(cls.spec, cls.result)
+
+    def test_every_level_passes(self):
+        self.assertEqual(self.report["failed_checks"], [], self.report["failed_checks"])
+        self.assertTrue(self.report["pass"])
+
+    def test_levels_are_all_reported(self):
+        self.assertEqual(set(self.report["levels"]),
+                         {"L0_envelope", "L1_skin", "L2_lattice", "L3_tiers", "coupling", "printability", "export"})
+
+    def test_skin_matches_closed_form(self):
+        from bioxlattice.structural import analytic_cavity, analytic_envelope, analytic_vent_volume
+        exp = analytic_envelope(self.spec) - analytic_cavity(self.spec) - analytic_vent_volume(self.spec)
+        self.assertAlmostEqual(self.result.skin.Volume(), exp, delta=1e-3)
+
+    def test_tier_counts_rederived(self):
+        from bioxlattice.structural import _tier_counts_from_spec
+        counts, kept = _tier_counts_from_spec(self.spec)
+        self.assertEqual(counts, self.result.lattice["struts_per_tier"])
+        self.assertEqual(kept, self.result.lattice["struts_kept"])
+
+    def test_coupling_identity_holds(self):
+        overlap = self.result.skin.intersect(self.result.core).Volume()
+        identity = self.result.skin.Volume() + self.result.core.Volume() - self.result.part.Volume()
+        self.assertAlmostEqual(overlap, identity, delta=1e-3)
+
+
+class FccKnownDefect(unittest.TestCase):
+    """examples/fcc_graded_test has 60 sealed micro-pockets at the lateral walls (a real, reported defect).
+
+    The test pins the defect: every other level must pass and only the enclosed-void gate may fail,
+    with exactly 60 pockets (20 against the lateral walls at mid-height, 40 in the cavity edges where
+    the lateral walls meet the top and bottom inner walls), totalling well under 2 mm^3. When the design is
+    fixed, this test must be updated: the gate then passes and the failed list must be empty.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        spec_path = os.path.join(EX_ROOT, "examples", "fcc_graded_test", "spec.json")
+        cls.spec = CoupledSpec.load(spec_path)
+        cls.result = build(cls.spec)
+        cls.report = _structural_report(cls.spec, cls.result)
+
+    def test_only_enclosed_void_gate_fails(self):
+        self.assertEqual(self.report["failed_checks"], ["printability.enclosed_voids"])
+        for name, lv in self.report["levels"].items():
+            if name != "printability":
+                self.assertTrue(lv["pass"], name)
+
+    def test_pockets_are_counted_and_located(self):
+        voids = self.report["voids"]
+        self.assertEqual(len(voids), 60)
+        from collections import Counter
+        self.assertEqual(Counter(v["location"] for v in voids), Counter({"lateral wall": 20, "edge": 40}))
+        self.assertLess(sum(v["volume_mm3"] for v in voids), 2.0)
+
+    def test_all_vents_open(self):
+        vent_checks = [c for c in self.report["levels"]["printability"]["checks"] if c["id"].endswith("_open")]
+        self.assertEqual(len(vent_checks), 4)
+        self.assertTrue(all(c["pass"] for c in vent_checks))
+
+
+class VoidLocation(unittest.TestCase):
+    def test_classes(self):
+        from bioxlattice.structural import _location
+        hxi = hyi = 13.5
+        hzi = 6.5
+        self.assertEqual(_location((13.27, 11.7, -0.3), (13.5, 12.3, 0.3), hxi, hyi, hzi), "lateral wall")
+        # z = -6 sits 0.5 mm from the bottom inner wall (z = -6.5): the pocket is in the cavity edge
+        self.assertEqual(_location((13.27, 11.7, -6.3), (13.5, 12.3, -5.7), hxi, hyi, hzi), "edge")
+        self.assertEqual(_location((-1, -1, -6.6), (1, 1, -6.3), hxi, hyi, hzi), "bottom/top wall")
+        self.assertEqual(_location((-1, -1, -1), (1, 1, 1), hxi, hyi, hzi), "interior")
+        self.assertEqual(_location((13.2, 0, -6.6), (13.5, 1, -6.3), hxi, hyi, hzi), "edge")

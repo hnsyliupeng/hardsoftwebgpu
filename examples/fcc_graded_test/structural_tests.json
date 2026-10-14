@@ -1,0 +1,1500 @@
+{
+  "pass": false,
+  "failed_checks": [
+    "printability.enclosed_voids"
+  ],
+  "levels": {
+    "L0_envelope": {
+      "pass": true,
+      "checks": [
+        {
+          "id": "L0.bbox_x",
+          "observed": 30.001204925215188,
+          "expected": 30.0,
+          "tolerance": 0.05,
+          "pass": true,
+          "note": ""
+        },
+        {
+          "id": "L0.bbox_y",
+          "observed": 30.001204925215184,
+          "expected": 30.0,
+          "tolerance": 0.05,
+          "pass": true,
+          "note": ""
+        },
+        {
+          "id": "L0.bbox_z",
+          "observed": 16.001204925215188,
+          "expected": 16.0,
+          "tolerance": 0.05,
+          "pass": true,
+          "note": ""
+        },
+        {
+          "id": "L0.outer_volume_closed_form",
+          "observed": 14345.061929829746,
+          "expected": 14345.061929829746,
+          "tolerance": 0.001,
+          "pass": true,
+          "note": "LWH - (4 - pi) r^2 H"
+        }
+      ]
+    },
+    "L1_skin": {
+      "pass": true,
+      "checks": [
+        {
+          "id": "L1.skin_volume_closed_form",
+          "observed": 4858.7880379158,
+          "expected": 4858.788037915795,
+          "tolerance": 0.001,
+          "pass": true,
+          "note": "envelope - cavity - n*pi*(d/2)^2*t"
+        },
+        {
+          "id": "L1.skin_single_solid",
+          "observed": 1,
+          "expected": 1,
+          "tolerance": 0,
+          "pass": true,
+          "note": ""
+        }
+      ]
+    },
+    "L2_lattice": {
+      "pass": true,
+      "checks": [
+        {
+          "id": "L2.core_inside_clip_x",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": ""
+        },
+        {
+          "id": "L2.core_inside_clip_y",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": ""
+        },
+        {
+          "id": "L2.core_inside_clip_z",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": ""
+        },
+        {
+          "id": "L2.core_volume_below_clip_box",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": ""
+        },
+        {
+          "id": "L2.core_nonempty",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": ""
+        },
+        {
+          "id": "L2.struts_kept_equals_tier_sum",
+          "observed": 1920,
+          "expected": 1920,
+          "tolerance": 0,
+          "pass": true,
+          "note": ""
+        }
+      ]
+    },
+    "L3_tiers": {
+      "pass": true,
+      "checks": [
+        {
+          "id": "L3.struts_kept_rederived",
+          "observed": 1920,
+          "expected": 1920,
+          "tolerance": 0,
+          "pass": true,
+          "note": ""
+        },
+        {
+          "id": "L3.tier0_count_rederived",
+          "observed": 1536,
+          "expected": 1536,
+          "tolerance": 0,
+          "pass": true,
+          "note": "radius 0.9 mm"
+        },
+        {
+          "id": "L3.tier1_count_rederived",
+          "observed": 276,
+          "expected": 276,
+          "tolerance": 0,
+          "pass": true,
+          "note": "radius 0.6 mm"
+        },
+        {
+          "id": "L3.tier2_count_rederived",
+          "observed": 108,
+          "expected": 108,
+          "tolerance": 0,
+          "pass": true,
+          "note": "radius 0.4 mm"
+        },
+        {
+          "id": "L3.depth_tiers_ascending",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": ""
+        }
+      ]
+    },
+    "coupling": {
+      "pass": true,
+      "checks": [
+        {
+          "id": "coupling.overlap_identity",
+          "observed": 312.53203414115717,
+          "expected": 312.5316049398516,
+          "tolerance": 0.001,
+          "pass": true,
+          "note": "skin \u2229 core (direct) vs skin + core - part"
+        },
+        {
+          "id": "coupling.overlap_positive",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": ""
+        },
+        {
+          "id": "coupling.overlap_within_parts",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": ""
+        },
+        {
+          "id": "coupling.single_solid",
+          "observed": 1,
+          "expected": 1,
+          "tolerance": 0,
+          "pass": true,
+          "note": ""
+        }
+      ]
+    },
+    "printability": {
+      "pass": false,
+      "checks": [
+        {
+          "id": "printability.watertight",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": ""
+        },
+        {
+          "id": "printability.enclosed_voids",
+          "observed": 60,
+          "expected": 0,
+          "tolerance": 0,
+          "pass": false,
+          "note": "60 sealed components; 20 against lateral walls; total 1.050 mm^3; see voids[]"
+        },
+        {
+          "id": "printability.min_wall_proxy_ge_0.4",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": "proxy 0.80 mm"
+        },
+        {
+          "id": "printability.vent0_open",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": "vent at (-7.0, -7.0): no bottom-face triangle inside the hole, rim vertices 126"
+        },
+        {
+          "id": "printability.vent1_open",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": "vent at (7.0, -7.0): no bottom-face triangle inside the hole, rim vertices 126"
+        },
+        {
+          "id": "printability.vent2_open",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": "vent at (-7.0, 7.0): no bottom-face triangle inside the hole, rim vertices 126"
+        },
+        {
+          "id": "printability.vent3_open",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": "vent at (7.0, 7.0): no bottom-face triangle inside the hole, rim vertices 126"
+        }
+      ]
+    },
+    "export": {
+      "pass": true,
+      "checks": [
+        {
+          "id": "export.step_volume_rel_error",
+          "observed": 1.043e-08,
+          "expected": 0.0,
+          "tolerance": 1e-06,
+          "pass": true,
+          "note": ""
+        },
+        {
+          "id": "export.editable_brep",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": ""
+        },
+        {
+          "id": "export.no_shell_based_model",
+          "observed": 0,
+          "expected": 0,
+          "tolerance": 0,
+          "pass": true,
+          "note": ""
+        }
+      ]
+    }
+  },
+  "voids": [
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        13.273,
+        11.7,
+        -6.3
+      ],
+      "bbox_max": [
+        13.5,
+        12.3,
+        -5.7
+      ],
+      "centroid": [
+        13.477,
+        11.999,
+        -6.003
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        13.273,
+        5.7,
+        -6.3
+      ],
+      "bbox_max": [
+        13.5,
+        6.3,
+        -5.7
+      ],
+      "centroid": [
+        13.477,
+        5.999,
+        -6.003
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        13.273,
+        -6.3,
+        -0.3
+      ],
+      "bbox_max": [
+        13.5,
+        -5.7,
+        0.3
+      ],
+      "centroid": [
+        13.477,
+        -6.001,
+        -0.003
+      ],
+      "location": "lateral wall"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        13.273,
+        -6.3,
+        -6.3
+      ],
+      "bbox_max": [
+        13.5,
+        -5.7,
+        -5.7
+      ],
+      "centroid": [
+        13.477,
+        -6.001,
+        -6.003
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        13.273,
+        11.7,
+        5.7
+      ],
+      "bbox_max": [
+        13.5,
+        12.3,
+        6.3
+      ],
+      "centroid": [
+        13.477,
+        11.999,
+        5.997
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -0.3,
+        13.273,
+        -6.3
+      ],
+      "bbox_max": [
+        0.3,
+        13.5,
+        -5.7
+      ],
+      "centroid": [
+        0.001,
+        13.479,
+        -6.0
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        13.273,
+        -0.3,
+        -6.3
+      ],
+      "bbox_max": [
+        13.5,
+        0.3,
+        -5.7
+      ],
+      "centroid": [
+        13.477,
+        -0.001,
+        -6.003
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        5.7,
+        13.273,
+        -0.3
+      ],
+      "bbox_max": [
+        6.3,
+        13.5,
+        0.3
+      ],
+      "centroid": [
+        6.001,
+        13.479,
+        -0.0
+      ],
+      "location": "lateral wall"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        13.273,
+        -6.3,
+        5.7
+      ],
+      "bbox_max": [
+        13.5,
+        -5.7,
+        6.3
+      ],
+      "centroid": [
+        13.477,
+        -6.001,
+        5.997
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -6.3,
+        13.273,
+        -6.3
+      ],
+      "bbox_max": [
+        -5.7,
+        13.5,
+        -5.7
+      ],
+      "centroid": [
+        -5.999,
+        13.479,
+        -6.0
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        13.273,
+        11.7,
+        -0.3
+      ],
+      "bbox_max": [
+        13.5,
+        12.3,
+        0.3
+      ],
+      "centroid": [
+        13.477,
+        11.999,
+        -0.003
+      ],
+      "location": "lateral wall"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        5.7,
+        13.273,
+        5.7
+      ],
+      "bbox_max": [
+        6.3,
+        13.5,
+        6.3
+      ],
+      "centroid": [
+        6.001,
+        13.479,
+        6.0
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        13.273,
+        5.7,
+        -0.3
+      ],
+      "bbox_max": [
+        13.5,
+        6.3,
+        0.3
+      ],
+      "centroid": [
+        13.477,
+        5.999,
+        -0.003
+      ],
+      "location": "lateral wall"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -12.3,
+        13.273,
+        -6.3
+      ],
+      "bbox_max": [
+        -11.7,
+        13.5,
+        -5.7
+      ],
+      "centroid": [
+        -11.999,
+        13.479,
+        -6.0
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -13.5,
+        -0.3,
+        5.7
+      ],
+      "bbox_max": [
+        -13.273,
+        0.3,
+        6.3
+      ],
+      "centroid": [
+        -13.479,
+        0.001,
+        6.003
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        13.273,
+        -12.3,
+        -0.3
+      ],
+      "bbox_max": [
+        13.5,
+        -11.7,
+        0.3
+      ],
+      "centroid": [
+        13.477,
+        -12.001,
+        -0.003
+      ],
+      "location": "lateral wall"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -12.3,
+        -13.5,
+        5.7
+      ],
+      "bbox_max": [
+        -11.7,
+        -13.273,
+        6.3
+      ],
+      "centroid": [
+        -12.001,
+        -13.477,
+        6.0
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -6.3,
+        -13.5,
+        5.7
+      ],
+      "bbox_max": [
+        -5.7,
+        -13.273,
+        6.3
+      ],
+      "centroid": [
+        -6.001,
+        -13.477,
+        6.0
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        11.7,
+        13.273,
+        5.7
+      ],
+      "bbox_max": [
+        12.3,
+        13.5,
+        6.3
+      ],
+      "centroid": [
+        12.001,
+        13.479,
+        6.0
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        5.7,
+        -13.5,
+        5.7
+      ],
+      "bbox_max": [
+        6.3,
+        -13.273,
+        6.3
+      ],
+      "centroid": [
+        5.999,
+        -13.477,
+        6.0
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -13.5,
+        -12.3,
+        5.7
+      ],
+      "bbox_max": [
+        -13.273,
+        -11.7,
+        6.3
+      ],
+      "centroid": [
+        -13.479,
+        -11.999,
+        6.003
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        13.273,
+        -12.3,
+        -6.3
+      ],
+      "bbox_max": [
+        13.5,
+        -11.7,
+        -5.7
+      ],
+      "centroid": [
+        13.477,
+        -12.001,
+        -6.003
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        11.7,
+        13.273,
+        -6.3
+      ],
+      "bbox_max": [
+        12.3,
+        13.5,
+        -5.7
+      ],
+      "centroid": [
+        12.001,
+        13.479,
+        -6.0
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -12.3,
+        13.273,
+        5.7
+      ],
+      "bbox_max": [
+        -11.7,
+        13.5,
+        6.3
+      ],
+      "centroid": [
+        -11.999,
+        13.479,
+        6.0
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        13.273,
+        -0.3,
+        -0.3
+      ],
+      "bbox_max": [
+        13.5,
+        0.3,
+        0.3
+      ],
+      "centroid": [
+        13.477,
+        -0.001,
+        -0.003
+      ],
+      "location": "lateral wall"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -0.3,
+        13.273,
+        -0.3
+      ],
+      "bbox_max": [
+        0.3,
+        13.5,
+        0.3
+      ],
+      "centroid": [
+        0.001,
+        13.479,
+        -0.0
+      ],
+      "location": "lateral wall"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -13.5,
+        5.7,
+        5.7
+      ],
+      "bbox_max": [
+        -13.273,
+        6.3,
+        6.3
+      ],
+      "centroid": [
+        -13.479,
+        6.001,
+        6.003
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -0.3,
+        13.273,
+        5.7
+      ],
+      "bbox_max": [
+        0.3,
+        13.5,
+        6.3
+      ],
+      "centroid": [
+        0.001,
+        13.479,
+        6.0
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        11.7,
+        -13.5,
+        5.7
+      ],
+      "bbox_max": [
+        12.3,
+        -13.273,
+        6.3
+      ],
+      "centroid": [
+        11.999,
+        -13.477,
+        6.0
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -6.3,
+        13.273,
+        -0.3
+      ],
+      "bbox_max": [
+        -5.7,
+        13.5,
+        0.3
+      ],
+      "centroid": [
+        -5.999,
+        13.479,
+        -0.0
+      ],
+      "location": "lateral wall"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        13.273,
+        5.7,
+        5.7
+      ],
+      "bbox_max": [
+        13.5,
+        6.3,
+        6.3
+      ],
+      "centroid": [
+        13.477,
+        5.999,
+        5.997
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -0.3,
+        -13.5,
+        5.7
+      ],
+      "bbox_max": [
+        0.3,
+        -13.273,
+        6.3
+      ],
+      "centroid": [
+        -0.001,
+        -13.477,
+        6.0
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -13.5,
+        11.7,
+        5.7
+      ],
+      "bbox_max": [
+        -13.273,
+        12.3,
+        6.3
+      ],
+      "centroid": [
+        -13.479,
+        12.001,
+        6.003
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -0.3,
+        -13.5,
+        -0.3
+      ],
+      "bbox_max": [
+        0.3,
+        -13.273,
+        0.3
+      ],
+      "centroid": [
+        -0.001,
+        -13.477,
+        0.0
+      ],
+      "location": "lateral wall"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -0.3,
+        -13.5,
+        -6.3
+      ],
+      "bbox_max": [
+        0.3,
+        -13.273,
+        -5.7
+      ],
+      "centroid": [
+        -0.001,
+        -13.477,
+        -6.0
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -12.3,
+        -13.5,
+        -0.3
+      ],
+      "bbox_max": [
+        -11.7,
+        -13.273,
+        0.3
+      ],
+      "centroid": [
+        -12.001,
+        -13.477,
+        0.0
+      ],
+      "location": "lateral wall"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -6.3,
+        -13.5,
+        -0.3
+      ],
+      "bbox_max": [
+        -5.7,
+        -13.273,
+        0.3
+      ],
+      "centroid": [
+        -6.001,
+        -13.477,
+        0.0
+      ],
+      "location": "lateral wall"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        5.7,
+        -13.5,
+        -0.3
+      ],
+      "bbox_max": [
+        6.3,
+        -13.273,
+        0.3
+      ],
+      "centroid": [
+        5.999,
+        -13.477,
+        0.0
+      ],
+      "location": "lateral wall"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -12.3,
+        -13.5,
+        -6.3
+      ],
+      "bbox_max": [
+        -11.7,
+        -13.273,
+        -5.7
+      ],
+      "centroid": [
+        -12.001,
+        -13.477,
+        -6.0
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -13.5,
+        -12.3,
+        -6.3
+      ],
+      "bbox_max": [
+        -13.273,
+        -11.7,
+        -5.7
+      ],
+      "centroid": [
+        -13.479,
+        -11.999,
+        -5.997
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -6.3,
+        -13.5,
+        -6.3
+      ],
+      "bbox_max": [
+        -5.7,
+        -13.273,
+        -5.7
+      ],
+      "centroid": [
+        -6.001,
+        -13.477,
+        -6.0
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -13.5,
+        -6.3,
+        -6.3
+      ],
+      "bbox_max": [
+        -13.273,
+        -5.7,
+        -5.7
+      ],
+      "centroid": [
+        -13.479,
+        -5.999,
+        -5.997
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        5.7,
+        -13.5,
+        -6.3
+      ],
+      "bbox_max": [
+        6.3,
+        -13.273,
+        -5.7
+      ],
+      "centroid": [
+        5.999,
+        -13.477,
+        -6.0
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        11.7,
+        -13.5,
+        -6.3
+      ],
+      "bbox_max": [
+        12.3,
+        -13.273,
+        -5.7
+      ],
+      "centroid": [
+        11.999,
+        -13.477,
+        -6.0
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -13.5,
+        5.7,
+        -6.3
+      ],
+      "bbox_max": [
+        -13.273,
+        6.3,
+        -5.7
+      ],
+      "centroid": [
+        -13.479,
+        6.001,
+        -5.997
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -13.5,
+        11.7,
+        -6.3
+      ],
+      "bbox_max": [
+        -13.273,
+        12.3,
+        -5.7
+      ],
+      "centroid": [
+        -13.479,
+        12.001,
+        -5.997
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -13.5,
+        -6.3,
+        5.7
+      ],
+      "bbox_max": [
+        -13.273,
+        -5.7,
+        6.3
+      ],
+      "centroid": [
+        -13.479,
+        -5.999,
+        6.003
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -13.5,
+        -12.3,
+        -0.3
+      ],
+      "bbox_max": [
+        -13.273,
+        -11.7,
+        0.3
+      ],
+      "centroid": [
+        -13.479,
+        -11.999,
+        0.003
+      ],
+      "location": "lateral wall"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -13.5,
+        -6.3,
+        -0.3
+      ],
+      "bbox_max": [
+        -13.273,
+        -5.7,
+        0.3
+      ],
+      "centroid": [
+        -13.479,
+        -5.999,
+        0.003
+      ],
+      "location": "lateral wall"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -13.5,
+        -0.3,
+        -6.3
+      ],
+      "bbox_max": [
+        -13.273,
+        0.3,
+        -5.7
+      ],
+      "centroid": [
+        -13.479,
+        0.001,
+        -5.997
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -13.5,
+        5.7,
+        -0.3
+      ],
+      "bbox_max": [
+        -13.273,
+        6.3,
+        0.3
+      ],
+      "centroid": [
+        -13.479,
+        6.001,
+        0.003
+      ],
+      "location": "lateral wall"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -13.5,
+        -0.3,
+        -0.3
+      ],
+      "bbox_max": [
+        -13.273,
+        0.3,
+        0.3
+      ],
+      "centroid": [
+        -13.479,
+        0.001,
+        0.003
+      ],
+      "location": "lateral wall"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -6.3,
+        13.273,
+        5.7
+      ],
+      "bbox_max": [
+        -5.7,
+        13.5,
+        6.3
+      ],
+      "centroid": [
+        -5.999,
+        13.479,
+        6.0
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        13.273,
+        -12.3,
+        5.7
+      ],
+      "bbox_max": [
+        13.5,
+        -11.7,
+        6.3
+      ],
+      "centroid": [
+        13.477,
+        -12.001,
+        5.997
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        11.7,
+        13.273,
+        -0.3
+      ],
+      "bbox_max": [
+        12.3,
+        13.5,
+        0.3
+      ],
+      "centroid": [
+        12.001,
+        13.479,
+        -0.0
+      ],
+      "location": "lateral wall"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        11.7,
+        -13.5,
+        -0.3
+      ],
+      "bbox_max": [
+        12.3,
+        -13.273,
+        0.3
+      ],
+      "centroid": [
+        11.999,
+        -13.477,
+        0.0
+      ],
+      "location": "lateral wall"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        5.7,
+        13.273,
+        -6.3
+      ],
+      "bbox_max": [
+        6.3,
+        13.5,
+        -5.7
+      ],
+      "centroid": [
+        6.001,
+        13.479,
+        -6.0
+      ],
+      "location": "edge"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -13.5,
+        11.7,
+        -0.3
+      ],
+      "bbox_max": [
+        -13.273,
+        12.3,
+        0.3
+      ],
+      "centroid": [
+        -13.479,
+        12.001,
+        0.003
+      ],
+      "location": "lateral wall"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        -12.3,
+        13.273,
+        -0.3
+      ],
+      "bbox_max": [
+        -11.7,
+        13.5,
+        0.3
+      ],
+      "centroid": [
+        -11.999,
+        13.479,
+        -0.0
+      ],
+      "location": "lateral wall"
+    },
+    {
+      "triangles": 226,
+      "volume_mm3": 0.0175,
+      "bbox_min": [
+        13.273,
+        -0.3,
+        5.7
+      ],
+      "bbox_max": [
+        13.5,
+        0.3,
+        6.3
+      ],
+      "centroid": [
+        13.477,
+        -0.001,
+        5.997
+      ],
+      "location": "edge"
+    }
+  ],
+  "spec_summary": {
+    "topology": "fcc",
+    "cell_mm": 6.0,
+    "twist_deg_per_mm": 0.0,
+    "vents": 4
+  },
+  "model": "fcc_graded_test"
+}
