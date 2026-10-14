@@ -7,10 +7,22 @@
 // independent of the number of cells.
 
 import type { HeterogeneityField, HeterogeneityRule } from "../types.ts";
+import { compileU } from "../expr/expr.ts";
 
-export function heteroValue(rule: HeterogeneityRule, u: number, min: number, max: number): number {
+export function heteroValue(
+  rule: HeterogeneityRule,
+  u: number,
+  min: number,
+  max: number,
+  expression?: string,
+): number {
   const t = Math.min(1, Math.max(0, u));
   switch (rule) {
+    case "expr": {
+      if (!expression) throw new Error("expr heterogeneity needs an expression");
+      const v = compileU(expression).eval({ u: t });
+      return Math.min(max, Math.max(min, v));
+    }
     case "uniform":
       return min;
     case "linear":
@@ -33,19 +45,26 @@ export function makeHeterogeneity(
   direction: "x" | "y" | "z",
   min: number,
   max: number,
+  expression?: string,
 ): HeterogeneityField {
   if (min <= 0 || max <= 0) throw new RangeError("thickness/radius must be positive");
+  if (rule === "expr") {
+    if (!expression) throw new RangeError("expr rule needs an expression");
+    compileU(expression); // validates syntax; throws SyntaxError
+    return { rule, direction, min: Math.min(min, max), max: Math.max(min, max), expression };
+  }
   if (rule === "uniform") return { rule, direction, min, max: min };
   return { rule, direction, min: Math.min(min, max), max: Math.max(min, max) };
 }
 
 /** Thickness/radius at a normalised position along the field direction (0..1). */
 export function valueAt(field: HeterogeneityField, u: number): number {
-  return heteroValue(field.rule, u, field.min, field.max);
+  return heteroValue(field.rule, u, field.min, field.max, field.expression);
 }
 
 /** Largest value the profile can take (used for search radii). */
 export function maxValue(field: HeterogeneityField): number {
   if (field.rule === "parabola") return field.min + field.max;
+  if (field.rule === "expr") return field.max;
   return field.max;
 }

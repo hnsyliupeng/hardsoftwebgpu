@@ -283,15 +283,26 @@ export function meshIntegrals(mesh: { positions: Float32Array; indices: Uint32Ar
 }
 
 /** Occupancy: a node is solid when its SDF value is negative. */
+/**
+ * Node occupancy for topology: a node is solid when f <= 1e-9 * h (closed-set rule). Solids that touch
+ * exactly (e.g. helical plies sharing a face) have f = 0 on the contact plane; a strict f < 0 test
+ * would let float rounding decide the contact and split one solid into two.
+ */
 export function occupancy(g: Grid): Uint8Array {
   const out = new Uint8Array(g.values.length);
-  for (let i = 0; i < out.length; i++) out[i] = g.values[i] < 0 ? 1 : 0;
+  const tol = 1e-9 * g.h;
+  for (let i = 0; i < out.length; i++) out[i] = g.values[i] <= tol ? 1 : 0;
   return out;
 }
 
+/** Minimum node count (3x3x3) for a solid component to count towards connectivity. */
+export const SIGNIFICANT_VOXELS = 27;
+
 export interface VoxelTopology {
-  /** Connected components of the solid (26-connectivity of occupied nodes). */
+  /** Significant connected components of the solid (26-connectivity, >= SIGNIFICANT_VOXELS nodes). */
   components: number;
+  /** Components below SIGNIFICANT_VOXELS nodes: sub-voxel slivers (typically clipped at the build boundary). */
+  slivers: number;
   /** Bounded cavities of the solid (6-connected empty regions not touching the grid border). */
   cavities: number;
   /** Euler characteristic of the cubical complex formed by the occupied nodes. */
@@ -341,14 +352,25 @@ export function voxelTopology(g: Grid, occ = occupancy(g)): VoxelTopology {
               if (occ[nid]) union(id, nid);
             }
       }
-  const solidRoots = new Set<number>();
+  const rootSize = new Map<number, number>();
   for (let k = 0; k < nz; k++)
     for (let j = 0; j < ny; j++)
       for (let i = 0; i < nx; i++) {
         const id = nodeIndex(g, i, j, k);
-        if (occ[id]) solidRoots.add(find(id));
+        if (occ[id]) {
+          const r = find(id);
+          rootSize.set(r, (rootSize.get(r) ?? 0) + 1);
+        }
       }
-  const components = solidRoots.size;
+  // A component counts as part of the design only if it spans at least SIGNIFICANT_VOXELS nodes.
+  // Smaller ones are sub-voxel slivers (e.g. two nodes clipped by the build boundary) and are
+  // reported separately instead of triggering a connectivity repair.
+  let components = 0;
+  let slivers = 0;
+  for (const n of rootSize.values()) {
+    if (n >= SIGNIFICANT_VOXELS) components++;
+    else slivers++;
+  }
 
   // Background: reset parents for empty nodes, 6-connectivity, components touching the border are "outside".
   for (let i = 0; i < N; i++) parent[i] = i;
@@ -422,7 +444,7 @@ export function voxelTopology(g: Grid, occ = occupancy(g)): VoxelTopology {
   }
   const euler = V - E + F - C;
   const handles = components + cavities - euler;
-  return { components, cavities, euler, handles, solidNodes };
+  return { components, slivers, cavities, euler, handles, solidNodes };
 }
 
 /**

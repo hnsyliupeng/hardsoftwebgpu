@@ -129,3 +129,27 @@ test("resolveParams clamps to catalog ranges and reports what it changed", () =>
   const d = resolveParams("helical_generic", {});
   assert.ok(d.defaulted.includes("num_plies"));
 });
+
+test("exactly touching solids are one component (closed-set occupancy on the contact plane)", () => {
+  // Two half-boxes sharing the plane z = 10. Grid h = 0.5 places a node exactly on the plane.
+  const lower = (x: number, y: number, z: number) => Math.max(Math.abs(x - 10) - 10, Math.abs(y - 10) - 10, z - 10, -1 - z); // z in [-1,10]
+  const upper = (x: number, y: number, z: number) => Math.max(Math.abs(x - 10) - 10, Math.abs(y - 10) - 10, 10 - z, z - 21); // z in [10,21]
+  const f: Field = {
+    bounds: { min: [0, 0, -1], max: [20, 20, 21] },
+    eval: (x, y, z) => Math.min(lower(x, y, z), upper(x, y, z)),
+    expr: "touching halves",
+  };
+  const g = sampleField(f, 40, 2);
+  const topo = voxelTopology(g, occupancy(g));
+  assert.equal(topo.components, 1, "touching halves must not split");
+});
+
+test("tiny isolated fragments are reported as slivers, not components", () => {
+  const body = mkField(0, 20, (x, y, z) => Math.hypot(x - 5, y - 5, z - 5) - 4);
+  const speck = (x: number, y: number, z: number) => Math.hypot(x - 17, y - 17, z - 17) - 0.3;
+  const f = mkField(0, 20, (x, y, z) => Math.min(body.eval(x, y, z), speck(x, y, z)));
+  const g = sampleField(f, 60, 2);
+  const topo = voxelTopology(g, occupancy(g));
+  assert.equal(topo.components, 1);
+  assert.equal(topo.slivers, 1);
+});

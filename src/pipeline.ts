@@ -3,6 +3,8 @@
 // Every harness returns { observations, limitations, unknowns, evidence } alongside its payload.
 
 import { parseIntent } from "./intent/intent.ts";
+import { makeProgramSpec } from "./program/index.ts";
+import type { FeatureProgram } from "./program/types.ts";
 import { evaluateSpec } from "./evaluate.ts";
 import { repairDesign, MAX_REPAIR_ROUNDS } from "./repair/repair.ts";
 import { emitParametricCode } from "./codegen/emit.ts";
@@ -17,6 +19,8 @@ export interface PipelineOptions {
   maxRepairRounds?: number;
   name?: string;
   exportFiles?: boolean;
+  /** Feature program (timeline mode): bypasses the IntentHarness; the prompt is kept for the record. */
+  program?: FeatureProgram;
 }
 
 export interface PipelineResult {
@@ -34,7 +38,9 @@ function uniq(xs: string[]): string[] {
 }
 
 export async function runPipeline(prompt: string, opts: PipelineOptions = {}): Promise<PipelineResult> {
-  const intent = parseIntent(prompt);
+  const intent = opts.program
+    ? { harness: "IntentHarness", ok: true, data: makeProgramSpec(opts.program), observations: ["Feature program supplied directly (timeline mode)."], limitations: [] as string[], unknowns: [] as string[], evidence: { reproducible_params: { program: opts.program }, source: "user JSON" } }
+    : parseIntent(prompt);
   const spec: DesignSpec = structuredClone(intent.data);
   if (opts.sizeMm) spec.constraints.size_mm = opts.sizeMm;
   if (opts.resolution) spec.constraints.resolution = opts.resolution;

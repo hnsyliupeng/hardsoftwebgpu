@@ -9,6 +9,8 @@ import { blurField, sampleField, surfaceNets, type Grid } from "./grid.ts";
 import type { Field } from "../topology/fields.ts";
 import { buildBrep, type BrepSolid } from "./brep.ts";
 import type { DesignSpec, HarnessResult, MeshData } from "../types.ts";
+import { executeBrepProgram } from "../program/brep.ts";
+import type { ProgramStep } from "../program/types.ts";
 
 export interface GeometryOutput {
   field: Field;
@@ -19,6 +21,8 @@ export interface GeometryOutput {
   brep: BrepSolid | null;
   partsBrep: Record<string, { volume: number }>;
   resolution: number;
+  /** Timeline execution report (feature programs only). */
+  programSteps: ProgramStep[] | null;
 }
 
 export async function buildGeometry(build: TopologyBuild, spec: DesignSpec): Promise<HarnessResult<GeometryOutput>> {
@@ -51,8 +55,23 @@ export async function buildGeometry(build: TopologyBuild, spec: DesignSpec): Pro
       limitations.push(`smlibwasm B-Rep kernel unavailable (${kernelError}); SDF mesh used, STEP export disabled.`);
     }
   }
+  let programSteps: ProgramStep[] | null = null;
+  if (build.program) {
+    try {
+      const r = await executeBrepProgram(build.program);
+      brep = r.solid;
+      programSteps = r.steps;
+      observations.push(
+        `Timeline executed on smlibwasm: ${r.steps.length} ops; final volume ${brep.volume.toFixed(3)} mm^3, area ${brep.area.toFixed(3)} mm^2, ${brep.mesh.indices.length / 3} tessellation triangles.`,
+      );
+    } catch (e) {
+      kernelError = e instanceof Error ? e.message : String(e);
+      limitations.push(`Timeline B-Rep execution failed (${kernelError}); SDF mesh used, STEP export disabled.`);
+      programSteps = (e as { steps?: ProgramStep[] }).steps ?? [];
+    }
+  }
   if (!brep) {
-    if (!build.brep) limitations.push("No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.");
+    if (!build.brep && !build.program) limitations.push("No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.");
   }
   limitations.push(`SDF surface resolution is limited to h = ${grid.h.toFixed(4)} mm (constraints.resolution = ${res}); features below ~2h are not resolved.`);
   if (res > 160) unknowns.push("Resolution above 160 per axis may exceed browser memory budgets.");
@@ -67,6 +86,7 @@ export async function buildGeometry(build: TopologyBuild, spec: DesignSpec): Pro
       brep,
       partsBrep: brep?.parts ?? {},
       resolution: res,
+      programSteps,
     },
     observations,
     limitations,
@@ -78,6 +98,9 @@ export async function buildGeometry(build: TopologyBuild, spec: DesignSpec): Pro
       smoothing_passes: build.smoothPasses,
       sdf_expression: build.field.expr,
       brep_plan: build.brep,
+      program_steps: programSteps,
+      program_sdf_notes: build.programNotes,
+      program_approximate_ops: build.programApproximate,
       reproducible_params: { family: spec.family, variant: spec.variant, parameters: spec.parameters, size_mm: spec.constraints.size_mm, resolution: res },
     },
   };

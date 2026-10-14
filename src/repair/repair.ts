@@ -7,6 +7,10 @@
 import { getBase } from "../bio/catalog.ts";
 import { evaluateSpec, type Evaluation } from "../evaluate.ts";
 import type { DesignSpec, HarnessResult, RepairStep } from "../types.ts";
+import { scaleWallThickness } from "../program/index.ts";
+
+/** Tolerance on the porosity target (absolute void fraction). */
+export const POROSITY_TOLERANCE = 0.02;
 
 export const MAX_REPAIR_ROUNDS = 5;
 
@@ -18,7 +22,7 @@ export interface RepairOutcome {
   rounds: number;
 }
 
-type Issue = { kind: "connectivity" | "min_wall" | "volume"; trigger: string };
+type Issue = { kind: "connectivity" | "min_wall" | "volume" | "porosity"; trigger: string };
 
 interface Action {
   parameter: string;
@@ -40,6 +44,12 @@ function diagnose(ev: Evaluation): Issue[] {
   const vmax = ev.spec.target_metrics.volume_fraction_max;
   if (vmax !== undefined && m.volume_fraction > vmax)
     issues.push({ kind: "volume", trigger: `volume fraction ${m.volume_fraction.toFixed(3)} > target ${vmax}` });
+  const pt = ev.spec.target_metrics.porosity;
+  if (pt !== undefined && Math.abs(m.porosity - pt) > POROSITY_TOLERANCE)
+    issues.push({
+      kind: "porosity",
+      trigger: `porosity ${m.porosity.toFixed(3)} differs from target ${pt.toFixed(3)} by more than ${POROSITY_TOLERANCE}`,
+    });
   return issues;
 }
 
@@ -57,6 +67,36 @@ function proposeAction(issue: Issue, ev: Evaluation): Action | null {
   const isLattice = spec.topology === "lattice" || spec.topology === "hybrid";
   const isTpms = spec.topology === "tpms";
   const cell = num(spec, "cell_size_mm", 4);
+
+  if (issue.kind === "porosity") {
+    // Porosity: void fraction = 1 - solid fraction. Solid fraction scales ~ r^2 for struts, ~ t for sheets.
+    const target = spec.target_metrics.porosity ?? 0;
+    const solid = Math.max(1e-6, ev.validation.data.metrics.volume_fraction);
+    const need = 1 - target;
+    if (isLattice) {
+      const from = num(spec, "strut_radius_mm", 0.1 * cell);
+      const k = Math.min(1.25, Math.max(0.8, Math.sqrt(need / solid)));
+      const to = Math.min(0.45 * cell, from * k);
+      if (to === from) return null;
+      return { parameter: "strut_radius_mm", from, to, action: `porosity target ${target}: scale strut radius x${(to / from).toFixed(3)} (cap 0.45 cell)`, priority: 1, scalesHetero: true };
+    }
+    if (isTpms) {
+      const from = num(spec, "wall_thickness_mm", 0.12 * cell);
+      const k = Math.min(1.25, Math.max(0.8, need / solid));
+      const to = Math.min(0.45 * cell, from * k);
+      if (to === from) return null;
+      return { parameter: "wall_thickness_mm", from, to, action: `porosity target ${target}: scale sheet thickness x${(to / from).toFixed(3)} (cap 0.45 period)`, priority: 1, scalesHetero: true };
+    }
+    return null;
+  }
+  if (spec.topology === "program") {
+    if (issue.kind !== "min_wall") return null;
+    const prog = spec.program!;
+    const probe = scaleWallThickness(prog, grow);
+    if (!probe) return null;
+    // Scale factor semantics: from = 1, to = grow (applied to the op's thickness expression / value).
+    return { parameter: `ops.${probe.opId}.thickness`, from: 1, to: grow, action: `scale wall thickness of op ${probe.opId} x${grow.toFixed(3)}`, priority: 1, scalesHetero: false };
+  }
 
   // Lattice and hybrid: the strut radius is the thickening parameter (hybrid bio part is left fixed).
   if (isLattice) {
@@ -100,6 +140,7 @@ function metricSubset(ev: Evaluation): Partial<import("../types.ts").DesignMetri
     genus: m.genus,
     components: m.components,
     volume_fraction: m.volume_fraction,
+    porosity: m.porosity,
   };
 }
 
@@ -109,6 +150,10 @@ function improved(kind: Issue["kind"], before: Evaluation, after: Evaluation): b
   if (a.components > b.components) return false; // never trade a fix for a split
   if (kind === "connectivity") return a.components < b.components || (a.connectivity && !b.connectivity);
   if (kind === "min_wall") return a.min_wall_thickness > b.min_wall_thickness + 1e-9;
+  if (kind === "porosity") {
+    const t = before.spec.target_metrics.porosity ?? 0;
+    return Math.abs(a.porosity - t) < Math.abs(b.porosity - t) - 1e-9;
+  }
   return a.volume_fraction < b.volume_fraction - 1e-9;
 }
 
@@ -139,11 +184,20 @@ export async function repairDesign(initial: Evaluation, maxRounds = MAX_REPAIR_R
       break;
     }
     const candidate = structuredClone(ev.spec);
-    candidate.parameters[action.parameter] = action.to;
+    if (candidate.topology === "program" && candidate.program) {
+      const k = action.to / action.from;
+      const scaled = scaleWallThickness(candidate.program, k)!;
+      candidate.program = scaled.program;
+    } else {
+      candidate.parameters[action.parameter] = action.to;
+    }
     if (action.scalesHetero && candidate.heterogeneity_field) {
       const k = action.to / action.from;
-      candidate.heterogeneity_field.min *= k;
-      candidate.heterogeneity_field.max *= k;
+      const het = candidate.heterogeneity_field;
+      het.min *= k;
+      het.max *= k;
+      // A user law thickness(u)=expr is scaled as a whole so that the profile keeps its shape.
+      if (het.expression) het.expression = `(${het.expression}) * ${k}`;
     }
     const next = await evaluateSpec(candidate);
     const ok = improved(issue.kind, ev, next);
@@ -170,6 +224,7 @@ export async function repairDesign(initial: Evaluation, maxRounds = MAX_REPAIR_R
   else observations.push(`${history.length} repair attempt(s), ${history.filter((h) => h.accepted).length} accepted. Stop: ${stopReason}`);
   limitations.push(`Repair is capped at ${maxRounds} rounds and runs one parameter change per round (greedy, no search).`);
   limitations.push("Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated).");
+  if (ev.spec.topology === "program") limitations.push("Program repair: only the first shell / graded_shell thickness is adjusted (priority 1); other ops are not changed.");
   if (ev.spec.topology === "tpms") limitations.push("TPMS: the absolute chord minimum is junction-dominated and does not track thickness, so repairs use the 5th-percentile wall.");
   return {
     harness: "RepairHarness",
@@ -180,7 +235,7 @@ export async function repairDesign(initial: Evaluation, maxRounds = MAX_REPAIR_R
     unknowns,
     evidence: {
       reproducible_params: { family: ev.spec.family, variant: ev.spec.variant, parameters: ev.spec.parameters, heterogeneity_field: ev.spec.heterogeneity_field },
-      priority_order: ["design parameters", "topology parameters", "code structure (manual)"],
+      priority_order: ["design parameters (min wall, porosity, volume)", "topology parameters", "code structure (manual)"],
       history_length: history.length,
     },
   };

@@ -5,6 +5,7 @@
 import { BIO_CATALOG, getBase, resolveParams, type BaseEntry } from "../bio/catalog.ts";
 import { retrieve } from "./retrieval.ts";
 import { makeHeterogeneity } from "../topology/heterogeneous.ts";
+import { extractProfileExpression } from "../expr/expr.ts";
 import type {
   Axis,
   DesignSpec,
@@ -200,8 +201,8 @@ export function parseIntent(prompt: string): HarnessResult<DesignSpec> {
 
   const porosity = /porosity[^0-9]{0,20}(\d+(?:\.\d+)?)\s*%/.exec(text);
   const volFrac = /volume fraction[^0-9]{0,20}(\d+(?:\.\d+)?)\s*%/.exec(text);
-  if (porosity) target.volume_fraction_max = 1 - Number(porosity[1]) / 100;
-  else if (volFrac) target.volume_fraction_max = Number(volFrac[1]) / 100;
+  if (porosity) target.porosity = Number(porosity[1]) / 100;
+  if (volFrac) target.volume_fraction_max = Number(volFrac[1]) / 100;
   if (minWall !== undefined) target.min_wall_thickness_mm = minWall;
   const genus = /genus[^0-9]{0,10}(\d+)/.exec(text);
   if (genus) target.genus = Number(genus[1]);
@@ -272,9 +273,19 @@ export function parseIntent(prompt: string): HarnessResult<DesignSpec> {
       if (wall) parameters.wall_thickness_mm = Number(wall[1] ?? wall[2]);
       else unknowns.push("TPMS wall thickness not given; 12% of the period assumed.");
     }
-    if (RE.hetero.test(text) || /sin\b|sinus|parabol/.test(text)) {
-      let rule: HeterogeneityRule = "linear";
-      if (/parabol/.test(text)) rule = "parabola";
+    // A user-stated profile law `thickness(u) = expr` (u = normalised position along the axis).
+    let exprText: string | undefined;
+    const extracted = extractProfileExpression(text);
+    if (extracted) {
+      exprText = extracted.expr;
+      if (extracted.rest) unknowns.push(`Heterogeneity expression stops at "${exprText}"; trailing text "${extracted.rest}" ignored.`);
+    } else if (/(?:thickness|radius)\s*\(\s*u\s*\)\s*=/.test(text)) {
+      unknowns.push("Heterogeneity expression could not be parsed; a preset profile is used instead.");
+    }
+    if (RE.hetero.test(text) || exprText || /sin\b|sinus|parabol/.test(text)) {
+      let rule: HeterogeneityRule = exprText ? "expr" : "linear";
+      if (exprText) observations.push(`Heterogeneity law: thickness(u) = ${exprText} (u in [0,1] along the axis, clamped to the min..max range).`);
+      else if (/parabol/.test(text)) rule = "parabola";
       else if (/\bsin|sinus/.test(text)) rule = "sin";
       const dm = /(?:along|in|on) (?:the )?(x|y|z)\b|(?:沿|沿着)\s*(x|y|z)/.exec(text);
       const direction: Axis = (dm ? (dm[1] ?? dm[2]) : "z") as Axis;
@@ -286,7 +297,7 @@ export function parseIntent(prompt: string): HarnessResult<DesignSpec> {
       let min = range ? Number(range[1]) : fallbackBase * 0.6;
       let max = range ? Number(range[2]) : fallbackBase * 1.4;
       if (!range) unknowns.push(`Heterogeneity range not stated; ${min.toFixed(3)}-${max.toFixed(3)} mm assumed around the base value.`);
-      heterogeneity_field = makeHeterogeneity(rule, direction, min, max);
+      heterogeneity_field = makeHeterogeneity(rule, direction, min, max, exprText);
       observations.push(`Heterogeneous profile: ${rule} along ${direction}, ${min.toFixed(3)}..${max.toFixed(3)} mm.`);
     }
     if (topology !== "hybrid") bioMotif = `${topology}:${variant}`;

@@ -8,6 +8,8 @@ import { clipToBox, sdUnion, type Field } from "./fields.ts";
 import { makeHeterogeneity } from "./heterogeneous.ts";
 import { strutLattice, tpmsShell, TPMS_EXPR } from "./lattice.ts";
 import type { DesignSpec, HarnessResult, HeterogeneityField, LatticeType, TpmsType } from "../types.ts";
+import { compileProgramField } from "../program/sdf.ts";
+import type { FeatureProgram } from "../program/types.ts";
 
 export interface TopologyBuild {
   field: Field;
@@ -19,6 +21,12 @@ export interface TopologyBuild {
   cells: [number, number, number] | null;
   cellSize: number | null;
   description: string;
+  /** Feature program (topology "program"): executed exactly by GeometryHarness. */
+  program: FeatureProgram | null;
+  /** Per-op SDF construction notes (exact / approximate). */
+  programNotes: Record<string, string>;
+  /** Ops whose SDF is only approximate (B-Rep remains the reference). */
+  programApproximate: string[];
 }
 
 export const LATTICE_TYPES: LatticeType[] = ["sc", "bcc", "fcc", "fbcc", "diamond"];
@@ -78,6 +86,9 @@ export function buildTopology(spec: DesignSpec): HarnessResult<TopologyBuild> {
       cells: null,
       cellSize: null,
       description: `${bio.base.id} (${bio.base.description})`,
+      program: null,
+      programNotes: {},
+      programApproximate: [],
     };
     observations.push(`Resolved base structure ${bio.base.id}: ${JSON.stringify(bio.params)} (seed ${bio.seed}).`);
     if (bio.clamped.length) observations.push(`Parameters clamped to benchmark ranges: ${bio.clamped.join("; ")}.`);
@@ -96,6 +107,9 @@ export function buildTopology(spec: DesignSpec): HarnessResult<TopologyBuild> {
       bio: null,
       cells: r.cells,
       cellSize: r.cellSize,
+      program: null,
+      programNotes: {},
+      programApproximate: [],
       description: `${type.toUpperCase()} strut lattice, ${r.cells.join("x")} cells of ${r.cellSize.toFixed(3)} mm`,
     };
     observations.push(`Strut lattice ${type} with ${r.cells.join("x")} cells, cell edge ${r.cellSize.toFixed(4)} mm (build edge ${L} mm).`);
@@ -112,11 +126,37 @@ export function buildTopology(spec: DesignSpec): HarnessResult<TopologyBuild> {
       bio: null,
       cells: r.cells,
       cellSize: r.cellSize,
+      program: null,
+      programNotes: {},
+      programApproximate: [],
       description: `${type} TPMS sheet, period ${r.cellSize.toFixed(3)} mm`,
     };
     observations.push(`TPMS ${type}: F = ${TPMS_EXPR[type]}; period ${r.cellSize.toFixed(4)} mm, ${r.cells.join("x")} periods.`);
     limitations.push("TPMS sheets use the first-order distance |F|/|grad F| - t/2 (not an exact Euclidean SDF); accurate near the sheet.");
     limitations.push("TPMS geometry is SDF-only; STL/glTF are produced by surface nets, STEP is not available.");
+  } else if (spec.topology === "program") {
+    if (!spec.program) throw new Error("topology \"program\" requires spec.program");
+    const compiled = compileProgramField(spec.program);
+    build = {
+      field: compiled.field,
+      parts: {},
+      smoothPasses: 0,
+      brep: null,
+      bio: null,
+      cells: null,
+      cellSize: null,
+      program: spec.program,
+      programNotes: compiled.notes,
+      programApproximate: compiled.approximate,
+      description: `feature program "${spec.program.name}" (${spec.program.ops.length} timeline ops, result ${spec.program.result})`,
+    };
+    observations.push(`Timeline ops: ${spec.program.ops.map((o) => `${o.id}:${o.op}`).join(" -> ")}.`);
+    for (const [id, note] of Object.entries(compiled.notes)) observations.push(`SDF ${id}: ${note}.`);
+    limitations.push("SDF sign convention per op is listed in observations; approximate ops are reported in the limitations below.");
+    if (compiled.approximate.length) {
+      limitations.push(`SDF approximation for ops ${compiled.approximate.join(", ")}: the B-Rep is the reference; the cross-check reports the deviation.`);
+    }
+    limitations.push("Feature programs: all coordinates are absolute millimetres; the kernel is smlibwasm (no re-centring).");
   } else {
     // hybrid: union of a strut/TPMS lattice and a bioinspired base structure (both in mm).
     const variant = spec.variant.includes(":") ? spec.variant.split(":")[1] : spec.variant;
@@ -137,6 +177,9 @@ export function buildTopology(spec: DesignSpec): HarnessResult<TopologyBuild> {
       bio,
       cells: lat.cells,
       cellSize: lat.cellSize,
+      program: null,
+      programNotes: {},
+      programApproximate: [],
       description: `hybrid: ${latticeType} lattice union ${bio.base.id}`,
     };
     observations.push(`Hybrid union of ${latticeType} lattice and ${bio.base.id}.`);
@@ -144,7 +187,7 @@ export function buildTopology(spec: DesignSpec): HarnessResult<TopologyBuild> {
   }
 
   const evidence = {
-    reproducible_params: { family: spec.family, variant: spec.variant, parameters: spec.parameters, size_mm: L, heterogeneity: het },
+    reproducible_params: { family: spec.family, variant: spec.variant, parameters: spec.parameters, size_mm: L, heterogeneity: het, program: spec.program ?? null },
     sdf_expression: build.field.expr,
     source_refs: [
       "Bioinspired123D base codes (lamm-mit/Bioinspired123D, Apache-2.0)",

@@ -1,12 +1,12 @@
 // Shared contracts for the Bioinspired123D-WASM multi-harness pipeline.
 // Units: millimetres (mm), mm^3 for volume, mm^2 for area, unless a field says otherwise.
 
-export type Topology = "tubular" | "helical" | "cellular" | "lattice" | "tpms" | "hybrid";
+export type Topology = "tubular" | "helical" | "cellular" | "lattice" | "tpms" | "hybrid" | "program";
 
 export type LatticeType = "sc" | "bcc" | "fcc" | "fbcc" | "diamond";
 export type TpmsType = "gyroid" | "schwarz_p" | "schwarz_d";
 
-export type HeterogeneityRule = "uniform" | "linear" | "sin" | "parabola";
+export type HeterogeneityRule = "uniform" | "linear" | "sin" | "parabola" | "expr";
 export type Axis = "x" | "y" | "z";
 
 export interface HeterogeneityField {
@@ -17,6 +17,8 @@ export interface HeterogeneityField {
   /** Minimum thickness (mm) or strut radius (mm). For `uniform`, min === max. */
   min: number;
   max: number;
+  /** For rule `expr`: thickness(u) expression in u in [0,1] (see src/expr/expr.ts); clamped to [min,max]. */
+  expression?: string;
 }
 
 export interface TargetMetrics {
@@ -28,6 +30,8 @@ export interface TargetMetrics {
   connectivity?: boolean;
   /** Expected handle count (first Betti number), if the user stated one. */
   genus?: number;
+  /** Target solid porosity (void fraction, 0..1) for lattice / TPMS designs. */
+  porosity?: number;
 }
 
 export interface DesignConstraints {
@@ -72,6 +76,8 @@ export interface HarnessResult<T> extends HarnessReport {
 
 export interface DesignSpec {
   topology: Topology;
+  /** Feature program (topology "program" only): the parametric timeline executed by GeometryHarness. */
+  program?: import("./program/types.ts").FeatureProgram;
   bio_motif: string;
   family: string;
   variant: string;
@@ -105,6 +111,8 @@ export interface DesignMetrics {
   bbox_mm: [[number, number, number], [number, number, number]];
   brep_vs_sdf_volume_rel_err: number | null;
   preview_coverage: number;
+  /** Measured porosity (1 - volume fraction); equals 1 - volume_fraction. */
+  porosity: number;
 }
 
 export interface RepairStep {

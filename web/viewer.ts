@@ -90,9 +90,30 @@ function attachDrag(canvas: HTMLCanvasElement, state: { ax: number; ay: number }
   });
 }
 
-export async function createViewer(canvas: HTMLCanvasElement, mesh: MeshInput): Promise<Viewer> {
+export interface BackendEnv {
+  /** navigator.gpu is present and an adapter can be requested. */
+  webgpu: boolean;
+  /** A WebGL2 context can be created on the canvas. */
+  webgl2: boolean;
+}
+
+/**
+ * Pure backend choice: WebGPU -> WebGL2 -> CPU. `force` (from the page URL, e.g. ?backend=cpu)
+ * skips the GPU paths; it is used by the CPU-only verification.
+ */
+export function chooseBackend(env: BackendEnv, force?: Backend): Backend {
+  if (force === "cpu") return "cpu";
+  if (force === "webgl2") return env.webgl2 ? "webgl2" : "cpu";
+  if (force === "webgpu") return env.webgpu ? "webgpu" : env.webgl2 ? "webgl2" : "cpu";
+  if (env.webgpu) return "webgpu";
+  if (env.webgl2) return "webgl2";
+  return "cpu";
+}
+
+export async function createViewer(canvas: HTMLCanvasElement, mesh: MeshInput, force?: Backend): Promise<Viewer> {
+  if (force === "cpu") return { backend: "cpu", destroy() {} };
   const gpu = (navigator as any).gpu;
-  if (gpu) {
+  if (gpu && force !== "webgl2") {
     try {
       const adapter = await gpu.requestAdapter();
       if (adapter) {

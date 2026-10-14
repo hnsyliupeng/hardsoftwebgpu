@@ -35,7 +35,7 @@ export function loadKernel(): Promise<Kernel> {
   return kernelPromise;
 }
 
-function measure(shape: any): { volume: number; area: number; centerOfMass: [number, number, number] } {
+export function measure(shape: any): { volume: number; area: number; centerOfMass: [number, number, number] } {
   const mp = shape.massProperties();
   const c = mp.center;
   return {
@@ -45,7 +45,7 @@ function measure(shape: any): { volume: number; area: number; centerOfMass: [num
   };
 }
 
-function meshOf(K: Kernel, shape: any): BrepSolid["mesh"] {
+export function meshOf(K: Kernel, shape: any): BrepSolid["mesh"] {
   const t = K.tessellate(shape);
   const positions = Float32Array.from(t.vertices as ArrayLike<number>);
   const indices = Uint32Array.from(t.triangles as ArrayLike<number>);

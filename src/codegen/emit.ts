@@ -7,6 +7,9 @@ import type { DesignSpec } from "../types.ts";
 export function emitParametricCode(spec: DesignSpec, prompt: string, importPath = "../../src/evaluate.ts"): string {
   const h = spec.heterogeneity_field;
   const sdf = describeSdf(spec);
+  const prog = spec.program
+    ? `// ---- Feature program (SolidCraft-style timeline; executed in order on smlibwasm) ----------\nconst program = ${JSON.stringify(spec.program, null, 2)} as const;\n\n`
+    : "";
   return `// Bioinspired123D-WASM parametric design (final state after RepairHarness).
 // Prompt: ${JSON.stringify(prompt)}
 // Run from the project root:  node --experimental-strip-types artifacts/<name>/design.ts
@@ -16,7 +19,7 @@ export function emitParametricCode(spec: DesignSpec, prompt: string, importPath 
 import { evaluateSpec } from "${importPath}";
 import type { DesignSpec } from "${importPath.replace("evaluate.ts", "types.ts")}";
 
-// ---- Parameters ----------------------------------------------------------------------------
+${prog}// ---- Parameters ----------------------------------------------------------------------------
 const size_mm = ${spec.constraints.size_mm};
 const resolution = ${spec.constraints.resolution};
 const min_printable_wall_mm = ${spec.constraints.min_printable_wall_mm};
@@ -25,7 +28,7 @@ const heterogeneity_field = ${h ? JSON.stringify(h) : "null"};
 
 // ---- Design specification (IntentHarness output, with the constants above applied) ----------
 const spec: DesignSpec = {
-  topology: ${JSON.stringify(spec.topology)},
+  topology: ${JSON.stringify(spec.topology)},${spec.program ? "\n  program: program as unknown as NonNullable<DesignSpec[\"program\"]>," : ""}
   bio_motif: ${JSON.stringify(spec.bio_motif)},
   family: ${JSON.stringify(spec.family)},
   variant: ${JSON.stringify(spec.variant)},
@@ -50,12 +53,16 @@ console.log(JSON.stringify({
   genus: m.genus,
   center_of_mass_mm: m.center_of_mass,
   volume_source: m.volume_source,
+  porosity: m.porosity,
+  timeline_steps: ev.geometry.data.programSteps,
 }, null, 2));
 `;
 }
 
 function describeSdf(spec: DesignSpec): string {
   switch (spec.topology) {
+    case "program":
+      return "feature timeline: per-op SDF (sdRoundedBox / capped cylinder / min-max booleans / inset shells / ruled loft / capped sweep); see src/program/sdf.ts";
     case "tpms":
       return `|F(x,y,z)| - t/2 with F = ${spec.variant} implicit (see TPMS_EXPR in src/topology/lattice.ts)`;
     case "lattice":

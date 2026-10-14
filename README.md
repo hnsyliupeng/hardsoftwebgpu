@@ -11,11 +11,14 @@ Every harness returns `observations`, `limitations`, `unknowns` and `evidence`.
 
 ```bash
 npm install            # Node >= 22.18 (type stripping is used for .ts scripts)
-npm test               # 19 node:test cases (topology, geometry, intent, repair, export)
+npm test               # 53 node:test cases (topology, geometry, intent, repair, expr, program, viewer, pipeline)
 npm run typecheck
 npm run run -- "gyroid TPMS wall thickness 0.2 mm, 4 mm cell" gyroid_repair 96
+npm run run -- --program rounded_hollow_box rounded_hollow_box 96   # feature timeline example
 node --experimental-strip-types artifacts/gyroid_repair/design.ts   # re-run the parametric code
-npm run benchmark      # IntentHarness over eval/benchmark.csv (320 prompts)
+node --experimental-strip-types scripts/selftest.ts                 # 64 CPU checks (artifacts/selftest/report.json)
+node --experimental-strip-types scripts/pipeline_bench.ts 48        # 320 prompts through the full chain (CPU)
+npm run benchmark      # IntentHarness over eval/benchmark.csv (320 prompts; keyword coverage only)
 npm run build:web && npm run serve   # web app on http://0.0.0.0:5173
 ```
 
@@ -27,6 +30,9 @@ npm run build:web && npm run serve   # web app on http://0.0.0.0:5173
 | 12 bio base structures (ported parameter ranges) | `src/bio/catalog.ts`, `src/bio/families.ts` |
 | Lattice / TPMS / heterogeneity (LatticeQuery formulas) | `src/topology/lattice.ts`, `src/topology/heterogeneous.ts` |
 | Exact B-Rep (smlibwasm) | `src/geometry/brep.ts` |
+| Feature timeline (box, cylinder, boolean, fillet, shell, offset, loft, sweep, graded shell) | `src/program/*` |
+| Expression law `thickness(u) = …` | `src/expr/expr.ts` |
+| Programmatic entry point | `src/api.ts` (`runDesign`) |
 | SDF sampling, surface nets, voxel topology | `src/geometry/grid.ts`, `src/geometry/index.ts` |
 | Validation, wall thickness by inward rays, preview | `src/validation/*.ts`, `src/render/preview.ts` |
 | Repair loop (≤ 5 rounds, full history) | `src/repair/repair.ts` |
@@ -38,7 +44,10 @@ npm run build:web && npm run serve   # web app on http://0.0.0.0:5173
 
 1. **smlibwasm** (`@classcad/smlibwasm` 0.2.3, exact NURBS): helical and tubular families → volume, area, centre of mass, STEP.
 2. **SDF + surface nets** (TypeScript, WASM-free): lattices, TPMS, cellular/Voronoi, and hybrids. Used for validation topology for every design.
-3. SolidCraft / SolveCraft feature timeline and a Rust/WASM kernel were **not** built: the Rust toolchain could not be installed in the sandbox (no route to `static.rust-lang.org`). The SDF path is TypeScript.
+3. **Feature timeline**: implemented here in TypeScript on top of smlibwasm (exact B-Rep) and the TypeScript SDF path (cross-check). It is our own implementation, not SolidCraft's code. The SolidCraft repository (a Rust desktop CAD app with a parametric timeline; also called SolveCraft) is **github.com/bherbruck/solidcraft**. It was read for reference only and was not built or used.
+4. The Rust/WASM SDF kernel was replaced by the TypeScript SDF kernel (amendment: the Rust toolchain is unreachable in this sandbox).
+
+See `docs/FEATURE_AUDIT.md` for the full requirement checklist with evidence.
 
 ## Metrics
 
@@ -57,6 +66,9 @@ npm run build:web && npm run serve   # web app on http://0.0.0.0:5173
 - STEP is only produced for B-Rep designs (helical, tubular).
 - The web app's WebGPU and WebGL2 paths were type-checked and bundled but **not executed in a real browser** (no browser in the sandbox). The worker pipeline was executed from the bundle under Node, including the smlibwasm kernel.
 - Heavy mesh exports (e.g. the 846k-triangle gyroid, ~90 MB across formats) are written where `OUT_DIR` points.
+- Validation does not execute the emitted `design.ts`. The web app runs the pipeline in a Worker; the CLI runs it in-process. Each `design.ts` was executed separately and reproduced its volume.
+- The ray-chord wall estimate measures the solid. Fused helical plies therefore report the block thickness, not one ply.
+- The 320-prompt full-chain sweep (`scripts/pipeline_bench.ts`) runs at resolution 48. All 320 designs passed every harness with connectivity true.
 
 ## Attribution
 

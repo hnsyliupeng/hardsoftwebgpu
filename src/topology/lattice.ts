@@ -119,7 +119,7 @@ export function strutLattice(opts: StrutLatticeOptions): Field {
   // Per-cell radius along the variation direction (cell-centre sampling of the profile).
   const radiusAt: number[] = [];
   for (let i = 0; i < nDir; i++) {
-    radiusAt.push(het ? heteroValue(het.rule, (i + 0.5) / nDir, het.min, het.max) : radius);
+    radiusAt.push(het ? heteroValue(het.rule, (i + 0.5) / nDir, het.min, het.max, het.expression) : radius);
   }
   const rMax = het ? maxValue(het) : radius;
   const bounds: Bounds = {
@@ -129,7 +129,7 @@ export function strutLattice(opts: StrutLatticeOptions): Field {
 
   const expr =
     `min_over_cells( min_seg( dist(p, seg_i) - r(cell) ) ) clipped to [0,${(nx * a).toFixed(3)}]x[0,${(ny * a).toFixed(3)}]x[0,${(nz * a).toFixed(3)}]` +
-    `; type=${type}, cell=${a}mm, r=${het ? `${het.rule}(${het.min}..${het.max}, dir=${het.direction})` : radius}`;
+    `; type=${type}, cell=${a}mm, r=${het ? `${het.expression ? `expr(${het.expression})` : het.rule}(${het.min}..${het.max}, dir=${het.direction})` : radius}`;
 
   const field: Field = {
     bounds,
@@ -246,10 +246,10 @@ export function tpmsShell(opts: TpmsOptions): Field {
   const L = [cells[0] * a, cells[1] * a, cells[2] * a];
   const k = (2 * Math.PI) / a;
   const bounds: Bounds = { min: [0, 0, 0], max: [L[0], L[1], L[2]] };
-  const wallAt = (u: number): number => (het ? heteroValue(het.rule, u, het.min, het.max) : thickness);
+  const wallAt = (u: number): number => (het ? heteroValue(het.rule, u, het.min, het.max, het.expression) : thickness);
   const expr =
     `max( (|F| / |grad F|) - t(u)/2 , sdBox ); F = ${TPMS_EXPR[type]} with X=2*pi*x/${a}` +
-    `; t=${het ? `${het.rule}(${het.min}..${het.max}, dir=${het.direction})` : thickness}`;
+    `; t=${het ? `${het.expression ? `expr(${het.expression})` : het.rule}(${het.min}..${het.max}, dir=${het.direction})` : thickness}`;
   return {
     bounds,
     expr,
