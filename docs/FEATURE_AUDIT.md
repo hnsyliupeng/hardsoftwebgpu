@@ -117,3 +117,7 @@ Each regenerated `artifacts/<name>/design.ts` was executed with `node --experime
 | `rounded_hollow_box` (res 96) | 2860.062 | 2860.062 | 0 |
 
 Meshes too large for the workspace (gyroid STL, sandwich and BCC meshes) were written to `/tmp/work/meshes/` and are not in the repository.
+
+## Open item: wall-limit wording (decided: keep)
+
+`src/geometry/index.ts` describes the wall limit as "~2h", and `src/validation/validate.ts` describes it as "3h". The owner chose to keep both wordings unchanged. This note records the discrepancy so it is not mistaken for a fix. Behaviour is unaffected.
