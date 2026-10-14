@@ -13,7 +13,7 @@
     "constraints": {
       "size_mm": 20,
       "min_printable_wall_mm": 0.4,
-      "resolution": 96
+      "resolution": 192
     },
     "retrieval": {
       "base_id": "cellular_generic",
@@ -60,7 +60,7 @@
         "constraints": {
           "size_mm": 20,
           "min_printable_wall_mm": 0.4,
-          "resolution": 96
+          "resolution": 192
         },
         "retrieval": {
           "base_id": "cellular_generic",
@@ -105,7 +105,7 @@
         "constraints": {
           "size_mm": 20,
           "min_printable_wall_mm": 0.4,
-          "resolution": 96
+          "resolution": 192
         },
         "retrieval": {
           "base_id": "helical_generic",
@@ -134,22 +134,21 @@
     }
   },
   "metrics": {
-    "volume": 7397.876929547491,
-    "surface_area": 3137.5868270294804,
-    "min_wall_thickness": 0.47896644237276015,
+    "volume": 7407.3910175057545,
+    "surface_area": 3247.2299159335657,
+    "min_wall_thickness": 0.47981039564408295,
     "connectivity": true,
-    "genus": 45
+    "genus": 52
   },
   "render_preview": null,
   "repair_history": [],
   "limitations": [
     "Fusion geometry is SDF-only. Zoned fusion cuts each part with a half-space and unites them over an overlap band; the seam is a planar cut, not an exact B-Rep boolean.",
     "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
-    "SDF surface resolution is limited to h = 0.2083 mm (constraints.resolution = 96); features below ~2h are not resolved.",
-    "Minimum wall 0.479 mm is under-resolved (3h = 0.625 mm); increase constraints.resolution to confirm it.",
+    "SDF surface resolution is limited to h = 0.1042 mm (constraints.resolution = 192); features below ~2h are not resolved.",
     "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
     "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
-    "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.104 mm; 2 sub-voxel chords discarded. Not a certified manufacturing check.",
+    "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.052 mm; 2 sub-voxel chords discarded. Not a certified manufacturing check.",
     "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
     "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
   ],
@@ -158,7 +157,8 @@
     "Build edge length not given; 20 mm cube assumed.",
     "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
     "Parameter thickness not stated; default 0.2 used.",
-    "Low intent confidence: please confirm the topology."
+    "Low intent confidence: please confirm the topology.",
+    "Resolution above 160 per axis may exceed browser memory budgets."
   ],
   "validation": {
     "id": "fusion_gyroid_plus_helical",
@@ -182,13 +182,19 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 144 7402.9 vs MC 7411.1 mm3 (0.11 %)",
+        "value": "mesh at 240 7405.2 vs MC 7411.1 mm3 (0.08 %)",
         "rule": "<= 5 % (finer mesh)"
+      },
+      {
+        "name": "watertight",
+        "pass": true,
+        "value": "0 open edges",
+        "rule": "0 open edges"
       },
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "96 px-grid 7397.9 vs 144 7402.9 mm3 (0.07 %)",
+        "value": "192 px-grid 7407.4 vs 240 7405.2 mm3 (0.03 %)",
         "rule": "<= 5 %"
       },
       {
@@ -207,28 +213,29 @@
     "topology": "fusion",
     "variant": "union",
     "grid": {
-      "resolution": 96,
-      "resolution_convergence": 144
+      "resolution": 192,
+      "resolution_convergence": 240
     },
     "metrics": {
-      "volume_mm3": 7397.877,
+      "volume_mm3": 7407.391,
       "volume_mc_mm3": 7411.08,
-      "surface_area_mm2": 3137.587,
-      "volume_fraction": 0.92473,
-      "porosity": 0.07527,
+      "surface_area_mm2": 3247.23,
+      "volume_fraction": 0.92592,
+      "porosity": 0.07408,
       "components": 1,
-      "cavities": 7,
-      "genus_handles": 45,
-      "euler_characteristic": -37,
-      "min_wall_p5_mm": 0.479,
-      "min_wall_median_mm": 19.0115,
-      "triangles": 174440,
+      "cavities": 5,
+      "genus_handles": 52,
+      "euler_characteristic": -46,
+      "min_wall_p5_mm": 0.4798,
+      "min_wall_median_mm": 18.8788,
+      "triangles": 722520,
       "center_of_mass": [
-        10.0001,
-        10.0039,
-        10.0025
+        10.0003,
+        10.0036,
+        10.0024
       ]
     },
+    "coupling_metrics": null,
     "harness_ok": {
       "IntentHarness": true,
       "TopologyHarness": true,
@@ -240,11 +247,10 @@
     "limitations": [
       "Fusion geometry is SDF-only. Zoned fusion cuts each part with a half-space and unites them over an overlap band; the seam is a planar cut, not an exact B-Rep boolean.",
       "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
-      "SDF surface resolution is limited to h = 0.2083 mm (constraints.resolution = 96); features below ~2h are not resolved.",
-      "Minimum wall 0.479 mm is under-resolved (3h = 0.625 mm); increase constraints.resolution to confirm it.",
+      "SDF surface resolution is limited to h = 0.1042 mm (constraints.resolution = 192); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
-      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.104 mm; 2 sub-voxel chords discarded. Not a certified manufacturing check.",
+      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.052 mm; 2 sub-voxel chords discarded. Not a certified manufacturing check.",
       "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
       "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
     ],
@@ -253,7 +259,8 @@
       "Build edge length not given; 20 mm cube assumed.",
       "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
       "Parameter thickness not stated; default 0.2 used.",
-      "Low intent confidence: please confirm the topology."
+      "Low intent confidence: please confirm the topology.",
+      "Resolution above 160 per axis may exceed browser memory budgets."
     ],
     "design_spec": {
       "topology": "fusion",
@@ -268,7 +275,7 @@
       "constraints": {
         "size_mm": 20,
         "min_printable_wall_mm": 0.4,
-        "resolution": 96
+        "resolution": 192
       },
       "retrieval": {
         "base_id": "cellular_generic",
@@ -315,7 +322,7 @@
           "constraints": {
             "size_mm": 20,
             "min_printable_wall_mm": 0.4,
-            "resolution": 96
+            "resolution": 192
           },
           "retrieval": {
             "base_id": "cellular_generic",
@@ -360,7 +367,7 @@
           "constraints": {
             "size_mm": 20,
             "min_printable_wall_mm": 0.4,
-            "resolution": 96
+            "resolution": 192
           },
           "retrieval": {
             "base_id": "helical_generic",
@@ -388,6 +395,6 @@
         }
       }
     },
-    "timing_s": 11
+    "timing_s": 45.7
   }
 }

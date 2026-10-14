@@ -18,7 +18,7 @@
     "constraints": {
       "size_mm": 20,
       "min_printable_wall_mm": 0.4,
-      "resolution": 96
+      "resolution": 192
     },
     "retrieval": {
       "base_id": "tubular_shapesize",
@@ -50,7 +50,7 @@
   "metrics": {
     "volume": 6492.035526276915,
     "surface_area": 4787.673886914178,
-    "min_wall_thickness": 1.21823731989229,
+    "min_wall_thickness": 1.1750561570156528,
     "connectivity": true,
     "genus": 16
   },
@@ -59,10 +59,10 @@
   "limitations": [
     "Elliptical holes use an approximate ellipse distance (B-Rep path uses exact ellipses).",
     "Kernel tessellation is used for display/STL of B-Rep designs; its tolerance is set by the kernel defaults.",
-    "SDF surface resolution is limited to h = 0.2083 mm (constraints.resolution = 96); features below ~2h are not resolved.",
+    "SDF surface resolution is limited to h = 0.1042 mm (constraints.resolution = 192); features below ~2h are not resolved.",
     "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
     "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
-    "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.104 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
+    "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.052 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
     "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
     "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
   ],
@@ -71,7 +71,8 @@
     "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
     "Parameter num_tubules not stated; default 16 used.",
     "Parameter ellipticity not stated; default 1.5 used.",
-    "Parameter radius not stated; default 0.1 used."
+    "Parameter radius not stated; default 0.1 used.",
+    "Resolution above 160 per axis may exceed browser memory budgets."
   ],
   "validation": {
     "id": "bio_tubular_shapesize",
@@ -95,13 +96,19 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 144 6492.0 vs MC 6491.2 mm3 (0.01 %)",
+        "value": "mesh at 240 6492.0 vs MC 6491.2 mm3 (0.01 %)",
         "rule": "<= 5 % (finer mesh)"
+      },
+      {
+        "name": "watertight",
+        "pass": true,
+        "value": "0 open edges",
+        "rule": "0 open edges"
       },
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "96 px-grid 6492.0 vs 144 6492.0 mm3 (0.00 %)",
+        "value": "192 px-grid 6492.0 vs 240 6492.0 mm3 (0.00 %)",
         "rule": "<= 5 %"
       },
       {
@@ -114,8 +121,8 @@
     "topology": "tubular",
     "variant": "tubular_shapesize",
     "grid": {
-      "resolution": 96,
-      "resolution_convergence": 144
+      "resolution": 192,
+      "resolution_convergence": 240
     },
     "metrics": {
       "volume_mm3": 6492.036,
@@ -127,8 +134,8 @@
       "cavities": 0,
       "genus_handles": 16,
       "euler_characteristic": -15,
-      "min_wall_p5_mm": 1.2182,
-      "min_wall_median_mm": 4.7396,
+      "min_wall_p5_mm": 1.1751,
+      "min_wall_median_mm": 4.6135,
       "triangles": 2380,
       "center_of_mass": [
         10,
@@ -136,6 +143,7 @@
         10
       ]
     },
+    "coupling_metrics": null,
     "harness_ok": {
       "IntentHarness": true,
       "TopologyHarness": true,
@@ -147,10 +155,10 @@
     "limitations": [
       "Elliptical holes use an approximate ellipse distance (B-Rep path uses exact ellipses).",
       "Kernel tessellation is used for display/STL of B-Rep designs; its tolerance is set by the kernel defaults.",
-      "SDF surface resolution is limited to h = 0.2083 mm (constraints.resolution = 96); features below ~2h are not resolved.",
+      "SDF surface resolution is limited to h = 0.1042 mm (constraints.resolution = 192); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
-      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.104 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
+      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.052 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
       "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
       "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
     ],
@@ -159,7 +167,8 @@
       "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
       "Parameter num_tubules not stated; default 16 used.",
       "Parameter ellipticity not stated; default 1.5 used.",
-      "Parameter radius not stated; default 0.1 used."
+      "Parameter radius not stated; default 0.1 used.",
+      "Resolution above 160 per axis may exceed browser memory budgets."
     ],
     "design_spec": {
       "topology": "tubular",
@@ -179,7 +188,7 @@
       "constraints": {
         "size_mm": 20,
         "min_printable_wall_mm": 0.4,
-        "resolution": 96
+        "resolution": 192
       },
       "retrieval": {
         "base_id": "tubular_shapesize",
@@ -208,6 +217,6 @@
       ],
       "notes": []
     },
-    "timing_s": 15.6
+    "timing_s": 59.4
   }
 }

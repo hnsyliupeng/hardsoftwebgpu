@@ -9,7 +9,7 @@ import type { DesignSpec } from "../../../src/types.ts";
 
 // ---- Parameters ----------------------------------------------------------------------------
 const size_mm = 20;
-const resolution = 96;
+const resolution = 192;
 const min_printable_wall_mm = 0.4;
 const parameters = {} as const;
 const heterogeneity_field = null;
@@ -17,7 +17,8 @@ const heterogeneity_field = null;
 // ---- Design specification (IntentHarness output, with the constants above applied) ----------
 const spec: DesignSpec = {
   topology: "fusion",
-  fusion: {"mode":"union","a":{"topology":"lattice","bio_motif":"lattice:bccz","family":"lattice","variant":"bccz","parameters":{"seed":42,"cell_size_mm":4,"strut_radius_mm":0.4},"heterogeneity_field":null,"target_metrics":{"connectivity":true},"constraints":{"size_mm":20,"min_printable_wall_mm":0.4,"resolution":96},"retrieval":{"base_id":"cellular_generic","top_k":[{"id":"cellular_generic","score":2.49},{"id":"cellular_sandwich","score":0},{"id":"cellular_voronoi","score":0}]},"confidence":0.85,"unknowns":["Build edge length not given; 20 mm cube assumed.","Printability floor not given; 0.4 mm assumed for the RepairHarness.","Unit cell size not given; 4 mm assumed.","Strut radius not given; 10% of the cell size assumed."],"notes":[]},"skin_mm":1} as unknown as NonNullable<DesignSpec["fusion"]>,
+  
+  fusion: {"mode":"union","a":{"topology":"lattice","bio_motif":"lattice:bccz","family":"lattice","variant":"bccz","parameters":{"seed":42,"cell_size_mm":4,"strut_radius_mm":0.4},"heterogeneity_field":null,"target_metrics":{"connectivity":true},"constraints":{"size_mm":20,"min_printable_wall_mm":0.4,"resolution":192},"retrieval":{"base_id":"cellular_generic","top_k":[{"id":"cellular_generic","score":2.49},{"id":"cellular_sandwich","score":0},{"id":"cellular_voronoi","score":0}]},"confidence":0.85,"unknowns":["Build edge length not given; 20 mm cube assumed.","Printability floor not given; 0.4 mm assumed for the RepairHarness.","Unit cell size not given; 4 mm assumed.","Strut radius not given; 10% of the cell size assumed."],"notes":[]},"skin_mm":1} as unknown as NonNullable<DesignSpec["fusion"]>,
   bio_motif: "fusion:union",
   family: "fusion",
   variant: "union",

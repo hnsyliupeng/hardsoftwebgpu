@@ -1,7 +1,7 @@
 // Shared contracts for the Bioinspired123D-WASM multi-harness pipeline.
 // Units: millimetres (mm), mm^3 for volume, mm^2 for area, unless a field says otherwise.
 
-export type Topology = "tubular" | "helical" | "cellular" | "lattice" | "tpms" | "hybrid" | "program" | "fusion";
+export type Topology = "tubular" | "helical" | "cellular" | "lattice" | "tpms" | "hybrid" | "program" | "fusion" | "coupled";
 
 export type LatticeType = "sc" | "bcc" | "fcc" | "fbcc" | "diamond" | "kelvin" | "bccz";
 export type TpmsType = "gyroid" | "schwarz_p" | "schwarz_d" | "neovius" | "iwp" | "lidinoid";
@@ -93,6 +93,8 @@ export interface DesignSpec {
   program?: import("./program/types.ts").FeatureProgram;
   /** Fusion of two designs (topology "fusion" only). */
   fusion?: FusionSpec;
+  /** Deep coupling between structures (topology "coupled" only). See src/topology/coupled.ts. */
+  coupled?: { round: "R1" | "R2" | "R3" | "R4" | "R5"; params?: Record<string, number | string> };
   bio_motif: string;
   family: string;
   variant: string;

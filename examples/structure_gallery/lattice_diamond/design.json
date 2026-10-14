@@ -13,7 +13,7 @@
     "constraints": {
       "size_mm": 20,
       "min_printable_wall_mm": 0.4,
-      "resolution": 96
+      "resolution": 192
     },
     "retrieval": {
       "base_id": "cellular_generic",
@@ -60,7 +60,7 @@
         "constraints": {
           "size_mm": 20,
           "min_printable_wall_mm": 0.4,
-          "resolution": 96
+          "resolution": 192
         },
         "retrieval": {
           "base_id": "cellular_generic",
@@ -92,9 +92,9 @@
     }
   },
   "metrics": {
-    "volume": 3147.6687108535925,
-    "surface_area": 8465.987911041082,
-    "min_wall_thickness": 0.8000000277305308,
+    "volume": 3193.2508388862534,
+    "surface_area": 8549.740744646071,
+    "min_wall_thickness": 0.8000000016242008,
     "connectivity": true,
     "genus": 836
   },
@@ -103,10 +103,10 @@
   "limitations": [
     "Fusion geometry is SDF-only. Zoned fusion cuts each part with a half-space and unites them over an overlap band; the seam is a planar cut, not an exact B-Rep boolean.",
     "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
-    "SDF surface resolution is limited to h = 0.2083 mm (constraints.resolution = 96); features below ~2h are not resolved.",
+    "SDF surface resolution is limited to h = 0.1042 mm (constraints.resolution = 192); features below ~2h are not resolved.",
     "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
     "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
-    "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.104 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
+    "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.052 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
     "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
     "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
   ],
@@ -115,7 +115,8 @@
     "Build edge length not given; 20 mm cube assumed.",
     "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
     "Parameter thickness not stated; default 0.2 used.",
-    "Low intent confidence: please confirm the topology."
+    "Low intent confidence: please confirm the topology.",
+    "Resolution above 160 per axis may exceed browser memory budgets."
   ],
   "validation": {
     "id": "lattice_diamond",
@@ -139,13 +140,19 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 144 3190.8 vs MC 3215.1 mm3 (0.76 %)",
+        "value": "mesh at 240 3195.3 vs MC 3215.1 mm3 (0.61 %)",
         "rule": "<= 5 % (finer mesh)"
+      },
+      {
+        "name": "watertight",
+        "pass": true,
+        "value": "0 open edges",
+        "rule": "0 open edges"
       },
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "96 px-grid 3147.7 vs 144 3190.8 mm3 (1.35 %)",
+        "value": "192 px-grid 3193.3 vs 240 3195.3 mm3 (0.06 %)",
         "rule": "<= 5 %"
       },
       {
@@ -170,28 +177,29 @@
     "topology": "fusion",
     "variant": "union",
     "grid": {
-      "resolution": 96,
-      "resolution_convergence": 144
+      "resolution": 192,
+      "resolution_convergence": 240
     },
     "metrics": {
-      "volume_mm3": 3147.669,
+      "volume_mm3": 3193.251,
       "volume_mc_mm3": 3215.08,
-      "surface_area_mm2": 8465.988,
-      "volume_fraction": 0.39346,
-      "porosity": 0.60654,
+      "surface_area_mm2": 8549.741,
+      "volume_fraction": 0.39916,
+      "porosity": 0.60084,
       "components": 1,
       "cavities": 1,
       "genus_handles": 836,
       "euler_characteristic": -834,
       "min_wall_p5_mm": 0.8,
       "min_wall_median_mm": 0.8,
-      "triangles": 515832,
+      "triangles": 2072760,
       "center_of_mass": [
-        10.0005,
-        10.0005,
-        10.0005
+        10.0001,
+        10.0001,
+        10.0001
       ]
     },
+    "coupling_metrics": null,
     "harness_ok": {
       "IntentHarness": true,
       "TopologyHarness": true,
@@ -203,10 +211,10 @@
     "limitations": [
       "Fusion geometry is SDF-only. Zoned fusion cuts each part with a half-space and unites them over an overlap band; the seam is a planar cut, not an exact B-Rep boolean.",
       "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
-      "SDF surface resolution is limited to h = 0.2083 mm (constraints.resolution = 96); features below ~2h are not resolved.",
+      "SDF surface resolution is limited to h = 0.1042 mm (constraints.resolution = 192); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
-      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.104 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
+      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.052 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
       "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
       "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
     ],
@@ -215,7 +223,8 @@
       "Build edge length not given; 20 mm cube assumed.",
       "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
       "Parameter thickness not stated; default 0.2 used.",
-      "Low intent confidence: please confirm the topology."
+      "Low intent confidence: please confirm the topology.",
+      "Resolution above 160 per axis may exceed browser memory budgets."
     ],
     "design_spec": {
       "topology": "fusion",
@@ -230,7 +239,7 @@
       "constraints": {
         "size_mm": 20,
         "min_printable_wall_mm": 0.4,
-        "resolution": 96
+        "resolution": 192
       },
       "retrieval": {
         "base_id": "cellular_generic",
@@ -277,7 +286,7 @@
           "constraints": {
             "size_mm": 20,
             "min_printable_wall_mm": 0.4,
-            "resolution": 96
+            "resolution": 192
           },
           "retrieval": {
             "base_id": "cellular_generic",
@@ -308,6 +317,6 @@
         "skin_mm": 1
       }
     },
-    "timing_s": 25.3
+    "timing_s": 114.3
   }
 }

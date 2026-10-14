@@ -9,7 +9,7 @@ import type { DesignSpec } from "../../../src/types.ts";
 
 // ---- Parameters ----------------------------------------------------------------------------
 const size_mm = 20;
-const resolution = 96;
+const resolution = 192;
 const min_printable_wall_mm = 0.4;
 const parameters = {"num_tubules":16,"ellipticity":1.5,"radius":0.1,"seed":42} as const;
 const heterogeneity_field = null;
@@ -17,6 +17,7 @@ const heterogeneity_field = null;
 // ---- Design specification (IntentHarness output, with the constants above applied) ----------
 const spec: DesignSpec = {
   topology: "tubular",
+  
   
   bio_motif: "tubular_shapesize",
   family: "tubular",

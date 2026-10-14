@@ -15,15 +15,15 @@ import type { DesignSpec, FusionSpec } from "../src/types.ts";
 import type { Field } from "../src/topology/fields.ts";
 
 const L = 20; // envelope edge (mm), every design
-const RES = Number(process.argv[2] ?? 96);
-const RES_CONV = Math.round(RES * 1.5);
+const RES = Number(process.argv[2] ?? 192);       // grid cells along the 20 mm box (0.104 mm voxels)
+const RES_CONV = Math.round(RES * 1.25);           // convergence grid
 const SHOT = 1600; // screenshot edge (px), as in render_coupled.ts
 const SS = 2;      // supersampling factor, box-filtered down to SHOT
 const MC_SAMPLES = 200000;
 const OUT = "examples/structure_gallery";
 const ONLY = process.argv.slice(3);
 
-type Group = "lattice" | "tpms" | "bio" | "fusion";
+type Group = "lattice" | "tpms" | "bio" | "fusion" | "coupled";
 interface Entry {
   id: string;
   group: Group;
@@ -87,7 +87,7 @@ const LAT_R = 0.4;
 const TPMS_CELL = 5;
 const TPMS_T = 0.5;
 
-const ENTRIES: Entry[] = [
+const BASE_ENTRIES: Entry[] = [
   // ---- periodic strut lattices ------------------------------------------------------------
   { id: "lattice_sc", group: "lattice", title: "Simple cubic lattice", prompt: "simple cubic lattice, 4 mm cell, strut radius 0.4 mm", make: () => latticeSpec("simple cubic", LAT_CELL, LAT_R), nominalWall: 2 * LAT_R },
   { id: "lattice_bcc", group: "lattice", title: "BCC lattice", prompt: "BCC lattice, 4 mm cell, strut radius 0.4 mm", make: () => latticeSpec("bcc", LAT_CELL, LAT_R), nominalWall: 2 * LAT_R },
@@ -152,6 +152,30 @@ const ENTRIES: Entry[] = [
   },
 ];
 
+// ---- deep coupling (five rounds, src/topology/coupled.ts) -------------------------------------------
+function coupledSpec(round: "R1" | "R2" | "R3" | "R4" | "R5", params: Record<string, number | string> = {}): DesignSpec {
+  const s = mk(`coupled ${round}`);
+  s.topology = "coupled";
+  s.family = "coupled";
+  s.variant = round;
+  s.bio_motif = `coupled:${round}`;
+  s.parameters = {};
+  s.coupled = { round, params };
+  s.fusion = undefined;
+  s.unknowns = [];
+  return s;
+}
+
+const COUPLED_ENTRIES: Entry[] = [
+  { id: "deep_R1_thickness", group: "coupled", title: "R1 thickness: gyroid wall set by a cellular foam field", prompt: "coupled R1: gyroid thickness driven by cellular foam", make: () => coupledSpec("R1") },
+  { id: "deep_R2_nested", group: "coupled", title: "R2 nested: Kelvin lattice grown inside tubular pores", prompt: "coupled R2: kelvin lattice nested in tubular pores", make: () => coupledSpec("R2") },
+  { id: "deep_R3_twist", group: "coupled", title: "R3 twist: BCC lattice twisted by a helical angle", prompt: "coupled R3: bcc lattice twisted helically", make: () => coupledSpec("R3") },
+  { id: "deep_R4_blend", group: "coupled", title: "R4 blend: Kelvin, gyroid and I-WP joined by smooth minima", prompt: "coupled R4: three-zone smooth blend", make: () => coupledSpec("R4") },
+  { id: "deep_R5_hierarchy", group: "coupled", title: "R5 hierarchy: gyroid infill in every foam pocket", prompt: "coupled R5: gyroid infill in cellular foam pockets", make: () => coupledSpec("R5") },
+];
+
+const ENTRIES: Entry[] = [...BASE_ENTRIES, ...COUPLED_ENTRIES];
+
 // ---- numerics -----------------------------------------------------------------------------------
 
 function mulberry32(seed: number): () => number {
@@ -198,6 +222,34 @@ interface Check {
 
 // ---- one entry ----------------------------------------------------------------------------------
 
+
+/** Number of open (boundary) edges of a triangle mesh; 0 means watertight. Sort-based, memory-light. */
+function openEdgeCount(indices: Uint32Array, vertexCount: number): number {
+  const keys = new Float64Array(indices.length);
+  for (let t = 0; t < indices.length; t += 3) {
+    for (let k = 0; k < 3; k++) {
+      const a = indices[t + k], b = indices[t + ((k + 1) % 3)];
+      const lo = Math.min(a, b), hi = Math.max(a, b);
+      keys[t + k] = lo * vertexCount + hi;
+    }
+  }
+  keys.sort();
+  let open = 0;
+  for (let i = 0; i < keys.length; ) {
+    let j = i;
+    while (j < keys.length && keys[j] === keys[i]) j++;
+    if (j - i === 1) open++;
+    i = j;
+  }
+  return open;
+}
+
+function parseCoupling(obs: string[]): Record<string, unknown> | null {
+  const line = obs.find((o) => o.startsWith("Coupling metrics: "));
+  if (!line) return null;
+  return JSON.parse(line.slice("Coupling metrics: ".length, -1));
+}
+
 async function runEntry(e: Entry) {
   const t0 = Date.now();
   const dir = join(OUT, e.id);
@@ -226,6 +278,8 @@ async function runEntry(e: Entry) {
 
   // Resolution convergence: the same design at 1.5x resolution.
   const convErr = Math.abs(m.volume - mc.volume) / Math.max(mc.volume, 1e-9);
+  const openEdges = openEdgeCount(res.meshForViewer.indices, res.meshForViewer.positions.length / 3);
+  checks.push({ name: "watertight", pass: openEdges === 0, value: `${openEdges} open edges`, rule: "0 open edges" });
   checks.push({ name: "resolution_convergence", pass: convErr <= 0.05, value: `${RES} px-grid ${m.volume.toFixed(1)} vs ${RES_CONV} ${mc.volume.toFixed(1)} mm3 (${(convErr * 100).toFixed(2)} %)`, rule: "<= 5 %" });
 
   // Designed wall vs measured median wall (inward-ray chords).
@@ -338,6 +392,7 @@ async function runEntry(e: Entry) {
       triangles: vm.triangles,
       center_of_mass: vm.center_of_mass.map((v) => +v.toFixed(4)),
     },
+    coupling_metrics: parseCoupling(res.reports.TopologyHarness?.observations ?? []),
     harness_ok: harnessOk,
     repair_history: res.state.repair_history,
     limitations: res.state.limitations,

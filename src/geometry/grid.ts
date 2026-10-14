@@ -24,10 +24,14 @@ export function sampleField(field: Field, resolution: number, pad = 2): Grid {
   const { min, max } = field.bounds;
   const extent = Math.max(max[0] - min[0], max[1] - min[1], max[2] - min[2]);
   const h = extent / resolution;
-  const origin: [number, number, number] = [min[0] - pad * h, min[1] - pad * h, min[2] - pad * h];
-  const nx = Math.ceil((max[0] - min[0]) / h) + 2 * pad + 1;
-  const ny = Math.ceil((max[1] - min[1]) / h) + 2 * pad + 1;
-  const nz = Math.ceil((max[2] - min[2]) / h) + 2 * pad + 1;
+  // The border must extend at least 1 mm beyond the bounds, so features that end just outside the
+  // box (strut caps, sheet edges) are closed inside the grid. A narrower border truncates them and
+  // leaves open surface-net edges at fine resolutions.
+  const padCells = Math.max(pad, Math.ceil(1.0 / h));
+  const origin: [number, number, number] = [min[0] - padCells * h, min[1] - padCells * h, min[2] - padCells * h];
+  const nx = Math.ceil((max[0] - min[0]) / h) + 2 * padCells + 1;
+  const ny = Math.ceil((max[1] - min[1]) / h) + 2 * padCells + 1;
+  const nz = Math.ceil((max[2] - min[2]) / h) + 2 * padCells + 1;
   const values = new Float32Array(nx * ny * nz);
   for (let k = 0; k < nz; k++) {
     const z = origin[2] + k * h;

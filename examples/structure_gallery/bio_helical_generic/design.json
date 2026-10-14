@@ -17,7 +17,7 @@
     "constraints": {
       "size_mm": 20,
       "min_printable_wall_mm": 0.4,
-      "resolution": 96
+      "resolution": 192
     },
     "retrieval": {
       "base_id": "helical_generic",
@@ -46,7 +46,7 @@
   "metrics": {
     "volume": 7165.920268261325,
     "surface_area": 2403.2656762656134,
-    "min_wall_thickness": 3.9569381266952823,
+    "min_wall_thickness": 3.97914673583434,
     "connectivity": true,
     "genus": 0
   },
@@ -56,16 +56,17 @@
     "Plies are plates clipped to the build cube (square corners retained).",
     "Helical plies are centred at (i+1/2)t (no half-ply overlap), a deviation from the upstream centre at i*t.",
     "Kernel tessellation is used for display/STL of B-Rep designs; its tolerance is set by the kernel defaults.",
-    "SDF surface resolution is limited to h = 0.2083 mm (constraints.resolution = 96); features below ~2h are not resolved.",
+    "SDF surface resolution is limited to h = 0.1042 mm (constraints.resolution = 192); features below ~2h are not resolved.",
     "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
     "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
-    "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.104 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
+    "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.052 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
     "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
     "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
   ],
   "unknowns": [
     "Build edge length not given; 20 mm cube assumed.",
-    "Printability floor not given; 0.4 mm assumed for the RepairHarness."
+    "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
+    "Resolution above 160 per axis may exceed browser memory budgets."
   ],
   "validation": {
     "id": "bio_helical_generic",
@@ -89,13 +90,19 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 144 7165.9 vs MC 7166.2 mm3 (0.00 %)",
+        "value": "mesh at 240 7165.9 vs MC 7166.2 mm3 (0.00 %)",
         "rule": "<= 5 % (finer mesh)"
+      },
+      {
+        "name": "watertight",
+        "pass": true,
+        "value": "0 open edges",
+        "rule": "0 open edges"
       },
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "96 px-grid 7165.9 vs 144 7165.9 mm3 (0.00 %)",
+        "value": "192 px-grid 7165.9 vs 240 7165.9 mm3 (0.00 %)",
         "rule": "<= 5 %"
       },
       {
@@ -108,8 +115,8 @@
     "topology": "helical",
     "variant": "helical_generic",
     "grid": {
-      "resolution": 96,
-      "resolution_convergence": 144
+      "resolution": 192,
+      "resolution_convergence": 240
     },
     "metrics": {
       "volume_mm3": 7165.92,
@@ -121,7 +128,7 @@
       "cavities": 0,
       "genus_handles": 0,
       "euler_characteristic": 1,
-      "min_wall_p5_mm": 3.9569,
+      "min_wall_p5_mm": 3.9791,
       "min_wall_median_mm": 20,
       "triangles": 340,
       "center_of_mass": [
@@ -130,6 +137,7 @@
         10
       ]
     },
+    "coupling_metrics": null,
     "harness_ok": {
       "IntentHarness": true,
       "TopologyHarness": true,
@@ -142,16 +150,17 @@
       "Plies are plates clipped to the build cube (square corners retained).",
       "Helical plies are centred at (i+1/2)t (no half-ply overlap), a deviation from the upstream centre at i*t.",
       "Kernel tessellation is used for display/STL of B-Rep designs; its tolerance is set by the kernel defaults.",
-      "SDF surface resolution is limited to h = 0.2083 mm (constraints.resolution = 96); features below ~2h are not resolved.",
+      "SDF surface resolution is limited to h = 0.1042 mm (constraints.resolution = 192); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
-      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.104 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
+      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.052 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
       "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
       "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
     ],
     "unknowns": [
       "Build edge length not given; 20 mm cube assumed.",
-      "Printability floor not given; 0.4 mm assumed for the RepairHarness."
+      "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
+      "Resolution above 160 per axis may exceed browser memory budgets."
     ],
     "design_spec": {
       "topology": "helical",
@@ -170,7 +179,7 @@
       "constraints": {
         "size_mm": 20,
         "min_printable_wall_mm": 0.4,
-        "resolution": 96
+        "resolution": 192
       },
       "retrieval": {
         "base_id": "helical_generic",
@@ -196,6 +205,6 @@
       ],
       "notes": []
     },
-    "timing_s": 8.9
+    "timing_s": 34.5
   }
 }

@@ -29,6 +29,7 @@ const heterogeneity_field = ${h ? JSON.stringify(h) : "null"};
 // ---- Design specification (IntentHarness output, with the constants above applied) ----------
 const spec: DesignSpec = {
   topology: ${JSON.stringify(spec.topology)},${spec.program ? "\n  program: program as unknown as NonNullable<DesignSpec[\"program\"]>," : ""}
+  ${spec.coupled ? `coupled: ${JSON.stringify(spec.coupled)} as unknown as NonNullable<DesignSpec["coupled"]>,` : ""}
   ${spec.fusion ? `fusion: ${JSON.stringify(spec.fusion)} as unknown as NonNullable<DesignSpec["fusion"]>,` : ""}
   bio_motif: ${JSON.stringify(spec.bio_motif)},
   family: ${JSON.stringify(spec.family)},

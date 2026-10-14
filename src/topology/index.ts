@@ -2,6 +2,7 @@
 // Families: bioinspired helical / cellular / tubular (12 base structures), strut lattices
 // (SC, BCC, FCC, FBCC, Diamond), TPMS (Gyroid, Schwarz P, Schwarz D), and hybrid unions.
 
+import { buildCoupled } from "./coupled.ts";
 import type { BrepPlan } from "../bio/families.ts";
 import { buildBio, toMillimetres, type BioBuild } from "../bio/families.ts";
 import { clipToBox, sdBox, sdUnion, type Field } from "./fields.ts";
@@ -157,6 +158,27 @@ export function buildTopology(spec: DesignSpec): HarnessResult<TopologyBuild> {
       limitations.push(`SDF approximation for ops ${compiled.approximate.join(", ")}: the B-Rep is the reference; the cross-check reports the deviation.`);
     }
     limitations.push("Feature programs: all coordinates are absolute millimetres; the kernel is smlibwasm (no re-centring).");
+  } else if (spec.topology === "coupled") {
+    // Deep coupling: one structure's geometry is driven by another's field (src/topology/coupled.ts).
+    if (!spec.coupled) throw new Error("topology \"coupled\" requires spec.coupled");
+    const c = buildCoupled(spec.coupled, L);
+    build = {
+      field: c.field,
+      parts: {},
+      smoothPasses: 0,
+      brep: null,
+      bio: null,
+      cells: null,
+      cellSize: null,
+      program: null,
+      programNotes: {},
+      programApproximate: [],
+      description: c.description,
+    };
+    observations.push(...c.observations);
+    observations.push(`Coupling metrics: ${JSON.stringify(c.coupling_metrics)}.`);
+    observations.push(`Resolved coupled parameters: ${JSON.stringify(c.resolved_params)}.`);
+    limitations.push(...c.limitations);
   } else if (spec.topology === "fusion") {
     // Fusion of two complete designs. Each part is built by the same TopologyHarness with the
     // parent's size and constraints, so the parts stay in one coordinate frame (mm, box [0, L]^3).
