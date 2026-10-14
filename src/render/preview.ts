@@ -119,15 +119,27 @@ export function rasterisePreview(mesh: MeshData, size = 128): Preview {
       max[a] = Math.max(max[a], p[i + a]);
     }
   const c = [0, 1, 2].map((a) => (min[a] + max[a]) / 2);
-  const ext = Math.max(max[0] - min[0], max[1] - min[1], max[2] - min[2]) || 1;
-  const s = (size * 0.9) / ext;
   // View: rotate 35 deg about z, then 25 deg about x (isometric-like).
   const cz = Math.cos(0.61), sz = Math.sin(0.61), cx = Math.cos(0.44), sx = Math.sin(0.44);
-  const proj = (x: number, y: number, z: number): [number, number, number] => {
-    let X = x - c[0], Y = y - c[1], Z = z - c[2];
+  const rawProj = (x: number, y: number, z: number): [number, number, number] => {
+    const X = x - c[0], Y = y - c[1], Z = z - c[2];
     const X1 = X * cz - Y * sz, Y1 = X * sz + Y * cz;
     const Y2 = Y1 * cx - Z * sx, Z2 = Y1 * sx + Z * cx;
-    return [size / 2 + X1 * s, size / 2 - Y2 * s, Z2];
+    return [X1, Y2, Z2];
+  };
+  // Fit the projected extent (not the world extent) into the frame, so rotated models are not clipped.
+  let pxMin = Infinity, pxMax = -Infinity, pyMin = Infinity, pyMax = -Infinity;
+  for (let i = 0; i < p.length; i += 3) {
+    const [X1, Y2] = rawProj(p[i], p[i + 1], p[i + 2]);
+    pxMin = Math.min(pxMin, X1); pxMax = Math.max(pxMax, X1);
+    pyMin = Math.min(pyMin, Y2); pyMax = Math.max(pyMax, Y2);
+  }
+  const span = Math.max(pxMax - pxMin, pyMax - pyMin) || 1;
+  const s = (size * 0.9) / span;
+  const mx = (pxMin + pxMax) / 2, my = (pyMin + pyMax) / 2;
+  const proj = (x: number, y: number, z: number): [number, number, number] => {
+    const [X1, Y2, Z2] = rawProj(x, y, z);
+    return [size / 2 + (X1 - mx) * s, size / 2 - (Y2 - my) * s, Z2];
   };
   const light = [0.4, 0.6, 0.7];
   const ll = Math.hypot(light[0], light[1], light[2]);
