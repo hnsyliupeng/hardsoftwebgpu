@@ -43,6 +43,11 @@
     <div class="row">
       <label><input type="radio" name="mode" value="prompt" checked /> Prompt (rule-based IntentHarness)</label>
       <label><input type="radio" name="mode" value="program" /> Feature program (JSON timeline)</label>
+      <label><input type="radio" name="mode" value="coupled" /> Coupled bio-lattice (CadQuery B-Rep, high-res, editable STEP)</label>
+    </div>
+    <div id="coupledInfo" style="display:none">
+      <p class="note">Skin (boolean-cut shell) + twisted BCC core + three depth-graded strut radii, built exactly with OpenCASCADE (CadQuery 2.8) offline by <code>python/bioxlattice</code>. The browser cannot run OpenCASCADE, so Generate loads the verified build outputs in <code>examples/coupled_bio_lattice/</code>.</p>
+      <div id="coupledLinks" class="row"></div>
     </div>
     <textarea id="prompt">Make a helical Bouligand structure with 5 plies, 10 degrees rotation.</textarea>
     <textarea id="programJson" spellcheck="false"></textarea>

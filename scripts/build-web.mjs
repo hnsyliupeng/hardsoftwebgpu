@@ -2,7 +2,7 @@
 // The smlibwasm .wasm is copied next to the worker bundle, because the kernel resolves it with
 // new URL("smlibwasm.wasm", import.meta.url).
 import { build } from "esbuild";
-import { cpSync, mkdirSync, copyFileSync, rmSync } from "node:fs";
+import { cpSync, mkdirSync, copyFileSync, rmSync, existsSync } from "node:fs";
 
 rmSync("dist/web", { recursive: true, force: true });
 mkdirSync("dist/web", { recursive: true });
@@ -24,4 +24,6 @@ const vendor = "dist/web/vendor/smlibwasm";
 for (const dir of ["dist", "wasm", "fonts"]) cpSync(`${smlib}/${dir}`, `${vendor}/${dir}`, { recursive: true });
 copyFileSync(`${smlib}/package.json`, `${vendor}/package.json`);
 cpSync("eval", "dist/web/eval", { recursive: true });
+// Offline CadQuery build of the coupled bio-lattice (STEP, STL, mesh.bin, metrics, code).
+if (existsSync("examples/coupled_bio_lattice")) cpSync("examples/coupled_bio_lattice", "dist/web/examples/coupled_bio_lattice", { recursive: true });
 console.log("built dist/web");

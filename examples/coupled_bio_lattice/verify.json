@@ -1,0 +1,32 @@
+{
+  "step": {
+    "file": "/tmp/work/coupled_out2/coupled_bio_lattice.step",
+    "reimported_solids": 1,
+    "reimported_volume": 17784.926,
+    "volume_rel_error": 2.141e-08,
+    "volume_ok": true,
+    "manifold_solid_brep_entities": 1,
+    "solids_with_internal_voids": 1,
+    "shell_based_surface_model_entities": 0,
+    "advanced_face_entities": 2248,
+    "cylindrical_surface_entities": 2228,
+    "reimported_face_types": {
+      "CYLINDER": 2228,
+      "PLANE": 20
+    },
+    "editable_brep_ok": true
+  },
+  "mesh": {
+    "vertices": 320852,
+    "triangles": 645780,
+    "non_manifold_or_boundary_edges": 0,
+    "watertight": true,
+    "components": 2,
+    "outer_component_genus": 0,
+    "void_component_genus": [
+      1021
+    ],
+    "euler_characteristic": -2038
+  },
+  "pass": true
+}

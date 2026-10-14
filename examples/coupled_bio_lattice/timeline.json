@@ -1,0 +1,220 @@
+[
+  {
+    "feature": "envelope_box",
+    "params": {
+      "L": 40.0,
+      "W": 40.0,
+      "H": 20.0,
+      "fillet_vertical": 3.0
+    },
+    "seconds": 0.016,
+    "volume": 31845.486678,
+    "solids": 1,
+    "faces": 10
+  },
+  {
+    "feature": "cavity_box",
+    "params": {
+      "L": 36.0,
+      "W": 36.0,
+      "H": 16.0,
+      "fillet_vertical": 1.0
+    },
+    "seconds": 0.012,
+    "volume": 20722.265482,
+    "solids": 1,
+    "faces": 10
+  },
+  {
+    "feature": "skin_boolean_cut",
+    "params": {
+      "thickness": 2.0
+    },
+    "seconds": 0.009,
+    "volume": 11123.221195,
+    "solids": 1,
+    "faces": 20
+  },
+  {
+    "feature": "lattice_layer-2_tier0",
+    "params": {
+      "radius": 0.8,
+      "struts": 920,
+      "topology": "bcc",
+      "cell": 5.0,
+      "twist_deg_per_mm": 2.0
+    },
+    "seconds": 62.06,
+    "volume": 6455.400815,
+    "solids": 1,
+    "faces": 1880
+  },
+  {
+    "feature": "lattice_layer-2_clip",
+    "params": {
+      "z_range_mm": [
+        -10.0,
+        -5.0
+      ]
+    },
+    "seconds": 1.858,
+    "volume": 1730.588074,
+    "solids": 9,
+    "faces": 956
+  },
+  {
+    "feature": "lattice_layer-1_tier0",
+    "params": {
+      "radius": 0.8,
+      "struts": 632,
+      "topology": "bcc",
+      "cell": 5.0,
+      "twist_deg_per_mm": 2.0
+    },
+    "seconds": 36.537,
+    "volume": 4573.075777,
+    "solids": 1,
+    "faces": 1304
+  },
+  {
+    "feature": "lattice_layer-1_tier1",
+    "params": {
+      "radius": 0.6,
+      "struts": 188,
+      "topology": "bcc",
+      "cell": 5.0,
+      "twist_deg_per_mm": 2.0
+    },
+    "seconds": 5.983,
+    "volume": 802.242547,
+    "solids": 1,
+    "faces": 440
+  },
+  {
+    "feature": "lattice_layer-1_tier2",
+    "params": {
+      "radius": 0.45,
+      "struts": 100,
+      "topology": "bcc",
+      "cell": 5.0,
+      "twist_deg_per_mm": 2.0
+    },
+    "seconds": 2.319,
+    "volume": 249.409756,
+    "solids": 1,
+    "faces": 300
+  },
+  {
+    "feature": "lattice_layer-1_clip",
+    "params": {
+      "z_range_mm": [
+        -5.0,
+        0.0
+      ]
+    },
+    "seconds": 1.266,
+    "volume": 1944.576037,
+    "solids": 1,
+    "faces": 1016
+  },
+  {
+    "feature": "lattice_layer0_tier0",
+    "params": {
+      "radius": 0.8,
+      "struts": 632,
+      "topology": "bcc",
+      "cell": 5.0,
+      "twist_deg_per_mm": 2.0
+    },
+    "seconds": 37.051,
+    "volume": 4573.075772,
+    "solids": 1,
+    "faces": 1304
+  },
+  {
+    "feature": "lattice_layer0_tier1",
+    "params": {
+      "radius": 0.6,
+      "struts": 188,
+      "topology": "bcc",
+      "cell": 5.0,
+      "twist_deg_per_mm": 2.0
+    },
+    "seconds": 6.104,
+    "volume": 802.242546,
+    "solids": 1,
+    "faces": 440
+  },
+  {
+    "feature": "lattice_layer0_tier2",
+    "params": {
+      "radius": 0.45,
+      "struts": 100,
+      "topology": "bcc",
+      "cell": 5.0,
+      "twist_deg_per_mm": 2.0
+    },
+    "seconds": 2.384,
+    "volume": 249.409755,
+    "solids": 1,
+    "faces": 300
+  },
+  {
+    "feature": "lattice_layer0_clip",
+    "params": {
+      "z_range_mm": [
+        0.0,
+        5.0
+      ]
+    },
+    "seconds": 1.357,
+    "volume": 1944.576034,
+    "solids": 1,
+    "faces": 1016
+  },
+  {
+    "feature": "lattice_layer1_tier0",
+    "params": {
+      "radius": 0.8,
+      "struts": 920,
+      "topology": "bcc",
+      "cell": 5.0,
+      "twist_deg_per_mm": 2.0
+    },
+    "seconds": 58.93,
+    "volume": 6455.400808,
+    "solids": 1,
+    "faces": 1880
+  },
+  {
+    "feature": "lattice_layer1_clip",
+    "params": {
+      "z_range_mm": [
+        5.0,
+        10.0
+      ]
+    },
+    "seconds": 1.875,
+    "volume": 1730.588073,
+    "solids": 9,
+    "faces": 956
+  },
+  {
+    "feature": "lattice_core_union",
+    "params": {
+      "layers": 4
+    },
+    "seconds": 19.267,
+    "volume": 7081.384319,
+    "solids": 17,
+    "faces": 2668
+  },
+  {
+    "feature": "union_skin_core",
+    "params": {},
+    "seconds": 6.555,
+    "volume": 17784.926438,
+    "solids": 1,
+    "faces": 2248
+  }
+]

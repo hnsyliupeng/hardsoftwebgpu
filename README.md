@@ -76,3 +76,12 @@ Parameter ranges and base-code semantics come from `lamm-mit/Bioinspired123D` (A
 `eval/LICENSE.Bioinspired123D.txt`). Lattice / TPMS formulas are ported from `jalovisko/LatticeQuery`
 (formulas only; its headers claim ADML ownership, so no code was copied). The kernel is
 `@classcad/smlibwasm` (SMLib, with NVIDIA usd-brep lineage).
+
+## Coupled bio-lattice (exact B-Rep, editable STEP)
+
+A second, high-resolution path built with CadQuery / OpenCASCADE: a 2 mm closed skin, a twisted BCC lattice core, and three depth-graded strut radii. See `docs/COUPLED_LATTICE.md`. Outputs are in `examples/coupled_bio_lattice/`, and the web app's "Coupled bio-lattice" mode loads them.
+
+```
+bash scripts/python_env.sh
+LD_LIBRARY_PATH=.venv/stubs .venv/bin/python -m unittest discover -s python/tests -p "test_*.py"
+```
