@@ -61,7 +61,7 @@ See `docs/FEATURE_AUDIT.md` for the full requirement checklist with evidence.
 - Bio families ignore `heterogeneity_field` (disclosed per design).
 - Base-code deviations from upstream Blender: plies in helical plates are slab-centred and fuse into one solid; the tubular cortical sleeve fuses with the matrix, so the minimum wall is the matrix bridge between holes.
 - TPMS sheets use the first-order distance |F|/|∇F| − t/2; the absolute wall minimum is junction-dominated.
-- SDF resolution is capped by `constraints.resolution` (default 96, h ≈ 0.21 mm for 20 mm); walls below ~3h are reported as under-resolved.
+- SDF resolution is capped by `constraints.resolution` (default 96, h ≈ 0.21 mm for 20 mm; the coupled gallery uses 192, h ≈ 0.104 mm); walls below ~3h are reported as under-resolved.
 - Genus is the first Betti number of the voxel solid and depends on resolution.
 - STEP is only produced for B-Rep designs (helical, tubular).
 - The web app's WebGPU and WebGL2 paths were type-checked and bundled but **not executed in a real browser** (no browser in the sandbox). The worker pipeline was executed from the bundle under Node, including the smlibwasm kernel.
@@ -86,6 +86,8 @@ Every build also writes `structural_tests.json`: multi-level checks (L0 envelope
 A second test model, `examples/fcc_graded_test/` (FCC, no twist, 30 × 30 × 16 mm), exercises the same pipeline. At phase 0 its structural report failed one gate: 60 sealed micro-pockets at the cavity walls. A lattice phase of (3, 3, 0) mm removes them; the structural report now passes all levels (`FccPhase` test).
 
 Multi-form fusion (`examples/fusion/`, five rounds): z-zones with different topologies (FCC, BCC, octet, reinforced BCC), a cell-size gradient, a twist gradient that stays continuous across zones, and per-zone radius scales. All five rounds pass the structural gates with zero enclosed voids. Two defects were found and repaired along the way (a node plane on a cavity wall, and sealed corner pockets from a zone-twist combination). See `docs/FUSION_ROUNDS.md`.
+
+Deep coupled fusion (`src/topology/coupled.ts`, five rounds, `docs/DEEP_FUSION_ROUNDS.md`): each round couples one structure's geometry to another's field: gyroid wall thickness driven by a cellular foam (R1), a Kelvin lattice nested in tubular pores (R2), a BCC lattice twisted along z (R3), three z-zones blended with smooth minima (R4), and a gyroid filling foam pockets (R5). Every round has a measured coupling metric. The gallery at `examples/structure_gallery/` is regenerated at 192 cells (0.104 mm voxels), 36/36 PASS, all meshes watertight (0 open edges). Its screenshots are 1600 px. Known limits: the stepped edges of the helical plies and the R4 Kelvin zone's low visibility in the cut-away view.
 
 ```
 bash scripts/python_env.sh
