@@ -4,7 +4,7 @@ This is the high-resolution path of the app. Geometry is built as an exact OpenC
 (CadQuery 2.8), not as a voxel or SDF field, and it is exported as an editable STEP file.
 
 - Code: `python/bioxlattice/` (builder, timeline, metrics, exporter, verifier, CLI)
-- Tests: `python/tests/test_bioxlattice.py` (18 tests) and `tests/coupled.test.ts` (4 tests)
+- Tests: `python/tests/test_bioxlattice.py` (19 tests, including the smlibpy cross-check) and `tests/coupled.test.ts` (4 tests)
 - Result: `examples/coupled_bio_lattice/` (STEP, mesh.bin, design.json, verify.json, timeline.json, design_code.py, screenshots)
 - Web: choose "Coupled bio-lattice" in the input panel and press Generate. The page loads the verified build outputs.
 
@@ -45,7 +45,7 @@ The min wall thickness is reported as 0.9 mm. This is a B-Rep proxy, `min(skin, 
 |---|---|---|---|
 | bherbruck/solidcraft | Rust app (MIT/Apache) | Parametric feature-timeline architecture (ordered features, logged parameters, rebuild from spec) | Architecture only. The Rust toolchain cannot be installed in this sandbox, so no code was built or linked. |
 | NVIDIA-Omniverse/usd-brep | Apache-2.0 | Reference for NURBS B-Rep modelling and USD representation | Not integrated. The project needs its Packman/NVIDIA build chain, and it is not reachable from here. No USD export was produced. |
-| awv-informatik/smlibpy | MIT | Second SMLib kernel (the same kernel as our smlibwasm) for cross-checks | Installed from PyPI (0.2.3) and imports. Not yet used in the verification. |
+| awv-informatik/smlibpy | MIT | Second SMLib kernel (the same kernel as our smlibwasm) for cross-checks | Used for the second-kernel check of the envelope, cavity and skin (`python/bioxlattice/crosscheck.py`, result in `crosscheck_smlibpy.json`). Relative error ≈ 10⁻¹⁶. The lattice itself is not repeated in SMLib. |
 | jalovisko/LatticeQuery | Apache-2.0 | Standard strut topologies (SC, BCC, FCC) | Re-implemented from the formulas. No code was copied. The B-Rep path supports SC, BCC and FCC. The SDF path already covers more topologies. |
 | cadquery/cadquery | Apache-2.0 | Exact OCC B-Rep and STEP I/O | Used as the geometry engine (CadQuery 2.8.0, from PyPI). |
 

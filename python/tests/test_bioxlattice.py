@@ -128,6 +128,15 @@ class Build(unittest.TestCase):
         self.assertTrue(any(n.endswith("_clip") for n in names))
 
 
+class SecondKernel(unittest.TestCase):
+    def test_envelope_and_skin_match_smlibpy(self):
+        from bioxlattice.crosscheck import compare
+
+        res = compare(CoupledSpec())  # default envelope and skin, no lattice (fast)
+        self.assertTrue(res["agree_1e-5"], res)
+        self.assertAlmostEqual(res["opencascade"]["skin"], 11123.221, places=2)
+
+
 class Export(unittest.TestCase):
     def test_step_is_editable_brep_and_round_trips(self):
         spec = small_spec()
