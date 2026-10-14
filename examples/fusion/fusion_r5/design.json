@@ -1,8 +1,8 @@
 {
-  "prompt": "Coupled bio-inspired lattice: 2.0 mm skin with 4 bottom printability vents around a BCC strut core, helical twist of the lattice along z (2.0 deg/mm, Bouligand-like) and 3 depth-graded strut radii, exported as editable B-Rep STEP with a high-resolution STL.",
+  "prompt": "Multi-zone coupled bio-lattice in a 40 x 40 x 20 mm envelope with a 2 mm skin, 4 bottom vents and depth-graded struts. Zones: z[-10,-5] fcc 5 mm, twist 1 deg/mm, radius x1; z[-5,0] octet 5 mm, twist 2 deg/mm, radius x0.9; z[0,5] bcc 5 mm, twist 3 deg/mm, radius x0.8; z[5,10] bcc 5 mm, twist 4 deg/mm, radius x1.",
   "design_spec": {
-    "topology": "hybrid",
-    "bio_motif": "helical (Bouligand-like) twist of a BCC strut lattice core inside a skin with vents",
+    "topology": "multi-zone bio-lattice",
+    "bio_motif": "zone-graded lattice core: topology, cell size, twist rate and radius scale change by z band; twist continuous across zones",
     "parameters": {
       "name": "fusion_r5",
       "envelope": {
@@ -15,7 +15,7 @@
         "thickness": 2.0
       },
       "lattice": {
-        "topology": "bcc",
+        "topology": "multi-zone",
         "cell": 5.0,
         "twist_deg_per_mm": 2.0,
         "overlap": 0.2,
@@ -66,7 +66,9 @@
             "twist_deg_per_mm": 4.0,
             "radius_scale": 1.0
           }
-        ]
+        ],
+        "zones_summary": "z[-10,-5] fcc 5 mm, twist 1 deg/mm, radius x1; z[-5,0] octet 5 mm, twist 2 deg/mm, radius x0.9; z[0,5] bcc 5 mm, twist 3 deg/mm, radius x0.8; z[5,10] bcc 5 mm, twist 4 deg/mm, radius x1",
+        "twist_map": "per-zone theta(z), continuous across zone interfaces"
       },
       "vents": {
         "enabled": true,
@@ -108,7 +110,7 @@
         0.6,
         0.45
       ],
-      "twist_map": "theta(z) = 2.0 deg/mm * z, rotation about Z"
+      "twist_map": "per-zone theta(z), continuous across zone interfaces"
     },
     "coupling_levels": [
       {
@@ -124,7 +126,7 @@
       {
         "level": "L2",
         "name": "lattice core",
-        "kind": "bcc struts, cell 5.0 mm, twisted nodes"
+        "kind": "zone-graded lattice (see zones), twisted nodes"
       },
       {
         "level": "L3",
@@ -144,7 +146,7 @@
       "kernel": "OpenCASCADE via CadQuery 2.8 (exact B-Rep)"
     }
   },
-  "code": "\"\"\"Copy-executable parametric build (run from this folder: python design_code.py).\n\nNeeds cadquery 2.8 (see python/requirements.txt). The spec below is the DesignState parameter set.\n\"\"\"\nimport json, os, sys\nHERE = os.path.dirname(os.path.abspath(__file__))\nsys.path.insert(0, os.path.join(HERE, \"..\", \"..\", \"python\"))\nfrom bioxlattice.spec import CoupledSpec\nfrom bioxlattice.build import build\nfrom bioxlattice.exporter import write_step\n\nSPEC = json.loads('{\"name\": \"fusion_r5\", \"envelope\": {\"length\": 40.0, \"width\": 40.0, \"height\": 20.0, \"edge_fillet\": 3.0}, \"skin\": {\"thickness\": 2.0}, \"lattice\": {\"topology\": \"bcc\", \"cell\": 5.0, \"twist_deg_per_mm\": 2.0, \"overlap\": 0.2, \"tier_depths\": [4.0, 7.0], \"tier_radii\": [0.8, 0.6, 0.45], \"phase\": [0.0, 0.0, 0.0], \"zones\": [{\"z0\": -10, \"z1\": -5, \"topology\": \"fcc\", \"cell\": 5.0, \"twist_deg_per_mm\": 1.0, \"radius_scale\": 1.0}, {\"z0\": -5, \"z1\": 0, \"topology\": \"octet\", \"cell\": 5.0, \"twist_deg_per_mm\": 2.0, \"radius_scale\": 0.9}, {\"z0\": 0, \"z1\": 5, \"topology\": \"bcc\", \"cell\": 5.0, \"twist_deg_per_mm\": 3.0, \"radius_scale\": 0.8}, {\"z0\": 5, \"z1\": 10, \"topology\": \"bcc\", \"cell\": 5.0, \"twist_deg_per_mm\": 4.0, \"radius_scale\": 1.0}]}, \"vents\": {\"enabled\": true, \"diameter\": 2.0, \"positions\": [[-10.0, -10.0], [10.0, -10.0], [-10.0, 10.0], [10.0, 10.0]]}, \"tessellation\": {\"deflection_mm\": 0.02, \"angular_rad\": 0.1, \"max_edge_mm\": 2.5}}')\n\nif __name__ == \"__main__\":\n    spec = CoupledSpec.from_dict(SPEC)\n    result = build(spec)\n    write_step(result.part, os.path.join(HERE, spec.name + \".step\"))\n    print(\"volume_mm3\", round(result.part.Volume(), 3), \"solids\", len(result.part.Solids()))\n",
+  "code": "\"\"\"Copy-executable parametric build (run from this folder: python design_code.py).\n\nNeeds cadquery 2.8 (see python/requirements.txt). The spec below is the DesignState parameter set.\n\"\"\"\nimport json, os, sys\nHERE = os.path.dirname(os.path.abspath(__file__))\ndef _find_python_dir():\n    d = HERE\n    while True:\n        cand = os.path.join(d, \"python\")\n        if os.path.isdir(os.path.join(cand, \"bioxlattice\")):\n            return cand\n        parent = os.path.dirname(d)\n        if parent == d:\n            raise SystemExit(\"python/bioxlattice not found above \" + HERE)\n        d = parent\nsys.path.insert(0, _find_python_dir())\nfrom bioxlattice.spec import CoupledSpec\nfrom bioxlattice.build import build\nfrom bioxlattice.exporter import write_step\n\nSPEC = json.loads('{\"name\": \"fusion_r5\", \"envelope\": {\"length\": 40.0, \"width\": 40.0, \"height\": 20.0, \"edge_fillet\": 3.0}, \"skin\": {\"thickness\": 2.0}, \"lattice\": {\"topology\": \"bcc\", \"cell\": 5.0, \"twist_deg_per_mm\": 2.0, \"overlap\": 0.2, \"tier_depths\": [4.0, 7.0], \"tier_radii\": [0.8, 0.6, 0.45], \"phase\": [0.0, 0.0, 0.0], \"zones\": [{\"z0\": -10, \"z1\": -5, \"topology\": \"fcc\", \"cell\": 5.0, \"twist_deg_per_mm\": 1.0, \"radius_scale\": 1.0}, {\"z0\": -5, \"z1\": 0, \"topology\": \"octet\", \"cell\": 5.0, \"twist_deg_per_mm\": 2.0, \"radius_scale\": 0.9}, {\"z0\": 0, \"z1\": 5, \"topology\": \"bcc\", \"cell\": 5.0, \"twist_deg_per_mm\": 3.0, \"radius_scale\": 0.8}, {\"z0\": 5, \"z1\": 10, \"topology\": \"bcc\", \"cell\": 5.0, \"twist_deg_per_mm\": 4.0, \"radius_scale\": 1.0}]}, \"vents\": {\"enabled\": true, \"diameter\": 2.0, \"positions\": [[-10.0, -10.0], [10.0, -10.0], [-10.0, 10.0], [10.0, 10.0]]}, \"tessellation\": {\"deflection_mm\": 0.02, \"angular_rad\": 0.1, \"max_edge_mm\": 2.5}}')\n\nif __name__ == \"__main__\":\n    spec = CoupledSpec.from_dict(SPEC)\n    result = build(spec)\n    write_step(result.part, os.path.join(HERE, spec.name + \".step\"))\n    print(\"volume_mm3\", round(result.part.Volume(), 3), \"solids\", len(result.part.Solids()))\n",
   "metrics": {
     "volume": 18380.108,
     "surface_area": 27638.11,
@@ -153,14 +155,49 @@
     "genus": 1700
   },
   "render_preview": null,
-  "repair_history": [],
+  "repair_history": [
+    {
+      "attempt": 1,
+      "twists_deg_per_mm": [
+        1,
+        3,
+        5,
+        8
+      ],
+      "top_topology": "bcc",
+      "result": "FAIL enclosed_voids: 4 sealed pockets 3.43 mm^3 near (+-17, +-17, 7.27)",
+      "repair": "monotone twist 1, 2, 3, 4 deg/mm (kept in examples/fusion/attempts/fusion_r5_v1)"
+    },
+    {
+      "attempt": 2,
+      "twists_deg_per_mm": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "result": "FAIL enclosed_voids: 4 zero-volume closed fragments on cavity top edge (not air)",
+      "repair": "void gate: closed components < 1e-3 mm^3 reported as warnings, not voids (definition change, disclosed)"
+    },
+    {
+      "attempt": 3,
+      "twists_deg_per_mm": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "result": "PASS structural; 0 voids; 1 warning (4 fragments)",
+      "repair": "none (final)"
+    }
+  ],
   "limitations": [
     "min_wall_thickness is a B-Rep proxy (min of skin and 2 x strut radius), not a ray or sphere-fit measurement",
     "twist maps nodes and keeps straight struts between them; it is not an exact helicoid lattice",
     "single-body result is checked for connectivity but the lattice is clipped to the cavity, so struts end on the skin overlap",
     "STL is a tessellation at the given deflection; STEP is exact B-Rep",
     "shell() is not used for the skin because it exports as a shell-based surface model; a boolean cut is used",
-    "4 internal void(s) remain enclosed by the skin and the vents do not reach them; they cannot drain during printing, so the vent layout is not sufficient for this topology"
+    "4 closed zero-volume fragment(s) on cavity edges (no enclosed air); reported as warnings; they pass the watertight check"
   ],
   "unknowns": [
     "printability and mechanical response are not simulated",
@@ -192,7 +229,7 @@
     "genus": 1700,
     "euler_characteristic": -3390,
     "boundary_components": 5,
-    "internal_void_count": 4,
+    "internal_void_count": 0,
     "internal_void_genera": [
       0,
       0,
@@ -221,7 +258,9 @@
       "vertices": 16388,
       "edges": 23330,
       "faces": 3772
-    }
+    },
+    "internal_void_volumes_mm3": [],
+    "zero_volume_fragments": 4
   },
   "mesh_quality": {
     "triangles": 1634690,

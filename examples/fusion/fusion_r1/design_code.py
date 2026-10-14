@@ -4,7 +4,17 @@ Needs cadquery 2.8 (see python/requirements.txt). The spec below is the DesignSt
 """
 import json, os, sys
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(HERE, "..", "..", "python"))
+def _find_python_dir():
+    d = HERE
+    while True:
+        cand = os.path.join(d, "python")
+        if os.path.isdir(os.path.join(cand, "bioxlattice")):
+            return cand
+        parent = os.path.dirname(d)
+        if parent == d:
+            raise SystemExit("python/bioxlattice not found above " + HERE)
+        d = parent
+sys.path.insert(0, _find_python_dir())
 from bioxlattice.spec import CoupledSpec
 from bioxlattice.build import build
 from bioxlattice.exporter import write_step

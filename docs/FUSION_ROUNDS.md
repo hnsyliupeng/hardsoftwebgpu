@@ -21,6 +21,18 @@ are rebuilt locally (ignored by Git, see the repository-size decision). Rebuild 
 | Void gate refined | `structural.VOID_MIN_VOLUME_MM3 = 1e-3` | Closed fragments with zero enclosed volume are warnings, not voids (see round 5). |
 | Relative overlap identity tolerance | `coupling.overlap_identity` | 1e-4 relative (was 1e-3 mm^3 absolute); OCC boolean error on a multi-solid core is about 1e-5 relative. |
 
+## Bookkeeping fixes (after the rounds)
+
+Found while preparing the final report; fixed without changing any geometry:
+- `design.json` was written before the structural gate and copied the raw closed-component count. For R2 and
+  R5 it therefore said `internal_void_count: 4` and listed the four fragments as enclosed voids, while
+  `structural_tests.json` reported 0 voids. `python/bioxlattice/reconcile.py` now copies the structural result into
+  `design.json` after each build, rewrites the zone-dependent description, and records `repair_history`. It was
+  applied to R1 to R5.
+- The `design_code.py` template used a fixed `../../python` path that only works two levels below the repo
+  root. The fusion folders are three levels down, so the generated code could not import the package. The
+  template now searches upward for `python/bioxlattice`. The five files were updated and the spec loads in R1 and R5.
+
 ## Rounds
 
 Common envelope 40 x 40 x 20 mm, edge fillet 3 mm, skin 2 mm, four bottom vents (d = 2 mm),

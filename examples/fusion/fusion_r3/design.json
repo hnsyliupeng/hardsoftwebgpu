@@ -1,8 +1,8 @@
 {
-  "prompt": "Coupled bio-inspired lattice: 2.0 mm skin with 4 bottom printability vents around a BCC strut core, helical twist of the lattice along z (2.0 deg/mm, Bouligand-like) and 3 depth-graded strut radii, exported as editable B-Rep STEP with a high-resolution STL.",
+  "prompt": "Multi-zone coupled bio-lattice in a 40 x 40 x 20 mm envelope with a 2 mm skin, 4 bottom vents and depth-graded struts. Zones: z[-10,-5] bcc 5 mm, twist 0 deg/mm, radius x1; z[-5,5] bcc 5 mm, twist 4 deg/mm, radius x1; z[5,10] bcc 5 mm, twist 8 deg/mm, radius x1.",
   "design_spec": {
-    "topology": "hybrid",
-    "bio_motif": "helical (Bouligand-like) twist of a BCC strut lattice core inside a skin with vents",
+    "topology": "multi-zone bio-lattice",
+    "bio_motif": "zone-graded lattice core: topology, cell size, twist rate and radius scale change by z band; twist continuous across zones",
     "parameters": {
       "name": "fusion_r3",
       "envelope": {
@@ -15,7 +15,7 @@
         "thickness": 2.0
       },
       "lattice": {
-        "topology": "bcc",
+        "topology": "multi-zone",
         "cell": 5.0,
         "twist_deg_per_mm": 2.0,
         "overlap": 0.2,
@@ -58,7 +58,9 @@
             "twist_deg_per_mm": 8.0,
             "radius_scale": 1.0
           }
-        ]
+        ],
+        "zones_summary": "z[-10,-5] bcc 5 mm, twist 0 deg/mm, radius x1; z[-5,5] bcc 5 mm, twist 4 deg/mm, radius x1; z[5,10] bcc 5 mm, twist 8 deg/mm, radius x1",
+        "twist_map": "per-zone theta(z), continuous across zone interfaces"
       },
       "vents": {
         "enabled": true,
@@ -100,7 +102,7 @@
         0.6,
         0.45
       ],
-      "twist_map": "theta(z) = 2.0 deg/mm * z, rotation about Z"
+      "twist_map": "per-zone theta(z), continuous across zone interfaces"
     },
     "coupling_levels": [
       {
@@ -116,7 +118,7 @@
       {
         "level": "L2",
         "name": "lattice core",
-        "kind": "bcc struts, cell 5.0 mm, twisted nodes"
+        "kind": "zone-graded lattice (see zones), twisted nodes"
       },
       {
         "level": "L3",
@@ -136,7 +138,7 @@
       "kernel": "OpenCASCADE via CadQuery 2.8 (exact B-Rep)"
     }
   },
-  "code": "\"\"\"Copy-executable parametric build (run from this folder: python design_code.py).\n\nNeeds cadquery 2.8 (see python/requirements.txt). The spec below is the DesignState parameter set.\n\"\"\"\nimport json, os, sys\nHERE = os.path.dirname(os.path.abspath(__file__))\nsys.path.insert(0, os.path.join(HERE, \"..\", \"..\", \"python\"))\nfrom bioxlattice.spec import CoupledSpec\nfrom bioxlattice.build import build\nfrom bioxlattice.exporter import write_step\n\nSPEC = json.loads('{\"name\": \"fusion_r3\", \"envelope\": {\"length\": 40.0, \"width\": 40.0, \"height\": 20.0, \"edge_fillet\": 3.0}, \"skin\": {\"thickness\": 2.0}, \"lattice\": {\"topology\": \"bcc\", \"cell\": 5.0, \"twist_deg_per_mm\": 2.0, \"overlap\": 0.2, \"tier_depths\": [4.0, 7.0], \"tier_radii\": [0.8, 0.6, 0.45], \"phase\": [0.0, 0.0, 0.0], \"zones\": [{\"z0\": -10, \"z1\": -5, \"topology\": \"bcc\", \"cell\": 5.0, \"twist_deg_per_mm\": 0.0, \"radius_scale\": 1.0}, {\"z0\": -5, \"z1\": 5, \"topology\": \"bcc\", \"cell\": 5.0, \"twist_deg_per_mm\": 4.0, \"radius_scale\": 1.0}, {\"z0\": 5, \"z1\": 10, \"topology\": \"bcc\", \"cell\": 5.0, \"twist_deg_per_mm\": 8.0, \"radius_scale\": 1.0}]}, \"vents\": {\"enabled\": true, \"diameter\": 2.0, \"positions\": [[-10.0, -10.0], [10.0, -10.0], [-10.0, 10.0], [10.0, 10.0]]}, \"tessellation\": {\"deflection_mm\": 0.02, \"angular_rad\": 0.1, \"max_edge_mm\": 2.5}}')\n\nif __name__ == \"__main__\":\n    spec = CoupledSpec.from_dict(SPEC)\n    result = build(spec)\n    write_step(result.part, os.path.join(HERE, spec.name + \".step\"))\n    print(\"volume_mm3\", round(result.part.Volume(), 3), \"solids\", len(result.part.Solids()))\n",
+  "code": "\"\"\"Copy-executable parametric build (run from this folder: python design_code.py).\n\nNeeds cadquery 2.8 (see python/requirements.txt). The spec below is the DesignState parameter set.\n\"\"\"\nimport json, os, sys\nHERE = os.path.dirname(os.path.abspath(__file__))\ndef _find_python_dir():\n    d = HERE\n    while True:\n        cand = os.path.join(d, \"python\")\n        if os.path.isdir(os.path.join(cand, \"bioxlattice\")):\n            return cand\n        parent = os.path.dirname(d)\n        if parent == d:\n            raise SystemExit(\"python/bioxlattice not found above \" + HERE)\n        d = parent\nsys.path.insert(0, _find_python_dir())\nfrom bioxlattice.spec import CoupledSpec\nfrom bioxlattice.build import build\nfrom bioxlattice.exporter import write_step\n\nSPEC = json.loads('{\"name\": \"fusion_r3\", \"envelope\": {\"length\": 40.0, \"width\": 40.0, \"height\": 20.0, \"edge_fillet\": 3.0}, \"skin\": {\"thickness\": 2.0}, \"lattice\": {\"topology\": \"bcc\", \"cell\": 5.0, \"twist_deg_per_mm\": 2.0, \"overlap\": 0.2, \"tier_depths\": [4.0, 7.0], \"tier_radii\": [0.8, 0.6, 0.45], \"phase\": [0.0, 0.0, 0.0], \"zones\": [{\"z0\": -10, \"z1\": -5, \"topology\": \"bcc\", \"cell\": 5.0, \"twist_deg_per_mm\": 0.0, \"radius_scale\": 1.0}, {\"z0\": -5, \"z1\": 5, \"topology\": \"bcc\", \"cell\": 5.0, \"twist_deg_per_mm\": 4.0, \"radius_scale\": 1.0}, {\"z0\": 5, \"z1\": 10, \"topology\": \"bcc\", \"cell\": 5.0, \"twist_deg_per_mm\": 8.0, \"radius_scale\": 1.0}]}, \"vents\": {\"enabled\": true, \"diameter\": 2.0, \"positions\": [[-10.0, -10.0], [10.0, -10.0], [-10.0, 10.0], [10.0, 10.0]]}, \"tessellation\": {\"deflection_mm\": 0.02, \"angular_rad\": 0.1, \"max_edge_mm\": 2.5}}')\n\nif __name__ == \"__main__\":\n    spec = CoupledSpec.from_dict(SPEC)\n    result = build(spec)\n    write_step(result.part, os.path.join(HERE, spec.name + \".step\"))\n    print(\"volume_mm3\", round(result.part.Volume(), 3), \"solids\", len(result.part.Solids()))\n",
   "metrics": {
     "volume": 18669.595,
     "surface_area": 26288.241,
@@ -207,7 +209,9 @@
       "vertices": 9754,
       "edges": 14024,
       "faces": 2394
-    }
+    },
+    "internal_void_volumes_mm3": [],
+    "zero_volume_fragments": 0
   },
   "mesh_quality": {
     "triangles": 1437364,
