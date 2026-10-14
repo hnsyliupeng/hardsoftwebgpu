@@ -45,6 +45,7 @@ class Lattice:
 class Tessellation:
     deflection_mm: float = 0.02   # high-resolution export tolerance
     angular_rad: float = 0.1
+    max_edge_mm: float = 2.5      # longest triangle edge after conformal refinement (no needles)
 
 
 @dataclass
@@ -83,6 +84,8 @@ class CoupledSpec:
                     raise ValueError(f"vent at ({x}, {y}) is outside the bottom face")
         if self.tessellation.deflection_mm <= 0:
             raise ValueError("deflection must be > 0")
+        if self.tessellation.max_edge_mm <= 0:
+            raise ValueError("max_edge_mm must be > 0")
 
     def to_dict(self) -> dict:
         return asdict(self)

@@ -58,7 +58,8 @@
       },
       "tessellation": {
         "deflection_mm": 0.02,
-        "angular_rad": 0.1
+        "angular_rad": 0.1,
+        "max_edge_mm": 2.5
       }
     },
     "heterogeneity_field": {
@@ -109,7 +110,7 @@
       "kernel": "OpenCASCADE via CadQuery 2.8 (exact B-Rep)"
     }
   },
-  "code": "\"\"\"Copy-executable parametric build (run from this folder: python design_code.py).\n\nNeeds cadquery 2.8 (see python/requirements.txt). The spec below is the DesignState parameter set.\n\"\"\"\nimport json, os, sys\nHERE = os.path.dirname(os.path.abspath(__file__))\nsys.path.insert(0, os.path.join(HERE, \"..\", \"..\", \"python\"))\nfrom bioxlattice.spec import CoupledSpec\nfrom bioxlattice.build import build\nfrom bioxlattice.exporter import write_step\n\nSPEC = json.loads('{\"name\": \"fcc_graded_test\", \"envelope\": {\"length\": 30.0, \"width\": 30.0, \"height\": 16.0, \"edge_fillet\": 2.0}, \"skin\": {\"thickness\": 1.5}, \"lattice\": {\"topology\": \"fcc\", \"cell\": 6.0, \"twist_deg_per_mm\": 0.0, \"overlap\": 0.2, \"tier_depths\": [3.0, 6.0], \"tier_radii\": [0.9, 0.6, 0.4], \"phase\": [3.0, 3.0, 0.0]}, \"vents\": {\"enabled\": true, \"diameter\": 1.6, \"positions\": [[-7.0, -7.0], [7.0, -7.0], [-7.0, 7.0], [7.0, 7.0]]}, \"tessellation\": {\"deflection_mm\": 0.02, \"angular_rad\": 0.1}}')\n\nif __name__ == \"__main__\":\n    spec = CoupledSpec.from_dict(SPEC)\n    result = build(spec)\n    write_step(result.part, os.path.join(HERE, spec.name + \".step\"))\n    print(\"volume_mm3\", round(result.part.Volume(), 3), \"solids\", len(result.part.Solids()))\n",
+  "code": "\"\"\"Copy-executable parametric build (run from this folder: python design_code.py).\n\nNeeds cadquery 2.8 (see python/requirements.txt). The spec below is the DesignState parameter set.\n\"\"\"\nimport json, os, sys\nHERE = os.path.dirname(os.path.abspath(__file__))\nsys.path.insert(0, os.path.join(HERE, \"..\", \"..\", \"python\"))\nfrom bioxlattice.spec import CoupledSpec\nfrom bioxlattice.build import build\nfrom bioxlattice.exporter import write_step\n\nSPEC = json.loads('{\"name\": \"fcc_graded_test\", \"envelope\": {\"length\": 30.0, \"width\": 30.0, \"height\": 16.0, \"edge_fillet\": 2.0}, \"skin\": {\"thickness\": 1.5}, \"lattice\": {\"topology\": \"fcc\", \"cell\": 6.0, \"twist_deg_per_mm\": 0.0, \"overlap\": 0.2, \"tier_depths\": [3.0, 6.0], \"tier_radii\": [0.9, 0.6, 0.4], \"phase\": [3.0, 3.0, 0.0]}, \"vents\": {\"enabled\": true, \"diameter\": 1.6, \"positions\": [[-7.0, -7.0], [7.0, -7.0], [-7.0, 7.0], [7.0, 7.0]]}, \"tessellation\": {\"deflection_mm\": 0.02, \"angular_rad\": 0.1, \"max_edge_mm\": 2.5}}')\n\nif __name__ == \"__main__\":\n    spec = CoupledSpec.from_dict(SPEC)\n    result = build(spec)\n    write_step(result.part, os.path.join(HERE, spec.name + \".step\"))\n    print(\"volume_mm3\", round(result.part.Volume(), 3), \"solids\", len(result.part.Solids()))\n",
   "metrics": {
     "volume": 7408.93,
     "surface_area": 10777.791,
@@ -182,6 +183,13 @@
       "faces": 1754
     }
   },
+  "mesh_quality": {
+    "triangles": 531296,
+    "max_edge_mm": 2.5,
+    "aspect_p50": 123.0,
+    "aspect_p99": 587.37,
+    "needles_aspect_gt_100_span_ge_5.0mm": 0
+  },
   "lattice": {
     "topology": "fcc",
     "cell_mm": 6.0,
@@ -209,8 +217,8 @@
     ]
   },
   "timing_s": {
-    "build": 63.56,
-    "step_write": 1.51,
-    "tessellate": 3.92
+    "build": 64.37,
+    "step_write": 1.39,
+    "tessellate": 6.75
   }
 }

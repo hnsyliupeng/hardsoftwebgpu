@@ -7,7 +7,7 @@
       "H": 16.0,
       "fillet_vertical": 2.0
     },
-    "seconds": 0.014,
+    "seconds": 0.015,
     "volume": 14345.06193,
     "solids": 1,
     "faces": 10
@@ -20,7 +20,7 @@
       "H": 13.0,
       "fillet_vertical": 0.5
     },
-    "seconds": 0.01,
+    "seconds": 0.011,
     "volume": 9474.210176,
     "solids": 1,
     "faces": 10
@@ -30,7 +30,7 @@
     "params": {
       "thickness": 1.5
     },
-    "seconds": 0.008,
+    "seconds": 0.009,
     "volume": 4870.851754,
     "solids": 1,
     "faces": 20
@@ -59,7 +59,7 @@
         ]
       ]
     },
-    "seconds": 0.009,
+    "seconds": 0.01,
     "volume": 4858.788038,
     "solids": 1,
     "faces": 24
@@ -73,7 +73,7 @@
       "cell": 6.0,
       "twist_deg_per_mm": 0.0
     },
-    "seconds": 2.264,
+    "seconds": 2.207,
     "volume": 1920.618821,
     "solids": 1,
     "faces": 648
@@ -86,7 +86,7 @@
         -6.0
       ]
     },
-    "seconds": 0.281,
+    "seconds": 0.29,
     "volume": 99.7933,
     "solids": 32,
     "faces": 232
@@ -100,7 +100,7 @@
       "cell": 6.0,
       "twist_deg_per_mm": 0.0
     },
-    "seconds": 12.218,
+    "seconds": 12.461,
     "volume": 4232.938849,
     "solids": 1,
     "faces": 788
@@ -114,7 +114,7 @@
       "cell": 6.0,
       "twist_deg_per_mm": 0.0
     },
-    "seconds": 0.735,
+    "seconds": 0.833,
     "volume": 341.353791,
     "solids": 1,
     "faces": 240
@@ -128,7 +128,7 @@
       "cell": 6.0,
       "twist_deg_per_mm": 0.0
     },
-    "seconds": 0.446,
+    "seconds": 0.465,
     "volume": 95.087784,
     "solids": 1,
     "faces": 144
@@ -141,7 +141,7 @@
         0.0
       ]
     },
-    "seconds": 0.722,
+    "seconds": 0.766,
     "volume": 1235.588617,
     "solids": 1,
     "faces": 701
@@ -155,7 +155,7 @@
       "cell": 6.0,
       "twist_deg_per_mm": 0.0
     },
-    "seconds": 11.434,
+    "seconds": 12.009,
     "volume": 3681.949694,
     "solids": 1,
     "faces": 748
@@ -169,7 +169,7 @@
       "cell": 6.0,
       "twist_deg_per_mm": 0.0
     },
-    "seconds": 1.319,
+    "seconds": 1.245,
     "volume": 456.713568,
     "solids": 1,
     "faces": 304
@@ -183,7 +183,7 @@
       "cell": 6.0,
       "twist_deg_per_mm": 0.0
     },
-    "seconds": 1.976,
+    "seconds": 2.056,
     "volume": 161.147303,
     "solids": 1,
     "faces": 176
@@ -196,7 +196,7 @@
         6.0
       ]
     },
-    "seconds": 0.512,
+    "seconds": 0.525,
     "volume": 948.518194,
     "solids": 1,
     "faces": 588
@@ -210,7 +210,7 @@
       "cell": 6.0,
       "twist_deg_per_mm": 0.0
     },
-    "seconds": 13.519,
+    "seconds": 13.358,
     "volume": 3472.185834,
     "solids": 1,
     "faces": 684
@@ -223,7 +223,7 @@
         12.0
       ]
     },
-    "seconds": 0.673,
+    "seconds": 0.65,
     "volume": 712.636332,
     "solids": 1,
     "faces": 345
@@ -233,7 +233,7 @@
     "params": {
       "layers": 4
     },
-    "seconds": 6.586,
+    "seconds": 6.73,
     "volume": 2842.674458,
     "solids": 1,
     "faces": 1926
@@ -241,7 +241,7 @@
   {
     "feature": "union_skin_core",
     "params": {},
-    "seconds": 2.549,
+    "seconds": 2.554,
     "volume": 7408.930132,
     "solids": 1,
     "faces": 1754

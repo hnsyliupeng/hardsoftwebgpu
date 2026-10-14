@@ -223,6 +223,22 @@
           "note": "proxy 0.90 mm"
         },
         {
+          "id": "mesh.max_edge_within_bound",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": "max edge 2.5 mm, bound 2.5 mm"
+        },
+        {
+          "id": "mesh.no_needles",
+          "observed": 0,
+          "expected": 0,
+          "tolerance": 0,
+          "pass": true,
+          "note": "triangles with aspect > 100 spanning >= 5 mm in z"
+        },
+        {
           "id": "printability.vent0_open",
           "observed": true,
           "expected": true,

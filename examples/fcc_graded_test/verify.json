@@ -17,8 +17,8 @@
     "editable_brep_ok": true
   },
   "mesh": {
-    "vertices": 130740,
-    "triangles": 262700,
+    "vertices": 265038,
+    "triangles": 531296,
     "non_manifold_or_boundary_edges": 0,
     "watertight": true,
     "components": 1,

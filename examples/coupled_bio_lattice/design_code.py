@@ -9,7 +9,7 @@ from bioxlattice.spec import CoupledSpec
 from bioxlattice.build import build
 from bioxlattice.exporter import write_step
 
-SPEC = json.loads('{"name": "coupled_bio_lattice", "envelope": {"length": 40.0, "width": 40.0, "height": 20.0, "edge_fillet": 3.0}, "skin": {"thickness": 2.0}, "lattice": {"topology": "bcc", "cell": 5.0, "twist_deg_per_mm": 2.0, "overlap": 0.2, "tier_depths": [4.0, 7.0], "tier_radii": [0.8, 0.6, 0.45]}, "vents": {"enabled": true, "diameter": 2.0, "positions": [[-10.0, -10.0], [10.0, -10.0], [-10.0, 10.0], [10.0, 10.0]]}, "tessellation": {"deflection_mm": 0.02, "angular_rad": 0.1}}')
+SPEC = json.loads('{"name": "coupled_bio_lattice", "envelope": {"length": 40.0, "width": 40.0, "height": 20.0, "edge_fillet": 3.0}, "skin": {"thickness": 2.0}, "lattice": {"topology": "bcc", "cell": 5.0, "twist_deg_per_mm": 2.0, "overlap": 0.2, "tier_depths": [4.0, 7.0], "tier_radii": [0.8, 0.6, 0.45], "phase": [0.0, 0.0, 0.0]}, "vents": {"enabled": true, "diameter": 2.0, "positions": [[-10.0, -10.0], [10.0, -10.0], [-10.0, 10.0], [10.0, 10.0]]}, "tessellation": {"deflection_mm": 0.02, "angular_rad": 0.1, "max_edge_mm": 2.5}}')
 
 if __name__ == "__main__":
     spec = CoupledSpec.from_dict(SPEC)

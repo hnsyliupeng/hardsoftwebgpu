@@ -11,7 +11,8 @@ def write_step(shape: cq.Shape, path: str) -> None:
     cq.exporters.export(cq.Workplane("XY").add(shape), path, exportType="STEP")
 
 
-def tessellate_merged(shape: cq.Shape, deflection: float, angular: float, tol: float = 1e-6):
+def tessellate_merged(shape: cq.Shape, deflection: float, angular: float, tol: float = 1e-6,
+                      max_edge: float | None = None):
     """Mesh the whole shape once, then read each face's triangulation and merge shared vertices.
 
     Meshing faces one at a time (Shape.tessellate per face) re-discretises shared edges and leaves
@@ -61,6 +62,10 @@ def tessellate_merged(shape: cq.Shape, deflection: float, angular: float, tol: f
                 j, k = k, j
             if i != j and j != k and i != k:
                 tris.append((i, j, k))
+    if max_edge:
+        # split long straight-edge needles (OCC leaves a straight edge as one segment); conformal
+        from .mesh_refine import refine_long_edges
+        verts, tris = refine_long_edges(verts, tris, max_edge)
     return verts, tris
 
 

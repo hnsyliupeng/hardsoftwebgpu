@@ -16,6 +16,7 @@ import time
 from .build import build
 from .exporter import tessellate_merged, write_mesh_bin, write_step, write_stl
 from .metrics import part_metrics
+from .mesh_refine import quality_report
 from .spec import CoupledSpec
 from .verify import verify_mesh, verify_step
 
@@ -84,7 +85,8 @@ def cmd_build(args) -> None:
     step_s = time.perf_counter() - t1
 
     t2 = time.perf_counter()
-    verts, tris = tessellate_merged(result.part, spec.tessellation.deflection_mm, spec.tessellation.angular_rad)
+    verts, tris = tessellate_merged(result.part, spec.tessellation.deflection_mm, spec.tessellation.angular_rad,
+                                    max_edge=spec.tessellation.max_edge_mm)
     tess_s = time.perf_counter() - t2
     stl_path = os.path.join(out, f"{name}.stl")
     write_stl(stl_path, verts, tris, name)
@@ -139,6 +141,7 @@ def cmd_build(args) -> None:
             "mesh_bin": f"{name}.mesh.bin", "code": "design_code.py", "timeline": "timeline.json",
         },
         "metrics_detail": metrics,
+        "mesh_quality": quality_report(verts, tris),
         "lattice": result.lattice,
         "timing_s": {"build": round(build_s, 2), "step_write": round(step_s, 2), "tessellate": round(tess_s, 2)},
     }

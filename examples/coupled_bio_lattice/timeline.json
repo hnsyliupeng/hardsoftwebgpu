@@ -7,7 +7,7 @@
       "H": 20.0,
       "fillet_vertical": 3.0
     },
-    "seconds": 0.016,
+    "seconds": 0.015,
     "volume": 31845.486678,
     "solids": 1,
     "faces": 10
@@ -20,7 +20,7 @@
       "H": 16.0,
       "fillet_vertical": 1.0
     },
-    "seconds": 0.013,
+    "seconds": 0.01,
     "volume": 20722.265482,
     "solids": 1,
     "faces": 10
@@ -59,7 +59,7 @@
         ]
       ]
     },
-    "seconds": 0.01,
+    "seconds": 0.009,
     "volume": 11098.088454,
     "solids": 1,
     "faces": 24
@@ -73,7 +73,7 @@
       "cell": 5.0,
       "twist_deg_per_mm": 2.0
     },
-    "seconds": 54.335,
+    "seconds": 54.103,
     "volume": 6455.400815,
     "solids": 1,
     "faces": 1880
@@ -86,7 +86,7 @@
         -5.0
       ]
     },
-    "seconds": 1.894,
+    "seconds": 1.615,
     "volume": 1730.588074,
     "solids": 9,
     "faces": 956
@@ -100,7 +100,7 @@
       "cell": 5.0,
       "twist_deg_per_mm": 2.0
     },
-    "seconds": 33.409,
+    "seconds": 33.261,
     "volume": 4573.075777,
     "solids": 1,
     "faces": 1304
@@ -114,7 +114,7 @@
       "cell": 5.0,
       "twist_deg_per_mm": 2.0
     },
-    "seconds": 5.613,
+    "seconds": 5.405,
     "volume": 802.242547,
     "solids": 1,
     "faces": 440
@@ -128,7 +128,7 @@
       "cell": 5.0,
       "twist_deg_per_mm": 2.0
     },
-    "seconds": 2.077,
+    "seconds": 2.076,
     "volume": 249.409756,
     "solids": 1,
     "faces": 300
@@ -141,7 +141,7 @@
         0.0
       ]
     },
-    "seconds": 1.197,
+    "seconds": 1.171,
     "volume": 1944.576037,
     "solids": 1,
     "faces": 1016
@@ -155,7 +155,7 @@
       "cell": 5.0,
       "twist_deg_per_mm": 2.0
     },
-    "seconds": 32.439,
+    "seconds": 33.069,
     "volume": 4573.075772,
     "solids": 1,
     "faces": 1304
@@ -169,7 +169,7 @@
       "cell": 5.0,
       "twist_deg_per_mm": 2.0
     },
-    "seconds": 5.529,
+    "seconds": 5.395,
     "volume": 802.242546,
     "solids": 1,
     "faces": 440
@@ -183,7 +183,7 @@
       "cell": 5.0,
       "twist_deg_per_mm": 2.0
     },
-    "seconds": 2.163,
+    "seconds": 2.077,
     "volume": 249.409755,
     "solids": 1,
     "faces": 300
@@ -196,7 +196,7 @@
         5.0
       ]
     },
-    "seconds": 1.303,
+    "seconds": 1.171,
     "volume": 1944.576034,
     "solids": 1,
     "faces": 1016
@@ -210,7 +210,7 @@
       "cell": 5.0,
       "twist_deg_per_mm": 2.0
     },
-    "seconds": 54.527,
+    "seconds": 53.515,
     "volume": 6455.400808,
     "solids": 1,
     "faces": 1880
@@ -223,7 +223,7 @@
         10.0
       ]
     },
-    "seconds": 1.865,
+    "seconds": 1.837,
     "volume": 1730.588073,
     "solids": 9,
     "faces": 956
@@ -233,7 +233,7 @@
     "params": {
       "layers": 4
     },
-    "seconds": 17.745,
+    "seconds": 17.638,
     "volume": 7081.384319,
     "solids": 17,
     "faces": 2668
@@ -241,7 +241,7 @@
   {
     "feature": "union_skin_core",
     "params": {},
-    "seconds": 5.972,
+    "seconds": 6.305,
     "volume": 17762.043896,
     "solids": 1,
     "faces": 2256

@@ -35,7 +35,7 @@ The final union is `skin ∪ core`. Two independent consistency checks hold: the
 | analytic faces | 100 % (2 228 cylinders, 20 planes) |
 | STEP | 48.5 MB (the first committed STEP was 48 MB), 1 solid, `MANIFOLD_SOLID_BREP`, no shell-based model, volume error 9·10⁻⁹ on re-import |
 | printability vents | 4 × Ø2.0 mm through the bottom wall at (±10, ±10) mm; diameter floor 0.4 mm |
-| mesh (high-res) | 647 946 triangles, 321 927 vertices, deflection 0.02 mm, watertight |
+| mesh (high-res) | 1 332 300 triangles, deflection 0.02 mm, max edge 2.5 mm, watertight |
 | build time | 236.7 s CLI build (STEP, mesh, STL, verify included) on 2 CPU cores |
 
 The min wall thickness is reported as 0.9 mm. This is a B-Rep proxy, `min(skin, 2·r_min)`, not a ray-based measurement.
@@ -67,13 +67,16 @@ The sandbox has no libGL. `scripts/make_gl_stub.sh` builds a stub `libGL.so.1` t
 - The vents are four Ø2 mm cylinders through the bottom wall only. They are a printability relief, not a load path. Their effect on the mechanical response is not measured here. Printability is not verified on a printer.
 - Twist keeps straight struts between rotated nodes. It is not an exact helicoid lattice.
 - The browser cannot run OpenCASCADE. Generate loads prebuilt outputs. Changing parameters in the page requires running the Python CLI.
-- The cutaway screenshot removes the half nearest the camera by triangle centroid. Thin vertical slivers at the part corners are a CPU-rasteriser artefact at grazing angles, not geometry.
-- The STL (32 MB) is not committed. The CLI writes it. The STEP and mesh.bin are committed.
+- Mesh quality (fixed): OCC leaves a straight B-Rep edge (e.g. a vertical seam where the fillet meets a planar wall) as one segment. Triangles spanning it were 16 mm needles, about 0.1 mm wide, which showed as spikes on the corner fillets. `python/bioxlattice/mesh_refine.py` splits every edge longer than `tessellation.max_edge_mm` (default 2.5 mm) by conformal midpoint splitting. Volume and watertightness are unchanged. `design.json` reports `mesh_quality`, and `structural_tests.json` gates `mesh.max_edge_within_bound` and `mesh.no_needles`.
+- Cutaway screenshots clip triangles exactly against the cut plane (`scripts/render_coupled.ts`). Earlier centroid culling left stepped edges at the cut.
+- Remaining slivers: refinement splits only long edges. Triangle aspect ratio is still high on thin tubes (p50 about 110 to 120), because tube circumferences are narrow. These are not needles (none span 5 mm or more with aspect over 100).
+- Known and not diagnosed: dark elliptical blobs at the BCC strut junctions in `coupled_bio_lattice.png`. Possibly strut end caps or the tier radius change at the node. Not yet checked against the geometry.
+- The STL (about 67 MB for the BCC model) is not committed. The CLI writes it to `artifacts/`. The STEP and mesh.bin are committed.
 - Not verified here: WebGPU presentation (see the earlier notes), mechanical response, printability.
 
 ## Test model 2: FCC graded scaffold (`examples/fcc_graded_test/`)
 
-A second test of the same pipeline with a different topology, no twist, a different envelope, different tiers, and a lattice phase offset. Build: `cd python && ../.venv/bin/python -m bioxlattice build ../examples/fcc_graded_test/spec.json ../examples/fcc_graded_test`. The STL (14 MB) is written to `artifacts/` and is not committed.
+A second test of the same pipeline with a different topology, no twist, a different envelope, different tiers, and a lattice phase offset. Build: `cd python && ../.venv/bin/python -m bioxlattice build ../examples/fcc_graded_test/spec.json ../examples/fcc_graded_test`. The STL (about 27 MB) is written to `artifacts/` and is not committed.
 
 | Parameter | Value |
 |---|---|
@@ -93,7 +96,7 @@ A second test of the same pipeline with a different topology, no twist, a differ
 | enclosed voids | 0 |
 | genus (outer boundary) | 306 |
 | STEP | 1 `MANIFOLD_SOLID_BREP`, re-import volume error 1.3e-8 |
-| mesh | 262 700 triangles, watertight |
+| mesh | 531 296 triangles, max edge 2.5 mm, watertight |
 | structural tests | all levels PASS (`structural_tests.json`) |
 
 Screenshots: `fcc_graded_test_cutaway.png` (near half removed, so the internal lattice is visible) and `fcc_graded_test_exterior.png` (the real outside: bottom skin and four vents, with no lattice visible by design).

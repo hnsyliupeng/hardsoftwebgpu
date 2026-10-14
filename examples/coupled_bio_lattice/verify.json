@@ -1,6 +1,6 @@
 {
   "step": {
-    "file": "/tmp/work/coupled_out3/coupled_bio_lattice.step",
+    "file": "../examples/coupled_bio_lattice/coupled_bio_lattice.step",
     "reimported_solids": 1,
     "reimported_volume": 17762.044,
     "volume_rel_error": 9.053e-09,
@@ -17,8 +17,8 @@
     "editable_brep_ok": true
   },
   "mesh": {
-    "vertices": 321927,
-    "triangles": 647946,
+    "vertices": 664104,
+    "triangles": 1332300,
     "non_manifold_or_boundary_edges": 0,
     "watertight": true,
     "components": 1,

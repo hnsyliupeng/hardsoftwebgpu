@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseMeshBin, vertexNormals, timelineRows } from "../web/coupled.ts";
+import { parseMeshBin, vertexNormals, creaseMesh, timelineRows } from "../web/coupled.ts";
 
 // Same layout as python/bioxlattice/exporter.write_mesh_bin: uint32 nv, uint32 nt,
 // float32 xyz * nv, uint32 ijk * nt, little endian.
@@ -47,4 +47,21 @@ test("timelineRows maps Python timeline entries to table rows", () => {
   assert.equal(rows[0].op, "skin_boolean_cut");
   assert.equal(rows[0].ms, 10);
   assert.equal(rows[0].note, "1 solid(s), 20 faces");
+});
+
+test("creaseMesh keeps a 90 degree seam crisp and smooths coplanar faces", () => {
+  // Two triangles meeting at a right-angle seam along the y axis (z=0 plane and x=0 plane).
+  const pos = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1]);
+  const idx = new Uint32Array([0, 1, 2, 0, 3, 2]);
+  const m = creaseMesh(pos, idx, 40);
+  assert.equal(m.indices.length, 6);
+  assert.equal(m.positions.length, 18);
+  // corner 0 of triangle 0 lies on the z=0 face: normal must be +z (not averaged toward +x)
+  assert.ok(Math.abs(m.normals[2] - 1) < 1e-6 && Math.abs(m.normals[0]) < 1e-6);
+  // corner 0 of triangle 1 lies on the x=0 face (triangle 0,3,2): normal must be +x or -x, not averaged
+  const n3 = Math.abs(m.normals[9]);
+  assert.ok(n3 > 1 - 1e-6, `expected seam-crisp normal along x, got ${m.normals[9]}`);
+  // coplanar smooth pair: a flat square split in two keeps +z at every corner
+  const flat = creaseMesh(new Float32Array([0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0]), new Uint32Array([0, 1, 2, 0, 2, 3]), 40);
+  for (let i = 0; i < flat.normals.length; i += 3) assert.ok(Math.abs(flat.normals[i + 2] - 1) < 1e-6);
 });

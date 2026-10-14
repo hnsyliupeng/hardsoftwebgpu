@@ -245,6 +245,15 @@ def run_checks(spec: CoupledSpec, result, verts, tris, verify_step_out: dict | N
                f"total {vol_enclosed:.3f} mm^3; see voids[]"),
         _check("printability.min_wall_proxy_ge_0.4", wall >= 0.4 - 1e-9, True, 0, f"proxy {wall:.2f} mm"),
     ]
+    # mesh quality: no long needles; longest edge within the refinement bound (see mesh_refine.py)
+    from .mesh_refine import quality_report
+    q = quality_report(verts, tris)
+    needles = q["needles_aspect_gt_100_span_ge_5.0mm"]
+    pr += [
+        _check("mesh.max_edge_within_bound", q["max_edge_mm"] <= spec.tessellation.max_edge_mm + 1e-6, True, 0,
+               f"max edge {q['max_edge_mm']} mm, bound {spec.tessellation.max_edge_mm} mm"),
+        _check("mesh.no_needles", needles, 0, 0, "triangles with aspect > 100 spanning >= 5 mm in z"),
+    ]
     pr += _vent_checks(spec, verts, tris)
     levels["printability"] = _level(pr)
 

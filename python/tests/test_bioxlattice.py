@@ -203,7 +203,8 @@ class ExampleSpecs(unittest.TestCase):
 def _structural_report(spec, result):
     """Tessellate and STEP-verify a built part, then run every structural level (structural.py)."""
     from bioxlattice.structural import run_checks
-    verts, tris = tessellate_merged(result.part, spec.tessellation.deflection_mm, spec.tessellation.angular_rad)
+    verts, tris = tessellate_merged(result.part, spec.tessellation.deflection_mm, spec.tessellation.angular_rad,
+                                    max_edge=spec.tessellation.max_edge_mm)
     tmp = tempfile.mkdtemp()
     step = os.path.join(tmp, "m.step")
     write_step(result.part, step)
@@ -288,3 +289,47 @@ class VoidLocation(unittest.TestCase):
         self.assertEqual(_location((-1, -1, -6.6), (1, 1, -6.3), hxi, hyi, hzi), "bottom/top wall")
         self.assertEqual(_location((-1, -1, -1), (1, 1, 1), hxi, hyi, hzi), "interior")
         self.assertEqual(_location((13.2, 0, -6.6), (13.5, 1, -6.3), hxi, hyi, hzi), "edge")
+
+
+class MeshRefine(unittest.TestCase):
+    """Long-edge refinement keeps the mesh closed, orientation-consistent and volume-exact."""
+
+    @staticmethod
+    def _signed_volume(V, T):
+        s = 0.0
+        for a, b, c in T:
+            pa, pb, pc = V[a], V[b], V[c]
+            s += (pa[0] * (pb[1] * pc[2] - pb[2] * pc[1]) - pa[1] * (pb[0] * pc[2] - pb[2] * pc[0])
+                  + pa[2] * (pb[0] * pc[1] - pb[1] * pc[0])) / 6.0
+        return s
+
+    @staticmethod
+    def _open_edges(T):
+        from collections import Counter
+        cnt = Counter()
+        for a, b, c in T:
+            for u, v in ((a, b), (b, c), (c, a)):
+                cnt[(min(u, v), max(u, v))] += 1
+        return sum(1 for n in cnt.values() if n != 2)
+
+    def test_box_refined_is_closed_and_volume_exact(self):
+        from bioxlattice.mesh_refine import quality_report, refine_long_edges
+        box = cq.Workplane("XY").box(40, 40, 16).edges("|Z").fillet(3).val()
+        V, T = tessellate_merged(box, 0.02, 0.1)
+        self.assertGreater(quality_report(V, T)["max_edge_mm"], 20.0)  # the raw mesh has needles
+        V2, T2 = refine_long_edges(V, T, 2.5)
+        self.assertLessEqual(quality_report(V2, T2)["max_edge_mm"], 2.5 + 1e-9)
+        self.assertEqual(quality_report(V2, T2)["needles_aspect_gt_100_span_ge_5.0mm"], 0)
+        self.assertEqual(self._open_edges(T2), 0)
+        self.assertAlmostEqual(self._signed_volume(V2, T2), self._signed_volume(V, T), delta=1e-6)
+
+    def test_refine_is_noop_when_within_bound(self):
+        from bioxlattice.mesh_refine import refine_long_edges
+        V = [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
+        T = [(0, 2, 1), (0, 1, 3), (0, 3, 2), (1, 2, 3)]
+        V2, T2 = refine_long_edges(V, T, 5.0)
+        self.assertEqual(len(T2), len(T))
+        self.assertEqual(len(V2), len(V))
+
+    def test_default_bound_in_spec(self):
+        self.assertEqual(CoupledSpec().tessellation.max_edge_mm, 2.5)
