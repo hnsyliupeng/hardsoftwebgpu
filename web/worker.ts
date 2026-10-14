@@ -3,6 +3,7 @@
 
 import { runPipeline } from "../src/pipeline.ts";
 import { parseProgramJson } from "../src/program/index.ts";
+import { rasterisePreview } from "../src/render/preview.ts";
 
 // The smlibwasm package is copied next to the bundle (see scripts/build-web.mjs); the kernel
 // loader imports it from this URL at runtime.
@@ -52,6 +53,8 @@ self.onmessage = async (ev: MessageEvent<RunRequest>) => {
       manifest: res.exports?.data.manifest ?? [],
       files,
       mesh: { positions: mesh.positions, normals: mesh.normals, indices: mesh.indices },
+      // CPU software render at 640 px: always shown under the viewer, whatever renderer is active.
+      snapshot: rasterisePreview(mesh, 640).dataUrl,
       ms: Math.round(performance.now() - t0),
     };
     const transfer: Transferable[] = [mesh.positions.buffer, mesh.normals.buffer, mesh.indices.buffer];

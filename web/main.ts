@@ -4,7 +4,6 @@
 
 import { createViewer, type Backend, type Viewer } from "./viewer.ts";
 import { EXAMPLE_PROGRAMS } from "../src/program/index.ts";
-import { rasterisePreview } from "../src/render/preview.ts";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -109,7 +108,7 @@ function renderResult(msg: any): void {
 
   codeEl.textContent = msg.code;
   stateEl.textContent = JSON.stringify(s, null, 2);
-  previewImg.src = s.render_preview;
+  previewImg.src = msg.snapshot ?? s.render_preview;
 
   downloadsEl.innerHTML = "";
   for (const item of msg.manifest as { name: string; bytes: number }[]) {
@@ -134,11 +133,6 @@ async function showViewer(mesh: { positions: Float32Array; normals: Float32Array
   viewer = await createViewer(fresh, mesh, choice);
   backendEl.textContent = viewer.backend === "cpu" ? "CPU (software render, no GPU)" : viewer.backend === "webgpu" ? "WebGPU" : "WebGL2";
   fresh.style.display = viewer.backend === "cpu" ? "none" : "block";
-  previewImg.style.display = viewer.backend === "cpu" ? "block" : "none";
-  if (viewer.backend === "cpu") {
-    // CPU path: rasterise the mesh at a readable size (same isometric view as the screenshots).
-    previewImg.src = rasterisePreview(mesh, 640).dataUrl;
-  }
 }
 
 function setMode(mode: "prompt" | "program"): void {

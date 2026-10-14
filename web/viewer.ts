@@ -98,34 +98,43 @@ export interface BackendEnv {
 }
 
 /**
- * Pure backend choice: WebGPU -> WebGL2 -> CPU. `force` (from the page URL, e.g. ?backend=cpu)
- * skips the GPU paths; it is used by the CPU-only verification.
+ * Ordered backend list for the environment. Automatic choice is WebGL2 first: it is the path that
+ * was executed and seen rendering in headless Chromium; WebGPU is used when WebGL2 is missing, or
+ * when explicitly requested. The list always ends in "cpu", which is always available.
+ * `force` (from the page URL, e.g. ?backend=cpu) restricts the list; CPU-only verification uses it.
  */
-export function chooseBackend(env: BackendEnv, force?: Backend): Backend {
-  if (force === "cpu") return "cpu";
-  if (force === "webgl2") return env.webgl2 ? "webgl2" : "cpu";
-  if (force === "webgpu") return env.webgpu ? "webgpu" : env.webgl2 ? "webgl2" : "cpu";
-  if (env.webgpu) return "webgpu";
-  if (env.webgl2) return "webgl2";
-  return "cpu";
+export function backendOrder(env: BackendEnv, force?: Backend): Backend[] {
+  if (force === "cpu") return ["cpu"];
+  if (force === "webgl2") return env.webgl2 ? ["webgl2", "cpu"] : ["cpu"];
+  if (force === "webgpu") return [...(env.webgpu ? ["webgpu" as const] : []), ...(env.webgl2 ? ["webgl2" as const] : []), "cpu"];
+  return [...(env.webgl2 ? ["webgl2" as const] : []), ...(env.webgpu ? ["webgpu" as const] : []), "cpu"];
 }
 
+/** First entry of backendOrder: the backend that is tried first. */
+export function chooseBackend(env: BackendEnv, force?: Backend): Backend {
+  return backendOrder(env, force)[0];
+}
+
+/** Tries the backends in order and returns the first that starts; "cpu" always succeeds. */
 export async function createViewer(canvas: HTMLCanvasElement, mesh: MeshInput, force?: Backend): Promise<Viewer> {
-  if (force === "cpu") return { backend: "cpu", destroy() {} };
   const gpu = (navigator as any).gpu;
-  if (gpu && force !== "webgl2") {
+  for (const b of backendOrder({ webgpu: !!gpu, webgl2: true }, force)) {
     try {
-      const adapter = await gpu.requestAdapter();
-      if (adapter) {
-        const device = await adapter.requestDevice();
-        return await webgpuViewer(canvas, mesh, device, gpu.getPreferredCanvasFormat());
+      if (b === "cpu") break;
+      if (b === "webgl2") {
+        const gl = canvas.getContext("webgl2", { antialias: true }) as WebGL2RenderingContext | null;
+        if (gl) return webgl2Viewer(canvas, mesh, gl);
+      } else {
+        const adapter = await gpu.requestAdapter();
+        if (adapter) {
+          const device = await adapter.requestDevice();
+          return await webgpuViewer(canvas, mesh, device, gpu.getPreferredCanvasFormat());
+        }
       }
     } catch (e) {
-      console.warn("WebGPU unavailable, falling back to WebGL2:", e);
+      console.warn(`${b} unavailable, trying the next backend:`, e);
     }
   }
-  const gl = canvas.getContext("webgl2", { antialias: true }) as WebGL2RenderingContext | null;
-  if (gl) return webgl2Viewer(canvas, mesh, gl);
   return { backend: "cpu", destroy() {} };
 }
 
