@@ -6,3 +6,8 @@ artifacts/
 .venv/
 __pycache__/
 *.pyc
+# Large generated outputs of the coupled examples: rebuild with `python -m bioxlattice build`
+examples/coupled_bio_lattice/*.step
+examples/coupled_bio_lattice/*.mesh.bin
+examples/fcc_graded_test/*.step
+examples/fcc_graded_test/*.mesh.bin

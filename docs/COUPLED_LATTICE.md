@@ -33,7 +33,7 @@ The final union is `skin ∪ core`. Two independent consistency checks hold: the
 | porosity | 0.4422 |
 | struts | 3 680 kept of 16 384 unique candidates; per tier 3104 / 376 / 200 |
 | analytic faces | 100 % (2 228 cylinders, 20 planes) |
-| STEP | 48.5 MB (the first committed STEP was 48 MB), 1 solid, `MANIFOLD_SOLID_BREP`, no shell-based model, volume error 9·10⁻⁹ on re-import |
+| STEP | 48.5 MB (kept out of Git since the repository-size decision), 1 solid, `MANIFOLD_SOLID_BREP`, no shell-based model, volume error 9·10⁻⁹ on re-import |
 | printability vents | 4 × Ø2.0 mm through the bottom wall at (±10, ±10) mm; diameter floor 0.4 mm |
 | mesh (high-res) | 1 332 300 triangles, deflection 0.02 mm, max edge 2.5 mm, watertight |
 | build time | 236.7 s CLI build (STEP, mesh, STL, verify included) on 2 CPU cores |
@@ -71,7 +71,7 @@ The sandbox has no libGL. `scripts/make_gl_stub.sh` builds a stub `libGL.so.1` t
 - Cutaway screenshots clip triangles exactly against the cut plane (`scripts/render_coupled.ts`). Earlier centroid culling left stepped edges at the cut.
 - Remaining slivers: refinement splits only long edges. Triangle aspect ratio is still high on thin tubes (p50 about 110 to 120), because tube circumferences are narrow. These are not needles (none span 5 mm or more with aspect over 100).
 - Known and not diagnosed: dark elliptical blobs at the BCC strut junctions in `coupled_bio_lattice.png`. Possibly strut end caps or the tier radius change at the node. Not yet checked against the geometry.
-- The STL (about 67 MB for the BCC model) is not committed. The CLI writes it to `artifacts/`. The STEP and mesh.bin are committed.
+- The STL (about 67 MB for the BCC model), the STEP (about 48 MB and 24 MB) and the mesh.bin (about 24 MB and 10 MB) are not committed. Rebuild them with `python -m bioxlattice build <spec.json> <outdir>`. The STL goes to `artifacts/`. Only the small outputs (spec, design.json, design_code.py, timeline.json, verify.json, structural_tests.json, screenshots) are tracked. The web viewer needs the mesh.bin, so a fresh clone must rebuild it first.
 - Not verified here: WebGPU presentation (see the earlier notes), mechanical response, printability.
 
 ## Test model 2: FCC graded scaffold (`examples/fcc_graded_test/`)
