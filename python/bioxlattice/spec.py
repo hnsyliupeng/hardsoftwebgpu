@@ -21,6 +21,14 @@ class Skin:
 
 
 @dataclass
+class Vents:
+    """Through-holes in the bottom skin that open the sealed lattice gaps to the outside (printability)."""
+    enabled: bool = True
+    diameter: float = 2.0
+    positions: list[list[float]] = field(default_factory=lambda: [[-10.0, -10.0], [10.0, -10.0], [-10.0, 10.0], [10.0, 10.0]])
+
+
+@dataclass
 class Lattice:
     topology: str = "bcc"     # L2 core topology
     cell: float = 5.0         # cell edge, mm
@@ -43,6 +51,7 @@ class CoupledSpec:
     envelope: Envelope = field(default_factory=Envelope)
     skin: Skin = field(default_factory=Skin)
     lattice: Lattice = field(default_factory=Lattice)
+    vents: Vents = field(default_factory=Vents)
     tessellation: Tessellation = field(default_factory=Tessellation)
 
     def validate(self) -> None:
@@ -61,6 +70,13 @@ class CoupledSpec:
             raise ValueError("strut radius below 0.2 mm")
         if sorted(l.tier_depths) != list(l.tier_depths):
             raise ValueError("tier_depths must be ascending")
+        v = self.vents
+        if v.enabled:
+            if v.diameter < 0.4:
+                raise ValueError("vent diameter below the 0.4 mm printable floor")
+            for x, y in v.positions:
+                if abs(x) + v.diameter / 2 >= e.length / 2 - s.thickness or abs(y) + v.diameter / 2 >= e.width / 2 - s.thickness:
+                    raise ValueError(f"vent at ({x}, {y}) is outside the bottom face")
         if self.tessellation.deflection_mm <= 0:
             raise ValueError("deflection must be > 0")
 
@@ -74,6 +90,7 @@ class CoupledSpec:
             envelope=Envelope(**d.get("envelope", {})),
             skin=Skin(**d.get("skin", {})),
             lattice=Lattice(**d.get("lattice", {})),
+            vents=Vents(**d.get("vents", {})),
             tessellation=Tessellation(**d.get("tessellation", {})),
         )
         spec.validate()

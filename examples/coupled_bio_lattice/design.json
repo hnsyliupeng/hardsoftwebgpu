@@ -29,6 +29,28 @@
           0.45
         ]
       },
+      "vents": {
+        "enabled": true,
+        "diameter": 2.0,
+        "positions": [
+          [
+            -10.0,
+            -10.0
+          ],
+          [
+            10.0,
+            -10.0
+          ],
+          [
+            -10.0,
+            10.0
+          ],
+          [
+            10.0,
+            10.0
+          ]
+        ]
+      },
       "tessellation": {
         "deflection_mm": 0.02,
         "angular_rad": 0.1
@@ -82,13 +104,13 @@
       "kernel": "OpenCASCADE via CadQuery 2.8 (exact B-Rep)"
     }
   },
-  "code": "\"\"\"Copy-executable parametric build (run from this folder: python design_code.py).\n\nNeeds cadquery 2.8 (see python/requirements.txt). The spec below is the DesignState parameter set.\n\"\"\"\nimport json, os, sys\nHERE = os.path.dirname(os.path.abspath(__file__))\nsys.path.insert(0, os.path.join(HERE, \"..\", \"..\", \"python\"))\nfrom bioxlattice.spec import CoupledSpec\nfrom bioxlattice.build import build\nfrom bioxlattice.exporter import write_step\n\nSPEC = json.loads('{\"name\": \"coupled_bio_lattice\", \"envelope\": {\"length\": 40.0, \"width\": 40.0, \"height\": 20.0, \"edge_fillet\": 3.0}, \"skin\": {\"thickness\": 2.0}, \"lattice\": {\"topology\": \"bcc\", \"cell\": 5.0, \"twist_deg_per_mm\": 2.0, \"overlap\": 0.2, \"tier_depths\": [4.0, 7.0], \"tier_radii\": [0.8, 0.6, 0.45]}, \"tessellation\": {\"deflection_mm\": 0.02, \"angular_rad\": 0.1}}')\n\nif __name__ == \"__main__\":\n    spec = CoupledSpec.from_dict(SPEC)\n    result = build(spec)\n    write_step(result.part, os.path.join(HERE, spec.name + \".step\"))\n    print(\"volume_mm3\", round(result.part.Volume(), 3), \"solids\", len(result.part.Solids()))\n",
+  "code": "\"\"\"Copy-executable parametric build (run from this folder: python design_code.py).\n\nNeeds cadquery 2.8 (see python/requirements.txt). The spec below is the DesignState parameter set.\n\"\"\"\nimport json, os, sys\nHERE = os.path.dirname(os.path.abspath(__file__))\nsys.path.insert(0, os.path.join(HERE, \"..\", \"..\", \"python\"))\nfrom bioxlattice.spec import CoupledSpec\nfrom bioxlattice.build import build\nfrom bioxlattice.exporter import write_step\n\nSPEC = json.loads('{\"name\": \"coupled_bio_lattice\", \"envelope\": {\"length\": 40.0, \"width\": 40.0, \"height\": 20.0, \"edge_fillet\": 3.0}, \"skin\": {\"thickness\": 2.0}, \"lattice\": {\"topology\": \"bcc\", \"cell\": 5.0, \"twist_deg_per_mm\": 2.0, \"overlap\": 0.2, \"tier_depths\": [4.0, 7.0], \"tier_radii\": [0.8, 0.6, 0.45]}, \"vents\": {\"enabled\": true, \"diameter\": 2.0, \"positions\": [[-10.0, -10.0], [10.0, -10.0], [-10.0, 10.0], [10.0, 10.0]]}, \"tessellation\": {\"deflection_mm\": 0.02, \"angular_rad\": 0.1}}')\n\nif __name__ == \"__main__\":\n    spec = CoupledSpec.from_dict(SPEC)\n    result = build(spec)\n    write_step(result.part, os.path.join(HERE, spec.name + \".step\"))\n    print(\"volume_mm3\", round(result.part.Volume(), 3), \"solids\", len(result.part.Solids()))\n",
   "metrics": {
-    "volume": 17784.926,
-    "surface_area": 24915.101,
+    "volume": 17762.044,
+    "surface_area": 24959.864,
     "min_wall_thickness": 0.9,
     "connectivity": true,
-    "genus": 0
+    "genus": 1024
   },
   "render_preview": null,
   "repair_history": [],
@@ -111,12 +133,12 @@
     "timeline": "timeline.json"
   },
   "metrics_detail": {
-    "volume": 17784.926,
-    "surface_area": 24915.101,
+    "volume": 17762.044,
+    "surface_area": 24959.864,
     "center_of_mass": [
       -0.0,
       0.0,
-      -0.0
+      0.0117
     ],
     "bbox_mm": [
       40.015,
@@ -126,24 +148,22 @@
     "min_wall_thickness": 0.9,
     "min_wall_definition": "min(skin thickness, 2 * smallest used strut radius); B-Rep proxy, not ray-based",
     "connectivity": true,
-    "genus": 0,
-    "euler_characteristic": -2038,
-    "boundary_components": 2,
-    "internal_void_count": 1,
-    "internal_void_genera": [
-      1021
-    ],
+    "genus": 1024,
+    "euler_characteristic": -2046,
+    "boundary_components": 1,
+    "internal_void_count": 0,
+    "internal_void_genera": [],
     "boundary_watertight": true,
-    "porosity": 0.4415,
+    "porosity": 0.4422,
     "levels": {
       "L0_envelope_volume": 31845.487,
-      "L1_skin_volume": 11123.221,
+      "L1_skin_volume": 11098.088,
       "L2_lattice_core_volume": 7081.384,
-      "overlap_skin_core": 419.679
+      "overlap_skin_core": 417.429
     },
     "face_types": {
-      "CYLINDER": 2228,
-      "PLANE": 20
+      "CYLINDER": 2232,
+      "PLANE": 24
     },
     "analytic_face_fraction": 1.0,
     "strut_radii_mm": [
@@ -152,9 +172,9 @@
       0.45
     ],
     "topology_counts": {
-      "vertices": 9894,
-      "edges": 14028,
-      "faces": 2248
+      "vertices": 9918,
+      "edges": 14064,
+      "faces": 2256
     }
   },
   "lattice": {
@@ -179,8 +199,8 @@
     "twist_deg_per_mm": 2.0
   },
   "timing_s": {
-    "build": 261.52,
-    "step_write": 3.42,
-    "tessellate": 12.8
+    "build": 236.66,
+    "step_write": 3.31,
+    "tessellate": 13.34
   }
 }

@@ -15,27 +15,28 @@ The builder works like a parametric timeline, in the spirit of SolidCraft's feat
 | Level | Feature | Operation (OCC) | Coupling |
 |---|---|---|---|
 | L0 | envelope box, vertical edges filleted 3 mm | primitive + fillet | defines the depth field |
-| L1 | closed skin, 2 mm | boolean cut of the cavity from the envelope | `shell()` is avoided: it exports as a shell-based surface model, while a boolean cut gives a manifold solid |
+| L1 | skin, 2 mm, with 4 Ø2 mm bottom vents | boolean cut of the cavity from the envelope | `shell()` is avoided: it exports as a shell-based surface model, while a boolean cut gives a manifold solid |
 | L2 | BCC strut core, 5 mm cell | cylinders fused per z-layer, clipped to the cavity plus 0.2 mm | nodes are twisted by θ(z) = 2°/mm · z (Bouligand-like helical coupling); neighbouring cells share the rotated nodes, so the lattice stays connected |
 | L3 | three depth-graded strut radii (0.8 / 0.6 / 0.45 mm) | strut radius chosen by depth below the envelope surface (tiers at 4 mm and 7 mm) | struts that reach the skin fuse into it through the 0.2 mm overlap |
 
-The final union is `skin ∪ core`. Two independent consistency checks hold: the volumes satisfy `L1 + L2 − overlap = total`, and the STEP re-imported with OCC matches the in-memory volume to 2·10⁻⁸.
+The final union is `skin ∪ core`. Two independent consistency checks hold: the volumes satisfy `L1 + L2 − overlap = total`, and the STEP re-imported with OCC matches the in-memory volume to 9·10⁻⁹.
 
 ## Results (default spec)
 
 | Metric | Value |
 |---|---|
-| volume | 17 784.9 mm³ (envelope 31 845.5, skin 11 123.2, core 7 081.4, overlap 419.7) |
-| surface area | 24 915.1 mm² |
+| volume | 17 762.0 mm³ (envelope 31 845.5, skin with 4 vents 11 098.1, core 7 081.4, overlap 417.4) |
+| surface area | 24 959.9 mm² |
 | solids | 1 |
-| outer boundary | genus 0, watertight |
-| internal voids | 1 (sealed lattice gaps), genus 1021 |
-| porosity | 0.4415 |
+| outer boundary | watertight, genus 1024 (lattice tunnels open to the exterior through the vents) |
+| internal voids | 0 (the vents open every enclosed lattice gap) |
+| porosity | 0.4422 |
 | struts | 3 680 kept of 16 384 unique candidates; per tier 3104 / 376 / 200 |
 | analytic faces | 100 % (2 228 cylinders, 20 planes) |
-| STEP | 48 MB, 1 solid, `MANIFOLD_SOLID_BREP` with voids, no shell-based model, volume error 2·10⁻⁸ on re-import |
-| mesh (high-res) | 645 780 triangles, 320 852 vertices, deflection 0.02 mm, watertight |
-| build time | 262 s build + 3 s STEP + 13 s tessellation on 2 CPU cores |
+| STEP | 48.5 MB (the first committed STEP was 48 MB), 1 solid, `MANIFOLD_SOLID_BREP`, no shell-based model, volume error 9·10⁻⁹ on re-import |
+| printability vents | 4 × Ø2.0 mm through the bottom wall at (±10, ±10) mm; diameter floor 0.4 mm |
+| mesh (high-res) | 647 946 triangles, 321 927 vertices, deflection 0.02 mm, watertight |
+| build time | 236.7 s CLI build (STEP, mesh, STL, verify included) on 2 CPU cores |
 
 The min wall thickness is reported as 0.9 mm. This is a B-Rep proxy, `min(skin, 2·r_min)`, not a ray-based measurement.
 
@@ -63,9 +64,9 @@ The sandbox has no libGL. `scripts/make_gl_stub.sh` builds a stub `libGL.so.1` t
 ## Limitations
 
 - Two STEP-format notes. The file is 48 MB because lattice-to-lattice intersections are exact B-spline edges, and each has pcurves. Setting `write.surfacecurve.mode` did not change the size. The STEP is editable B-Rep, but features applied to it may be fragile.
-- The internal voids are sealed inside the skin, so this part cannot be printed without vent holes. Vents are not part of this spec.
+- The vents are four Ø2 mm cylinders through the bottom wall only. They are a printability relief, not a load path. Their effect on the mechanical response is not measured here. Printability is not verified on a printer.
 - Twist keeps straight struts between rotated nodes. It is not an exact helicoid lattice.
 - The browser cannot run OpenCASCADE. Generate loads prebuilt outputs. Changing parameters in the page requires running the Python CLI.
-- The cutaway screenshot clips triangles by centroid, so the wall edges show small artefacts.
+- The cutaway screenshot removes the half nearest the camera by triangle centroid. Thin vertical slivers at the part corners are a CPU-rasteriser artefact at grazing angles, not geometry.
 - The STL (32 MB) is not committed. The CLI writes it. The STEP and mesh.bin are committed.
 - Not verified here: WebGPU presentation (see the earlier notes), mechanical response, printability.

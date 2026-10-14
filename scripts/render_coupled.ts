@@ -14,13 +14,19 @@ const raw = readFileSync(meshPath);
 const full = parseMeshBin(raw.buffer.slice(raw.byteOffset, raw.byteOffset + raw.byteLength));
 let mesh = full;
 if (modeArg === "cut") {
-  // remove the upper half: top skin and upper lattice, leaving the lower lattice visible
+  // Remove the half of the part nearest the camera (same view rotation as rasterisePreview:
+  // 35 deg about z, then 25 deg about x; smaller projected depth = nearer to the viewer).
+  // The far half stays, so the internal lattice is visible through the opened side.
   const keep: number[] = [];
   const P = full.positions, I = full.indices;
+  const cosZ = Math.cos(0.61), sinZ = Math.sin(0.61), cosX = Math.cos(0.44), sinX = Math.sin(0.44);
+  const depth = (x: number, y: number, z: number) => (x * sinZ + y * cosZ) * sinX + z * cosX;
   for (let t = 0; t < I.length; t += 3) {
-    let cz = 0;
-    for (let k = 0; k < 3; k++) cz += P[I[t + k] * 3 + 2];
-    if (cz / 3 >= 0) keep.push(I[t], I[t + 1], I[t + 2]);
+    let dx = 0, dy = 0, dz = 0;
+    for (let k = 0; k < 3; k++) {
+      dx += P[I[t + k] * 3]; dy += P[I[t + k] * 3 + 1]; dz += P[I[t + k] * 3 + 2];
+    }
+    if (depth(dx / 3, dy / 3, dz / 3) >= 0) keep.push(I[t], I[t + 1], I[t + 2]);
   }
   mesh = { positions: P, normals: full.normals, indices: Uint32Array.from(keep) };
 }

@@ -79,7 +79,7 @@ Parameter ranges and base-code semantics come from `lamm-mit/Bioinspired123D` (A
 
 ## Coupled bio-lattice (exact B-Rep, editable STEP)
 
-A second, high-resolution path built with CadQuery / OpenCASCADE: a 2 mm closed skin, a twisted BCC lattice core, and three depth-graded strut radii. See `docs/COUPLED_LATTICE.md`. Outputs are in `examples/coupled_bio_lattice/`, and the web app's "Coupled bio-lattice" mode loads them.
+A second, high-resolution path built with CadQuery / OpenCASCADE: a 2 mm skin with four printability vents, a twisted BCC lattice core, and three depth-graded strut radii. See `docs/COUPLED_LATTICE.md`. Outputs are in `examples/coupled_bio_lattice/`, and the web app's "Coupled bio-lattice" mode loads them.
 
 ```
 bash scripts/python_env.sh

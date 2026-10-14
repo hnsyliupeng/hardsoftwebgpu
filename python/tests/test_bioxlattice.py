@@ -16,7 +16,7 @@ import cadquery as cq  # noqa: E402
 from bioxlattice.build import build  # noqa: E402
 from bioxlattice.exporter import tessellate_merged, write_step  # noqa: E402
 from bioxlattice.metrics import genus_info, part_metrics  # noqa: E402
-from bioxlattice.spec import CoupledSpec, Envelope, Lattice, Skin, Tessellation  # noqa: E402
+from bioxlattice.spec import CoupledSpec, Envelope, Lattice, Skin, Tessellation, Vents  # noqa: E402
 from bioxlattice.topology import lattice_segments  # noqa: E402
 from bioxlattice.verify import verify_mesh, verify_step  # noqa: E402
 
@@ -29,6 +29,7 @@ def small_spec(**kw) -> CoupledSpec:
         skin=Skin(thickness=1.0),
         lattice=Lattice(topology="bcc", cell=4.0, twist_deg_per_mm=2.0, overlap=0.2,
                         tier_depths=[2.0, 3.5], tier_radii=[0.5, 0.4, 0.3]),
+        vents=Vents(positions=[[-4.0, -4.0], [4.0, 4.0]], diameter=1.5),
         tessellation=Tessellation(deflection_mm=0.05, angular_rad=0.3),
     )
     for k, v in kw.items():
@@ -67,6 +68,10 @@ class Spec(unittest.TestCase):
     def test_thin_skin_rejected(self):
         with self.assertRaises(ValueError):
             CoupledSpec(skin=Skin(thickness=0.2)).validate()
+
+    def test_vent_outside_bottom_face_rejected(self):
+        with self.assertRaises(ValueError):
+            CoupledSpec(vents=Vents(positions=[[30.0, 0.0]])).validate()
 
     def test_tier_count_checked(self):
         with self.assertRaises(ValueError):
@@ -116,6 +121,12 @@ class Build(unittest.TestCase):
         self.assertGreater(lv["overlap_skin_core"], 0)
         self.assertAlmostEqual(lv["L1_skin_volume"] + lv["L2_lattice_core_volume"] - lv["overlap_skin_core"],
                                m["volume"], places=2)
+
+    def test_vents_open_the_sealed_lattice_gaps(self):
+        m = part_metrics(self.result, self.spec)
+        self.assertEqual(m["internal_void_count"], 0, m)
+        self.assertTrue(m["boundary_watertight"])
+        self.assertIn("skin_vent_cut", [f["feature"] for f in self.result.timeline])
 
     def test_tiers_all_present_for_depth_bands(self):
         used = self.result.lattice["struts_per_tier"]

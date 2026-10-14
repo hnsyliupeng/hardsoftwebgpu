@@ -70,6 +70,16 @@ def build(spec: CoupledSpec) -> BuildResult:
                   lambda: _box_filleted(e.length - 2 * t, e.width - 2 * t, e.height - 2 * t, r_in))
     skin = step("skin_boolean_cut", {"thickness": t}, lambda: outer.cut(cavity))
 
+    # L1b printability: vents through the bottom wall open the sealed lattice gaps to the outside.
+    # Each cylinder starts below the bottom face and stops at the cavity floor, so only the wall is cut.
+    vn = spec.vents
+    if vn.enabled and vn.positions:
+        cutters = [cq.Solid.makeCylinder(vn.diameter / 2, t + 1.0,
+                                         cq.Vector(x, y, -hz - 1.0), cq.Vector(0, 0, 1))
+                   for x, y in vn.positions]
+        skin = step("skin_vent_cut", {"diameter": vn.diameter, "count": len(cutters), "positions": vn.positions},
+                    lambda: skin.cut(*cutters))
+
     # L2 lattice core: clip box = cavity grown by the overlap so struts fuse into the skin
     clip_x = (e.length - 2 * t + 2 * ov) / 2
     clip_y = (e.width - 2 * t + 2 * ov) / 2
