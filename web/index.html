@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bioinspired123D-WASM — local multi-harness generator</title>
+<style>
+  body { font: 14px/1.45 system-ui, sans-serif; margin: 0; color: #1d2330; background: #f6f7f9; }
+  header { padding: 14px 20px; background: #1d2330; color: #fff; }
+  header small { opacity: .7; }
+  main { display: grid; grid-template-columns: minmax(360px, 1fr) minmax(360px, 1fr); gap: 16px; padding: 16px 20px; }
+  section { background: #fff; border: 1px solid #dde1e8; border-radius: 8px; padding: 12px 14px; min-width: 0; }
+  h2 { font-size: 15px; margin: 0 0 8px; }
+  textarea { width: 100%; height: 88px; box-sizing: border-box; font: inherit; padding: 8px; border: 1px solid #c7ccd6; border-radius: 6px; }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+  input, select { font: inherit; padding: 4px 6px; border: 1px solid #c7ccd6; border-radius: 6px; }
+  input[type=number] { width: 70px; }
+  button { font: inherit; padding: 6px 12px; border-radius: 6px; border: 1px solid #1d2330; background: #1d2330; color: #fff; cursor: pointer; }
+  button.example { background: #fff; color: #1d2330; font-size: 12px; padding: 3px 8px; }
+  button:disabled { opacity: .5; }
+  #view { width: 100%; height: 320px; display: block; background: #fff; border: 1px solid #dde1e8; border-radius: 6px; }
+  #preview { width: 100%; max-width: 320px; image-rendering: pixelated; display: none; border: 1px solid #dde1e8; border-radius: 6px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  td, th { border-bottom: 1px solid #eef0f4; padding: 4px 6px; text-align: left; vertical-align: top; }
+  pre { background: #0f1420; color: #e6edf7; padding: 10px; border-radius: 6px; overflow: auto; max-height: 340px; font-size: 12px; }
+  ul { margin: 4px 0 0 18px; padding: 0; font-size: 13px; }
+  #status { color: #3a4a66; min-height: 20px; }
+  .wide { grid-column: 1 / -1; }
+  a { color: #1f5fbf; }
+</style>
+</head>
+<body>
+<header>
+  <strong>Bioinspired123D-WASM</strong> — local, CPU-verifiable multi-harness generator
+  <small>· smlibwasm B-Rep + SDF/surface-net · no Blender, no cloud</small>
+</header>
+<main>
+  <section>
+    <h2>Prompt</h2>
+    <textarea id="prompt">Make a helical Bouligand structure with 5 plies, 10 degrees rotation.</textarea>
+    <div class="row">
+      <button class="example" data-prompt="Make a helical Bouligand structure with 5 plies, 10 degrees rotation.">helical</button>
+      <button class="example" data-prompt="Make a tubular structure with 16 tubules and cortical layer thickness 0.04.">tubular</button>
+      <button class="example" data-prompt="Create a BCC lattice 20 mm cube with 4 mm cell and 0.6 mm strut radius, graded along z from 0.3 mm to 0.9 mm">BCC graded</button>
+      <button class="example" data-prompt="gyroid TPMS wall thickness 0.2 mm, 4 mm cell">gyroid (repairs)</button>
+    </div>
+    <div class="row">
+      <label>size (mm) <input id="size" type="number" value="20" min="5" max="200" /></label>
+      <label>resolution <select id="resolution"><option value="64">64</option><option value="96" selected>96</option><option value="128">128</option></select></label>
+      <label>max repairs <input id="repairs" type="number" value="5" min="0" max="5" /></label>
+      <button id="run">Generate</button>
+    </div>
+    <div id="status"></div>
+    <div class="row">Renderer: <span id="backend"></span></div>
+    <canvas id="view"></canvas>
+    <img id="preview" alt="low-resolution preview (ValidationHarness)" />
+  </section>
+  <section>
+    <h2>Metrics</h2>
+    <table id="metrics"></table>
+    <h2 style="margin-top:12px">Downloads</h2>
+    <div id="downloads"></div>
+  </section>
+  <section>
+    <h2>repair_history</h2>
+    <div id="repair"></div>
+    <h2 style="margin-top:12px">Limitations</h2>
+    <ul id="limits"></ul>
+    <h2 style="margin-top:12px">Unknowns (confirm)</h2>
+    <ul id="unknowns"></ul>
+  </section>
+  <section>
+    <h2>Parametric code</h2>
+    <pre id="code"></pre>
+  </section>
+  <section class="wide">
+    <h2>DesignState (JSON)</h2>
+    <pre id="state"></pre>
+  </section>
+</main>
+<script type="module" src="./main.js"></script>
+</body>
+</html>

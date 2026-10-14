@@ -1,0 +1,321 @@
+﻿prompt,filename,category,subcategory
+Write Blender code to make a helical Bouligand structure.,t1,baseline,bio_helical
+Write Blender code to make a helical stacked bioinspired material.,t2,baseline,bio_helical
+Write Blender code to make a helical twisted ply structure with angular variation per ply.,t3,baseline,bio_helical
+Write Blender code to make a helical material with noise in each rotation.,t4,baseline,bio_helical
+Write Blender code to make a helical twisted ply material made of rectangular fibers.,t5,baseline,bio_helical
+Write Blender code to make a model of a helical Bouligand material made of cylindrical fibers,t6,baseline,bio_helical
+Write Blender code to make a helical stacked structure with rotational noise,t7,baseline,bio_helical
+Write Blender code to make a helical bioinspired structure with flat rectangular struts in each layer,t8,baseline,bio_helical
+Write Blender code to make a helical twisted ply bioinspired structure with randomness in rotation.,t9,baseline,bio_helical
+Write Blender code to makea helical Bouligand bioinspired structure with aligned cylinders,t10,baseline,bio_helical
+Write Blender code to make a tubular structure.,t11,baseline,bio_tubular
+Write Blender code to make a tubular porous material with cortical layers.,t12,baseline,bio_tubular
+Write Blender code to make a tubular material with random placement,t13,baseline,bio_tubular
+Write Blender code to make a tubular bioinspired material with layers,t14,baseline,bio_tubular
+Write Blender code to make a tubular porous bioinspired structure with noisy tubule placement,t15,baseline,bio_tubular
+Write Blender code to make a tubular bioinspired material with jittered placement,t16,baseline,bio_tubular
+Write Blender code to make a tubular structure with tubule layers.,t17,baseline,bio_tubular
+Write Blender code to make a tubular porous structure with noise,t18,baseline,bio_tubular
+Write Blender code to make a tubular material with layers around each tubule.,t19,baseline,bio_tubular
+Write Blender code to make a tubular bioinspired structure with noisy tubule placement,t20,baseline,bio_tubular
+Write Blender code to make a cellular bioinspired structure with sandwich top and bottom layers,t21,baseline,bio_cellular
+Write Blender code to make a cellular cube with smooth curves and sandwich layers,t22,baseline,bio_cellular
+Write Blender code to make a cellular structure with layers on top and bottom.,t23,baseline,bio_cellular
+Write Blender code to make a cellular material with smooth edges and sandwich layers,t24,baseline,bio_cellular
+Write Blender code to make a cellular bioinspired material with smooth curves.,t25,baseline,bio_cellular
+Write Blender code to make a cellular cube with sandwich top and bottom layers.,t26,baseline,bio_cellular
+Write Blender code to make a cellular structure with smooth curves and layers on top and bottom,t27,baseline,bio_cellular
+Write Blender code to make a cellular bioinspired structure with smooth edges,t28,baseline,bio_cellular
+Write Blender code to make a cellular cube with layers on top and bottom.,t29,baseline,bio_cellular
+Write Blender code to make a cellular bioinspired material with sandwich layers.,t30,baseline,bio_cellular
+"Write Blender code to make a helical structure with 5 layers, 10 degrees rotation per layer.",t31,numerical,bio_helical
+"Write Blender code to make a helical structure with 5 layers, 20 degrees rotation per layer.",t32,numerical,bio_helical
+Write Blender code to make a helical structure with 3 layers.,t33,numerical,bio_helical
+Write Blender code to make a helical structure with 10 layers.,t34,numerical,bio_helical
+Write Blender code to make a helical structure with 25 layers.,t35,numerical,bio_helical
+Write Blender code to make a helical structure made of rectangular fibers with 3 layers.,t36,numerical,bio_helical
+Write Blender code to make a helical structure made of rectangular fibers with 10 layers.,t37,numerical,bio_helical
+Write Blender code to make a helical structure made of cylindrical fibers with 3 layers.,t38,numerical,bio_helical
+Write Blender code to make a helical structure made of cylindrical fibers with 10 layers.,t39,numerical,bio_helical
+Write Blender code to make a helical structure with 10 layers with rotational noise.,t40,numerical,bio_helical
+Write Blender code to make a cellular structure with a thickness of 0.1 and sandwich layers with a size of 0.1.,t41,numerical,bio_cellular
+Write Blender code to make a cellular structure with a thickness of 0.3 and sandwich layers with a size of 0.3.,t42,numerical,bio_cellular
+Write Blender code to make a cellular structure with a thickness of 0.1.,t43,numerical,bio_cellular
+Write Blender code to make a cellular structure with a thickness of 0.3.,t44,numerical,bio_cellular
+Write Blender code to make a cellular structure with a thickness of 0.5.,t45,numerical,bio_cellular
+Write Blender code to make a cellular structure with smooth edges with a smooth level of 1.,t46,numerical,bio_cellular
+Write Blender code to make a cellular structure with smooth edges with a smooth level of 3.,t47,numerical,bio_cellular
+Write Blender code to make a cellular structure with sandwich layers that are 0.1 in size. ,t48,numerical,bio_cellular
+Write Blender code to make a cellular structure with sandwich layers that are 0.3 in size. ,t49,numerical,bio_cellular
+Write Blender code to make a cellular structure with sandwich layers that are 0.5 in size. ,t50,numerical,bio_cellular
+Write Blender code to make a tubular structure with 16 elliptical tubules with ellipticity of 2 and radius of 0.05.,t51,numerical,bio_tubular
+Write Blender code to make a tubular structure with 25 elliptical tubules with ellipticity of 1.5 and radius of 0.05.,t52,numerical,bio_tubular
+Write Blender code to make a tubular structure with 4 tubules.,t53,numerical,bio_tubular
+Write Blender code to make a tubular structure with 36 tubules.,t54,numerical,bio_tubular
+Write Blender code to make a tubular structure with 49 tubules.,t55,numerical,bio_tubular
+Write Blender code to make a tubular structure with 4 tubules with random placement.,t56,numerical,bio_tubular
+Write Blender code to make a tubular structure with 36 tubules with random placement.,t57,numerical,bio_tubular
+Write Blender code to make a tubular structure with 49 tubules with random placement.,t58,numerical,bio_tubular
+Write Blender code to make a tubular structure with 25 tubules with cortical layers.,t59,numerical,bio_tubular
+Write Blender code to make a tubular structure with 36 tubules with cortical layers.,t60,numerical,bio_tubular
+Write Blender code to make a helical structure with very few layers.,t61,qualitative,bio_helical
+Write Blender code to make a helical structure with very small twist per ply.,t62,qualitative,bio_helical
+Write Blender code to make a helical structure with very many layers.,t63,qualitative,bio_helical
+Write Blender code to make a helical structure with very high rotation per ply.,t64,qualitative,bio_helical
+Write Blender code to make a helical structure with very high noise in each rotation.,t65,qualitative,bio_helical
+"Write Blender code to make a cellular structure with noticeably smooth, rounded edges.",t66,qualitative,bio_cellular
+Write Blender code to make a cellular structure with very thick sandwich layers.,t67,qualitative,bio_cellular
+Write Blender code to make a cellular sandwich structure with very thin shell layers.,t68,qualitative,bio_cellular
+Write Blender code to make a cellular structure with very thin thickness.,t69,qualitative,bio_cellular
+Write Blender code to make a cellular structure with very thick struts.,t70,qualitative,bio_cellular
+Write Blender code to make a tubular structure with many tubules.,t71,qualitative,bio_tubular
+Write Blender code to make a tubular structure with only a few tubules.,t72,qualitative,bio_tubular
+Write Blender code to make a tubular structure with very few tubules. ,t73,qualitative,bio_tubular
+Write Blender code to make a tubular structure with very high noise.,t74,qualitative,bio_tubular
+Write Blender code to make a tubular structure with very noisy tubule placement.,t75,qualitative,bio_tubular
+Write Blender code to make a helical structure without noise in rotation.,t76,negation,bio_helical
+Write Blender code to make a helical structure with zero cylindrical rods.,t77,negation,bio_helical
+Write Blender code to make a helical structure without rectangular fibers.,t78,negation,bio_helical
+Write Blender code to make a cellular structure with no top or bottom layers.,t79,negation,bio_cellular
+Write Blender code to make a cellular structure without smooth curves.,t80,negation,bio_cellular
+Write Blender code to make a cellular sandwich structure without top or bottom layers.,t81,negation,bio_cellular
+Write Blender code to make a cube of tubular structure without any tubules.,t82,negation,bio_tubular
+Write Blender code to make a tubular structure without any tubules.,t83,negation,bio_tubular
+Write Blender code to make a tubular structure with no noise in placement.,t84,negation,bio_tubular
+Write Blender code to make a tubular structure with no tubule layers.,t85,negation,bio_tubular
+Write Blender code to make a helical structure made of rectangular fibers with rotational noise.,t86,internal,bio_helical
+Write Blender code to make a helical structure made of rectangular fibers and angular variation per ply.,t87,internal,bio_helical
+Write Blender code to make a helical structure made of cylindrical fibers with rotational noise.,t88,internal,bio_helical
+Write Blender code to make a helical structure made of cylindrical fibers and angular variation per ply.,t89,internal,bio_helical
+"Write Blender code to make a helical structure made of both rectangular and cylindrical fibers, alternating layers.",t90,internal,bio_helical
+"Write Blender code to make a helical structure made of both rectangular and cylindrical fibers, alternating fibers.",t91,internal,bio_helical
+Write Blender code to make a cellular structure with sandwich layers where the top layer is much thicker than the bottom.,t92,internal,bio_cellular
+Write Blender code to make a cellular structure with sandwich layers of different thicknesses.,t93,internal,bio_cellular
+Write Blender code to make a cellular structure with only a single thin top sandwich layer.,t94,internal,bio_cellular
+Write Blender code to make a cellular structure but with only a top sandwich layer.,t95,internal,bio_cellular
+Write Blender code to make a cellular structure with very smooth curves and a bottom layer that is thicker than the top layer.,t96,internal,bio_cellular
+Write Blender code to make a tubular structure with elliptical tubules and jittered placement. ,t97,internal,bio_tubular
+Write Blender code to make a tubular structure with very elliptical tubules and random placement.,t98,internal,bio_tubular
+"Write Blender code to make a tubular structure with radial placement, where tubules radiate from the center of the cube.",t99,internal,bio_tubular
+Write Blender code to make a tubular structure where the tubules run horizontally instead of vertically.,t100,internal,bio_tubular
+Write Blender code to make a tubular structure with ordered placement.,t101,internal,bio_tubular
+Write Blender code to make a helical structure that is much taller than it is wide.,t102,form,bio_helical
+Write Blender code to make a helical structure with a tall rectangular prism form factor,t103,form,bio_helical
+Write Blender code to make a helical structure that is short and wide.,t104,form,bio_helical
+Write Blender code to make a cellular structure with a sphere instead of a cube.,t105,form,bio_cellular
+Write Blender code to make a cellular structure with a cylinder instead of a cube.,t106,form,bio_cellular
+Write Blender code to make a cellular structure with a cone instead of a cube.,t107,form,bio_cellular
+Write Blender code to make a cellular structure with a cylinder instead of a cube and then with sandwich layers on top and bottom.,t108,form,bio_cellular
+Write Blender code to make a tubular structure within a cylinder instead of a cube.,t109,form,bio_tubular
+Write Blender code to make a tubular structure within a sphere instead of a cube.,t110,form,bio_tubular
+Write Blender code to make a tubular structure within a flat rectangular prism instead of a cube.,t111,form,bio_tubular
+Write Blender code to make a helical structure with cellular sandwich layers added on top and bottom.,t112,external,bio_helicalxcellular
+Write Blender code to make a helical sandwich structure with sandwich layers on top and bottom.,t113,external,bio_helicalxcellular
+Write Blender code to make a helical structure made of cylindrical fibers but with sandwich layers on top and bottom.,t114,external,bio_helicalxcellular
+Write Blender code to make a helical cellular structure where each ply is a cellular structure.,t115,external,bio_helicalxcellular
+Write Blender code to make a helical tubular structure but with hollow tubules through all the twisted plies.,t116,external,bio_helicalxtubular
+Write Blender code to make a helical structure made of cylindrical fibers that are all hollow tubules. ,t117,external,bio_helicalxtubular
+Write Blender code to make a helical structure with smooth edges. ,t118,external,bio_helicalxcellular
+Write Blender code to make a cellular structure with sandwich layers that have tubules embedded.,t119,external,bio_cellularxtubular
+Write Blender code to make a cellular structure reinforced with tubular struts running vertically.,t120,external,bio_cellularxtubular
+Write Blender code to make a cellular structure with tubules running vertically through the core.,t121,external,bio_cellularxtubular
+Write Blender code to make a cellular structure with sandwich layers that are plies made of cylindrical fibers.,t122,external,bio_cellularxtubular
+Write Blender code to make a tubular structure with sandwich layers on top and bottom.,t123,external,bio_cellularxtubular
+Write Blender code to make a tubular structure capped with cellular sandwich layers. ,t124,external,bio_cellularxtubular
+Write Blender code to make a helical structure that has sandwich layers which have tubules through them. ,t125,external,bio_all
+Write Blender code to make a helical structure with smooth edges and tubules through the whole stack of layers.  ,t126,external,bio_all
+Write Blender code to make a structure with both helical and tubular features.,t127,external,bio_helicalxtubular
+Write Blender code to make a structure with both cellular and tubular features.,t128,external,bio_cellularxtubular
+Write Blender code to make a structure with both helical and cellular features.,t129,external,bio_helicalxcellular
+Write Blender code to make a coffee table out of cellular bioinspired structures.,t130,crossdomain,bio_cellular
+Write Blender code to make a sofa frame made of cellular bioinspired material with smooth curves.,t131,crossdomain,bio_cellular
+Write Blender code to make a bookshelf constructed as a cellular Voronoi structure.,t132,crossdomain,bio_cellular
+Write Blender code to make a bookshelf built as a cellular cube with smooth edges.,t133,crossdomain,bio_cellular
+Write Blender code to make a dining table with a cellular sandwich top.,t134,crossdomain,bio_cellular
+Write Blender code to make a dining table where the legs are helical twisted structures.,t135,crossdomain,bio_helical
+Write Blender code to make a sofa base out of helical Bouligand plies.,t136,crossdomain,bio_helical
+Write Blender code to make a coffee table frame constructed as a helical structure.,t137,crossdomain,bio_helical
+Write Blender code to make a hat with a helical brim made of cylindrical fibers.,t138,crossdomain,bio_helical
+Write Blender code to make a chessboard with a helical twisted structures as the pieces.,t139,crossdomain,bio_helical
+Write Blender code to make a drum with a tubular porous structure in it.,t140,crossdomain,bio_tubular
+Write Blender code to make a coffee table with tubules in it.,t141,crossdomain,bio_tubular
+Write Blender code to make an apple with a tubular structure through it.,t142,crossdomain,bio_tubular
+Write Blender code to make a dog bowl made from a tubular structure with vertical holes.,t143,crossdomain,bio_tubular
+Write Blender code to make a smartphone case constructed from tubular bioinspired material.,t144,crossdomain,bio_tubular
+Write Blender code to make a torus and place a cube through its center.,t145,general,general
+Write Blender code to make 3 cones stacked each with different scales.,t146,general,general
+Write Blender code to make a sphere ontop of a hexagonal prism.,t147,general,general
+Write Blender code to make a cube scaled long in X and flattened in Z.,t148,general,general
+Write Blender code to make a 2x2 grid of cones each rotated differently.,t149,general,general
+Write Blender code to make a cube subtracted from the top side of a sphere.,t150,general,general
+Write Blender code to make a row of spheres that gradually increase in size.,t151,general,general
+Write Blender code to make a cellular structure and scale it down by 50%.,t152,general_bio,bio_cellular
+Write Blender code to make a 2x2 grid of helical structures.,t153,general_bio,bio_helical
+Write Blender code to make 2 tubular structure cubes next to one another.,t154,general_bio,bio_tubular
+"Write Blender code to make 2 cellular sandwich structures, stacked ontop of one another.",t155,general_bio,bio_cellular
+Write Blender code to make a tubular structure and rotate it by 45 degrees around the Z axis.,t156,general_bio,bio_tubular
+Write Blender code to make a helical structure and lay it on its side.,t157,general_bio,bio_helical
+Write Blender code to make a cellular structure and rotate it by 30 degrees around the Z axis.,t158,general_bio,bio_cellular
+Write Blender code to make a tubular structure and stretch it along the Y axis by 2 times.,t159,general_bio,bio_tubular
+Write Blender code to make a helical structure and scale it up by 50%,t160,general_bio,bio_helical
+Write Blender code to make a helical Bouligand structure. Think step by step.,t161,baseline_step,bio_helical
+Write Blender code to make a helical stacked bioinspired material. Think step by step.,t162,baseline_step,bio_helical
+Write Blender code to make a helical twisted ply structure with angular variation per ply. Think step by step.,t163,baseline_step,bio_helical
+Write Blender code to make a helical material with noise in each rotation. Think step by step.,t164,baseline_step,bio_helical
+Write Blender code to make a helical twisted ply material made of rectangular fibers. Think step by step.,t165,baseline_step,bio_helical
+Write Blender code to make a model of a helical Bouligand material made of cylindrical fibers Think step by step.,t166,baseline_step,bio_helical
+Write Blender code to make a helical stacked structure with rotational noise Think step by step.,t167,baseline_step,bio_helical
+Write Blender code to make a helical bioinspired structure with flat rectangular struts in each layer Think step by step.,t168,baseline_step,bio_helical
+Write Blender code to make a helical twisted ply bioinspired structure with randomness in rotation. Think step by step.,t169,baseline_step,bio_helical
+Write Blender code to makea helical Bouligand bioinspired structure with aligned cylinders Think step by step.,t170,baseline_step,bio_helical
+Write Blender code to make a tubular structure. Think step by step.,t171,baseline_step,bio_tubular
+Write Blender code to make a tubular porous material with cortical layers. Think step by step.,t172,baseline_step,bio_tubular
+Write Blender code to make a tubular material with random placement Think step by step.,t173,baseline_step,bio_tubular
+Write Blender code to make a tubular bioinspired material with layers Think step by step.,t174,baseline_step,bio_tubular
+Write Blender code to make a tubular porous bioinspired structure with noisy tubule placement Think step by step.,t175,baseline_step,bio_tubular
+Write Blender code to make a tubular bioinspired material with jittered placement Think step by step.,t176,baseline_step,bio_tubular
+Write Blender code to make a tubular structure with tubule layers. Think step by step.,t177,baseline_step,bio_tubular
+Write Blender code to make a tubular porous structure with noise Think step by step.,t178,baseline_step,bio_tubular
+Write Blender code to make a tubular material with layers around each tubule. Think step by step.,t179,baseline_step,bio_tubular
+Write Blender code to make a tubular bioinspired structure with noisy tubule placement Think step by step.,t180,baseline_step,bio_tubular
+Write Blender code to make a cellular bioinspired structure with sandwich top and bottom layers Think step by step.,t181,baseline_step,bio_cellular
+Write Blender code to make a cellular cube with smooth curves and sandwich layers Think step by step.,t182,baseline_step,bio_cellular
+Write Blender code to make a cellular structure with layers on top and bottom. Think step by step.,t183,baseline_step,bio_cellular
+Write Blender code to make a cellular material with smooth edges and sandwich layers Think step by step.,t184,baseline_step,bio_cellular
+Write Blender code to make a cellular bioinspired material with smooth curves. Think step by step.,t185,baseline_step,bio_cellular
+Write Blender code to make a cellular cube with sandwich top and bottom layers. Think step by step.,t186,baseline_step,bio_cellular
+Write Blender code to make a cellular structure with smooth curves and layers on top and bottom Think step by step.,t187,baseline_step,bio_cellular
+Write Blender code to make a cellular bioinspired structure with smooth edges Think step by step.,t188,baseline_step,bio_cellular
+Write Blender code to make a cellular cube with layers on top and bottom. Think step by step.,t189,baseline_step,bio_cellular
+Write Blender code to make a cellular bioinspired material with sandwich layers. Think step by step.,t190,baseline_step,bio_cellular
+"Write Blender code to make a helical structure with 5 layers, 10 degrees rotation per layer. Think step by step.",t191,numerical_step,bio_helical
+"Write Blender code to make a helical structure with 5 layers, 20 degrees rotation per layer. Think step by step.",t192,numerical_step,bio_helical
+Write Blender code to make a helical structure with 3 layers. Think step by step.,t193,numerical_step,bio_helical
+Write Blender code to make a helical structure with 10 layers. Think step by step.,t194,numerical_step,bio_helical
+Write Blender code to make a helical structure with 25 layers. Think step by step.,t195,numerical_step,bio_helical
+Write Blender code to make a helical structure made of rectangular fibers with 3 layers. Think step by step.,t196,numerical_step,bio_helical
+Write Blender code to make a helical structure made of rectangular fibers with 10 layers. Think step by step.,t197,numerical_step,bio_helical
+Write Blender code to make a helical structure made of cylindrical fibers with 3 layers. Think step by step.,t198,numerical_step,bio_helical
+Write Blender code to make a helical structure made of cylindrical fibers with 10 layers. Think step by step.,t199,numerical_step,bio_helical
+Write Blender code to make a helical structure with 10 layers with rotational noise. Think step by step.,t200,numerical_step,bio_helical
+Write Blender code to make a cellular structure with a thickness of 0.1 and sandwich layers with a size of 0.1. Think step by step.,t201,numerical_step,bio_cellular
+Write Blender code to make a cellular structure with a thickness of 0.3 and sandwich layers with a size of 0.3. Think step by step.,t202,numerical_step,bio_cellular
+Write Blender code to make a cellular structure with a thickness of 0.1. Think step by step.,t203,numerical_step,bio_cellular
+Write Blender code to make a cellular structure with a thickness of 0.3. Think step by step.,t204,numerical_step,bio_cellular
+Write Blender code to make a cellular structure with a thickness of 0.5. Think step by step.,t205,numerical_step,bio_cellular
+Write Blender code to make a cellular structure with smooth edges with a smooth level of 1. Think step by step.,t206,numerical_step,bio_cellular
+Write Blender code to make a cellular structure with smooth edges with a smooth level of 3. Think step by step.,t207,numerical_step,bio_cellular
+Write Blender code to make a cellular structure with sandwich layers that are 0.1 in size.  Think step by step.,t208,numerical_step,bio_cellular
+Write Blender code to make a cellular structure with sandwich layers that are 0.3 in size.  Think step by step.,t209,numerical_step,bio_cellular
+Write Blender code to make a cellular structure with sandwich layers that are 0.5 in size.  Think step by step.,t210,numerical_step,bio_cellular
+Write Blender code to make a tubular structure with 16 elliptical tubules with ellipticity of 2 and radius of 0.05. Think step by step.,t211,numerical_step,bio_tubular
+Write Blender code to make a tubular structure with 25 elliptical tubules with ellipticity of 1.5 and radius of 0.05. Think step by step.,t212,numerical_step,bio_tubular
+Write Blender code to make a tubular structure with 4 tubules. Think step by step.,t213,numerical_step,bio_tubular
+Write Blender code to make a tubular structure with 36 tubules. Think step by step.,t214,numerical_step,bio_tubular
+Write Blender code to make a tubular structure with 49 tubules. Think step by step.,t215,numerical_step,bio_tubular
+Write Blender code to make a tubular structure with 4 tubules with random placement. Think step by step.,t216,numerical_step,bio_tubular
+Write Blender code to make a tubular structure with 36 tubules with random placement. Think step by step.,t217,numerical_step,bio_tubular
+Write Blender code to make a tubular structure with 49 tubules with random placement. Think step by step.,t218,numerical_step,bio_tubular
+Write Blender code to make a tubular structure with 25 tubules with cortical layers. Think step by step.,t219,numerical_step,bio_tubular
+Write Blender code to make a tubular structure with 36 tubules with cortical layers. Think step by step.,t220,numerical_step,bio_tubular
+Write Blender code to make a helical structure with very few layers. Think step by step.,t221,qualitative_step,bio_helical
+Write Blender code to make a helical structure with very small twist per ply. Think step by step.,t222,qualitative_step,bio_helical
+Write Blender code to make a helical structure with very many layers. Think step by step.,t223,qualitative_step,bio_helical
+Write Blender code to make a helical structure with very high rotation per ply. Think step by step.,t224,qualitative_step,bio_helical
+Write Blender code to make a helical structure with very high noise in each rotation. Think step by step.,t225,qualitative_step,bio_helical
+"Write Blender code to make a cellular structure with noticeably smooth, rounded edges. Think step by step.",t226,qualitative_step,bio_cellular
+Write Blender code to make a cellular structure with very thick sandwich layers. Think step by step.,t227,qualitative_step,bio_cellular
+Write Blender code to make a cellular sandwich structure with very thin shell layers. Think step by step.,t228,qualitative_step,bio_cellular
+Write Blender code to make a cellular structure with very thin thickness. Think step by step.,t229,qualitative_step,bio_cellular
+Write Blender code to make a cellular structure with very thick struts. Think step by step.,t230,qualitative_step,bio_cellular
+Write Blender code to make a tubular structure with many tubules. Think step by step.,t231,qualitative_step,bio_tubular
+Write Blender code to make a tubular structure with only a few tubules. Think step by step.,t232,qualitative_step,bio_tubular
+Write Blender code to make a tubular structure with very few tubules.  Think step by step.,t233,qualitative_step,bio_tubular
+Write Blender code to make a tubular structure with very high noise. Think step by step.,t234,qualitative_step,bio_tubular
+Write Blender code to make a tubular structure with very noisy tubule placement. Think step by step.,t235,qualitative_step,bio_tubular
+Write Blender code to make a helical structure without noise in rotation. Think step by step.,t236,negation_step,bio_helical
+Write Blender code to make a helical structure with zero cylindrical rods. Think step by step.,t237,negation_step,bio_helical
+Write Blender code to make a helical structure without rectangular fibers. Think step by step.,t238,negation_step,bio_helical
+Write Blender code to make a cellular structure with no top or bottom layers. Think step by step.,t239,negation_step,bio_cellular
+Write Blender code to make a cellular structure without smooth curves. Think step by step.,t240,negation_step,bio_cellular
+Write Blender code to make a cellular sandwich structure without top or bottom layers. Think step by step.,t241,negation_step,bio_cellular
+Write Blender code to make a cube of tubular structure without any tubules. Think step by step.,t242,negation_step,bio_tubular
+Write Blender code to make a tubular structure without any tubules. Think step by step.,t243,negation_step,bio_tubular
+Write Blender code to make a tubular structure with no noise in placement. Think step by step.,t244,negation_step,bio_tubular
+Write Blender code to make a tubular structure with no tubule layers. Think step by step.,t245,negation_step,bio_tubular
+Write Blender code to make a helical structure made of rectangular fibers with rotational noise. Think step by step.,t246,internal_step,bio_helical
+Write Blender code to make a helical structure made of rectangular fibers and angular variation per ply. Think step by step.,t247,internal_step,bio_helical
+Write Blender code to make a helical structure made of cylindrical fibers with rotational noise. Think step by step.,t248,internal_step,bio_helical
+Write Blender code to make a helical structure made of cylindrical fibers and angular variation per ply. Think step by step.,t249,internal_step,bio_helical
+"Write Blender code to make a helical structure made of both rectangular and cylindrical fibers, alternating layers. Think step by step.",t250,internal_step,bio_helical
+"Write Blender code to make a helical structure made of both rectangular and cylindrical fibers, alternating fibers. Think step by step.",t251,internal_step,bio_helical
+Write Blender code to make a cellular structure with sandwich layers where the top layer is much thicker than the bottom. Think step by step.,t252,internal_step,bio_cellular
+Write Blender code to make a cellular structure with sandwich layers of different thicknesses. Think step by step.,t253,internal_step,bio_cellular
+Write Blender code to make a cellular structure with only a single thin top sandwich layer. Think step by step.,t254,internal_step,bio_cellular
+Write Blender code to make a cellular structure but with only a top sandwich layer. Think step by step.,t255,internal_step,bio_cellular
+Write Blender code to make a cellular structure with very smooth curves and a bottom layer that is thicker than the top layer. Think step by step.,t256,internal_step,bio_cellular
+Write Blender code to make a tubular structure with elliptical tubules and jittered placement.  Think step by step.,t257,internal_step,bio_tubular
+Write Blender code to make a tubular structure with very elliptical tubules and random placement. Think step by step.,t258,internal_step,bio_tubular
+"Write Blender code to make a tubular structure with radial placement, where tubules radiate from the center of the cube. Think step by step.",t259,internal_step,bio_tubular
+Write Blender code to make a tubular structure where the tubules run horizontally instead of vertically. Think step by step.,t260,internal_step,bio_tubular
+Write Blender code to make a tubular structure with ordered placement. Think step by step.,t261,internal_step,bio_tubular
+Write Blender code to make a helical structure that is much taller than it is wide. Think step by step.,t262,form_step,bio_helical
+Write Blender code to make a helical structure with a tall rectangular prism form factor Think step by step.,t263,form_step,bio_helical
+Write Blender code to make a helical structure that is short and wide. Think step by step.,t264,form_step,bio_helical
+Write Blender code to make a cellular structure with a sphere instead of a cube. Think step by step.,t265,form_step,bio_cellular
+Write Blender code to make a cellular structure with a cylinder instead of a cube. Think step by step.,t266,form_step,bio_cellular
+Write Blender code to make a cellular structure with a cone instead of a cube. Think step by step.,t267,form_step,bio_cellular
+Write Blender code to make a cellular structure with a cylinder instead of a cube and then with sandwich layers on top and bottom. Think step by step.,t268,form_step,bio_cellular
+Write Blender code to make a tubular structure within a cylinder instead of a cube. Think step by step.,t269,form_step,bio_tubular
+Write Blender code to make a tubular structure within a sphere instead of a cube. Think step by step.,t270,form_step,bio_tubular
+Write Blender code to make a tubular structure within a flat rectangular prism instead of a cube. Think step by step.,t271,form_step,bio_tubular
+Write Blender code to make a helical structure with cellular sandwich layers added on top and bottom. Think step by step.,t272,external_step,bio_helicalxcellular
+Write Blender code to make a helical sandwich structure with sandwich layers on top and bottom. Think step by step.,t273,external_step,bio_helicalxcellular
+Write Blender code to make a helical structure made of cylindrical fibers but with sandwich layers on top and bottom. Think step by step.,t274,external_step,bio_helicalxcellular
+Write Blender code to make a helical cellular structure where each ply is a cellular structure. Think step by step.,t275,external_step,bio_helicalxcellular
+Write Blender code to make a helical tubular structure but with hollow tubules through all the twisted plies. Think step by step.,t276,external_step,bio_helicalxtubular
+Write Blender code to make a helical structure made of cylindrical fibers that are all hollow tubules.  Think step by step.,t277,external_step,bio_helicalxtubular
+Write Blender code to make a helical structure with smooth edges.  Think step by step.,t278,external_step,bio_helicalxcellular
+Write Blender code to make a cellular structure with sandwich layers that have tubules embedded. Think step by step.,t279,external_step,bio_cellularxtubular
+Write Blender code to make a cellular structure reinforced with tubular struts running vertically. Think step by step.,t280,external_step,bio_cellularxtubular
+Write Blender code to make a cellular structure with tubules running vertically through the core. Think step by step.,t281,external_step,bio_cellularxtubular
+Write Blender code to make a cellular structure with sandwich layers that are plies made of cylindrical fibers. Think step by step.,t282,external_step,bio_cellularxtubular
+Write Blender code to make a tubular structure with sandwich layers on top and bottom. Think step by step.,t283,external_step,bio_cellularxtubular
+Write Blender code to make a tubular structure capped with cellular sandwich layers.  Think step by step.,t284,external_step,bio_cellularxtubular
+Write Blender code to make a helical structure that has sandwich layers which have tubules through them.  Think step by step.,t285,external_step,bio_all
+Write Blender code to make a helical structure with smooth edges and tubules through the whole stack of layers.   Think step by step.,t286,external_step,bio_all
+Write Blender code to make a structure with both helical and tubular features. Think step by step.,t287,external_step,bio_helicalxtubular
+Write Blender code to make a structure with both cellular and tubular features. Think step by step.,t288,external_step,bio_cellularxtubular
+Write Blender code to make a structure with both helical and cellular features. Think step by step.,t289,external_step,bio_helicalxcellular
+Write Blender code to make a coffee table out of cellular bioinspired structures. Think step by step.,t290,crossdomain_step,bio_cellular
+Write Blender code to make a sofa frame made of cellular bioinspired material with smooth curves. Think step by step.,t291,crossdomain_step,bio_cellular
+Write Blender code to make a bookshelf constructed as a cellular Voronoi structure. Think step by step.,t292,crossdomain_step,bio_cellular
+Write Blender code to make a bookshelf built as a cellular cube with smooth edges. Think step by step.,t293,crossdomain_step,bio_cellular
+Write Blender code to make a dining table with a cellular sandwich top. Think step by step.,t294,crossdomain_step,bio_cellular
+Write Blender code to make a dining table where the legs are helical twisted structures. Think step by step.,t295,crossdomain_step,bio_helical
+Write Blender code to make a sofa base out of helical Bouligand plies. Think step by step.,t296,crossdomain_step,bio_helical
+Write Blender code to make a coffee table frame constructed as a helical structure. Think step by step.,t297,crossdomain_step,bio_helical
+Write Blender code to make a hat with a helical brim made of cylindrical fibers. Think step by step.,t298,crossdomain_step,bio_helical
+Write Blender code to make a chessboard with a helical twisted structures as the pieces. Think step by step.,t299,crossdomain_step,bio_helical
+Write Blender code to make a drum with a tubular porous structure in it. Think step by step.,t300,crossdomain_step,bio_tubular
+Write Blender code to make a coffee table with tubules in it. Think step by step.,t301,crossdomain_step,bio_tubular
+Write Blender code to make an apple with a tubular structure through it. Think step by step.,t302,crossdomain_step,bio_tubular
+Write Blender code to make a dog bowl made from a tubular structure with vertical holes. Think step by step.,t303,crossdomain_step,bio_tubular
+Write Blender code to make a smartphone case constructed from tubular bioinspired material. Think step by step.,t304,crossdomain_step,bio_tubular
+Write Blender code to make a torus and place a cube through its center. Think step by step.,t305,general_step,general
+Write Blender code to make 3 cones stacked each with different scales. Think step by step.,t306,general_step,general
+Write Blender code to make a sphere ontop of a hexagonal prism. Think step by step.,t307,general_step,general
+Write Blender code to make a cube scaled long in X and flattened in Z. Think step by step.,t308,general_step,general
+Write Blender code to make a 2x2 grid of cones each rotated differently. Think step by step.,t309,general_step,general
+Write Blender code to make a cube subtracted from the top side of a sphere. Think step by step.,t310,general_step,general
+Write Blender code to make a row of spheres that gradually increase in size. Think step by step.,t311,general_step,general
+Write Blender code to make a cellular structure and scale it down by 50%. Think step by step.,t312,general_bio_step,bio_cellular
+Write Blender code to make a 2x2 grid of helical structures. Think step by step.,t313,general_bio_step,bio_helical
+Write Blender code to make 2 tubular structure cubes next to one another. Think step by step.,t314,general_bio_step,bio_tubular
+"Write Blender code to make 2 cellular sandwich structures, stacked ontop of one another. Think step by step.",t315,general_bio_step,bio_cellular
+Write Blender code to make a tubular structure and rotate it by 45 degrees around the Z axis. Think step by step.,t316,general_bio_step,bio_tubular
+Write Blender code to make a helical structure and lay it on its side. Think step by step.,t317,general_bio_step,bio_helical
+Write Blender code to make a cellular structure and rotate it by 30 degrees around the Z axis. Think step by step.,t318,general_bio_step,bio_cellular
+Write Blender code to make a tubular structure and stretch it along the Y axis by 2 times. Think step by step.,t319,general_bio_step,bio_tubular
+Write Blender code to make a helical structure and scale it up by 50% Think step by step.,t320,general_bio_step,bio_helical

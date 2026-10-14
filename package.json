@@ -1,0 +1,27 @@
+{
+  "name": "bioinspired123d-wasm",
+  "version": "0.1.0",
+  "description": "Local, CPU-verifiable bioinspired lattice / TPMS / cellular generator (Bioinspired123D-WASM Multi-Harness Agent).",
+  "type": "module",
+  "license": "Apache-2.0",
+  "private": true,
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "test": "node --experimental-strip-types --no-warnings --test tests/*.test.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "run": "node --experimental-strip-types --no-warnings scripts/run.ts",
+    "benchmark": "node --experimental-strip-types --no-warnings scripts/benchmark.ts",
+    "build:web": "node scripts/build-web.mjs",
+    "serve": "node scripts/serve.mjs"
+  },
+  "dependencies": {
+    "@classcad/smlibwasm": "0.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.9.3"
+  }
+}
