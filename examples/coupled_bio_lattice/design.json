@@ -1,8 +1,8 @@
 {
-  "prompt": "Coupled bio-inspired lattice: closed 2 mm skin around a BCC strut core, helical twist of the lattice along z (Bouligand-like) and three depth-graded strut radii, exported as editable B-Rep STEP with a high-resolution STL.",
+  "prompt": "Coupled bio-inspired lattice: 2 mm skin with four bottom printability vents around a BCC strut core, helical twist of the lattice along z (Bouligand-like) and three depth-graded strut radii, exported as editable B-Rep STEP with a high-resolution STL.",
   "design_spec": {
     "topology": "hybrid",
-    "bio_motif": "helical (Bouligand-like) twist of a strut lattice core inside a closed skin",
+    "bio_motif": "helical (Bouligand-like) twist of a strut lattice core inside a skin with vents",
     "parameters": {
       "name": "coupled_bio_lattice",
       "envelope": {
@@ -79,7 +79,7 @@
       {
         "level": "L1",
         "name": "skin",
-        "kind": "boolean cut, 2.0 mm closed wall"
+        "kind": "boolean cut, 2.0 mm wall with bottom vents"
       },
       {
         "level": "L2",
@@ -101,7 +101,10 @@
         40.0,
         20.0
       ],
-      "kernel": "OpenCASCADE via CadQuery 2.8 (exact B-Rep)"
+      "kernel": "OpenCASCADE via CadQuery 2.8 (exact B-Rep)",
+      "vents_mm": [
+        2.0
+      ]
     }
   },
   "code": "\"\"\"Copy-executable parametric build (run from this folder: python design_code.py).\n\nNeeds cadquery 2.8 (see python/requirements.txt). The spec below is the DesignState parameter set.\n\"\"\"\nimport json, os, sys\nHERE = os.path.dirname(os.path.abspath(__file__))\nsys.path.insert(0, os.path.join(HERE, \"..\", \"..\", \"python\"))\nfrom bioxlattice.spec import CoupledSpec\nfrom bioxlattice.build import build\nfrom bioxlattice.exporter import write_step\n\nSPEC = json.loads('{\"name\": \"coupled_bio_lattice\", \"envelope\": {\"length\": 40.0, \"width\": 40.0, \"height\": 20.0, \"edge_fillet\": 3.0}, \"skin\": {\"thickness\": 2.0}, \"lattice\": {\"topology\": \"bcc\", \"cell\": 5.0, \"twist_deg_per_mm\": 2.0, \"overlap\": 0.2, \"tier_depths\": [4.0, 7.0], \"tier_radii\": [0.8, 0.6, 0.45]}, \"vents\": {\"enabled\": true, \"diameter\": 2.0, \"positions\": [[-10.0, -10.0], [10.0, -10.0], [-10.0, 10.0], [10.0, 10.0]]}, \"tessellation\": {\"deflection_mm\": 0.02, \"angular_rad\": 0.1}}')\n\nif __name__ == \"__main__\":\n    spec = CoupledSpec.from_dict(SPEC)\n    result = build(spec)\n    write_step(result.part, os.path.join(HERE, spec.name + \".step\"))\n    print(\"volume_mm3\", round(result.part.Volume(), 3), \"solids\", len(result.part.Solids()))\n",

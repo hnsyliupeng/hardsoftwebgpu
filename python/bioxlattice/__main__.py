@@ -19,7 +19,7 @@ from .metrics import part_metrics
 from .spec import CoupledSpec
 from .verify import verify_mesh, verify_step
 
-PROMPT = ("Coupled bio-inspired lattice: closed 2 mm skin around a BCC strut core, helical twist "
+PROMPT = ("Coupled bio-inspired lattice: 2 mm skin with four bottom printability vents around a BCC strut core, helical twist "
           "of the lattice along z (Bouligand-like) and three depth-graded strut radii, exported as "
           "editable B-Rep STEP with a high-resolution STL.")
 
@@ -82,7 +82,7 @@ def cmd_build(args) -> None:
         "prompt": PROMPT,
         "design_spec": {
             "topology": "hybrid",
-            "bio_motif": "helical (Bouligand-like) twist of a strut lattice core inside a closed skin",
+            "bio_motif": "helical (Bouligand-like) twist of a strut lattice core inside a skin with vents",
             "parameters": spec.to_dict(),
             "heterogeneity_field": {
                 "type": "depth_tiered_strut_radius",
@@ -93,7 +93,7 @@ def cmd_build(args) -> None:
             },
             "coupling_levels": [
                 {"level": "L0", "name": "envelope", "kind": "box, filleted vertical edges"},
-                {"level": "L1", "name": "skin", "kind": f"boolean cut, {spec.skin.thickness} mm closed wall"},
+                {"level": "L1", "name": "skin", "kind": f"boolean cut, {spec.skin.thickness} mm wall with bottom vents"},
                 {"level": "L2", "name": "lattice core", "kind": f"{spec.lattice.topology} struts, cell {spec.lattice.cell} mm, twisted nodes"},
                 {"level": "L3", "name": "graded struts", "kind": "radius by depth tier, fused into L1 by overlap"},
             ],
