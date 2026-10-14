@@ -38,7 +38,7 @@ function firstIndex(text: string, re: RegExp): number {
 
 const RE = {
   tpms: /\btpms\b|triply[- ]periodic|periodic minimal|gyroid|schwarz|neovius|\biwp\b|lidinoid|minimal surface|螺旋曲面|三周期|极小曲面/,
-  lattice: /lattice|点阵|晶格|\bbcc\b|\bfcc\b|\bfbcc\b|\bbccz\b|kelvin|tetrakaidecahedr|simple[- ]cubic|\bsc\b|金刚石|\bstrut/,
+  lattice: /lattice|点阵|晶格|\bbcc\b|\bfcc\b|\bfbcc\b|\bbccz\b|kelvin|tetrakaidecahedr|simple[- ]cubic|\bsc\b|金刚石/,  // 'strut' alone is not a lattice cue: bio prompts say 'struts' (rectangular / thick struts)
   helical: /helic|bouligand|螺旋|twist|\bply\b|\bplies\b/,
   cellular: /cellular|foam|voronoi|honeycomb|蜂窝|泡沫|sandwich|夹层|三明治/,
   tubular: /tubul|\btubes?\b|\bholes?\b|\bpores?\b|channel|管|孔/,

@@ -76,6 +76,6 @@ Each folder contains `design.json` (DesignState, metrics, validation, repair_his
 - **Zoned fusion replaces the earlier linear grading.** Linear blending of two fields fragmented the Kelvin part into 14 pieces. The zoned mode cuts each part with a half-space and unites the parts over a 1 mm overlap band, which gives one solid. The seam is a planar cut, not an exact B-Rep boolean.
 - **Tubular noise has the same volume as the generic tubule block.** Hole positions are jittered inside the box and the hole areas are unchanged, so the solid volume is translation-invariant. The jitter changes surface area (4310.09 vs 4310.09 mm²) and the minimum-wall statistics, not the volume.
 - **Helical plies are nearly solid** (about 90 % solid fraction), as in the upstream basecode. Their wall-median column is a ray-chord statistic on a solid body and is not reported as a wall thickness.
-- **Bio families are not yet compared numerically** with Bioinspired123D's `eval/benchmark.csv`; the family definitions come from its basecode. That comparison remains open.
+- **Bioinspired123D comparison** (`docs/BIOINSPIRED_COMPARISON.md`): all 12 upstream base codes are implemented; family routing is 270/270 on the single-family benchmark prompts. Cross-domain prompts (36) still route to one family, and the 14 generic non-bio prompts are flagged as unrecognised.
 - **Not done here:** printing or FEA validation, and STEP export for these 31 designs.
 

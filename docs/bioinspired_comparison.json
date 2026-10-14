@@ -1,0 +1,60 @@
+{
+  "source": "lamm-mit/Bioinspired123D (eval/benchmark.csv, data/raw/biodataset_basecodes.csv)",
+  "coverage": {
+    "upstream": 12,
+    "implemented": 12,
+    "missing": [],
+    "extra": []
+  },
+  "single_family": {
+    "n": 270,
+    "family_accuracy": 1,
+    "per_family": {
+      "helical": {
+        "n": 90,
+        "correct": 90,
+        "accuracy": 1
+      },
+      "tubular": {
+        "n": 90,
+        "correct": 90,
+        "accuracy": 1
+      },
+      "cellular": {
+        "n": 90,
+        "correct": 90,
+        "accuracy": 1
+      }
+    },
+    "first_mismatches": []
+  },
+  "cross_domain": {
+    "n": 36,
+    "predicted_family_counts": {
+      "helical": 22,
+      "cellular": 10,
+      "tubular": 4
+    },
+    "topology_counts": {
+      "helical": 22,
+      "cellular": 10,
+      "tubular": 4
+    },
+    "by_subcategory": {
+      "bio_helicalxcellular": 12,
+      "bio_helicalxtubular": 6,
+      "bio_cellularxtubular": 14,
+      "bio_all": 4
+    }
+  },
+  "general": {
+    "n": 14,
+    "flagged_unrecognised": 14,
+    "max_confidence": 0.25,
+    "predicted_family_counts": {
+      "tubular": 10,
+      "helical": 2,
+      "cellular": 2
+    }
+  }
+}
