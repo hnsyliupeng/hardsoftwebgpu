@@ -39,6 +39,35 @@ class Lattice:
     tier_radii: list[float] = field(default_factory=lambda: [0.8, 0.6, 0.45])
     # lattice origin offset in mm (x, y, z). [0, 0, 0] keeps nodes on integer multiples of the cell.
     phase: list[float] = field(default_factory=lambda: [0.0, 0.0, 0.0])
+    # Multi-zone fusion: contiguous z-bands, each with its own topology, cell, twist rate and radius
+    # scale. Empty list = one band covering the envelope with the top-level values above.
+    # Keys per zone: z0, z1 (mm, envelope z), topology, cell, twist_deg_per_mm, radius_scale.
+    zones: list[dict] = field(default_factory=list)
+
+
+ZONE_KEYS = ("z0", "z1", "topology", "cell", "twist_deg_per_mm", "radius_scale")
+
+
+def resolved_zones(spec: "CoupledSpec") -> list[dict]:
+    """Zones with every key filled. One implicit band when `lattice.zones` is empty.
+
+    Zone grids are anchored at the lattice phase, not at z0, so a zone with the same cell as the
+    top level keeps the same node positions as the single-zone model.
+    """
+    l, hz = spec.lattice, spec.envelope.height / 2
+    if not l.zones:
+        return [{"z0": -hz, "z1": hz, "topology": l.topology, "cell": l.cell,
+                 "twist_deg_per_mm": l.twist_deg_per_mm, "radius_scale": 1.0}]
+    out = []
+    for z in l.zones:
+        out.append({
+            "z0": float(z["z0"]), "z1": float(z["z1"]),
+            "topology": z.get("topology", l.topology),
+            "cell": float(z.get("cell", l.cell)),
+            "twist_deg_per_mm": float(z.get("twist_deg_per_mm", l.twist_deg_per_mm)),
+            "radius_scale": float(z.get("radius_scale", 1.0)),
+        })
+    return out
 
 
 @dataclass
@@ -82,6 +111,33 @@ class CoupledSpec:
             for x, y in v.positions:
                 if abs(x) + v.diameter / 2 >= e.length / 2 - s.thickness or abs(y) + v.diameter / 2 >= e.width / 2 - s.thickness:
                     raise ValueError(f"vent at ({x}, {y}) is outside the bottom face")
+        zs = resolved_zones(self)
+        for i, z in enumerate(l.zones):
+            unknown = set(z) - set(ZONE_KEYS)
+            if unknown:
+                raise ValueError(f"zone {i} has unknown keys {sorted(unknown)}")
+            if "z0" not in z or "z1" not in z:
+                raise ValueError(f"zone {i} needs z0 and z1")
+        for i, z in enumerate(zs):
+            if z["topology"] not in TOPOLOGIES:
+                raise ValueError(f"zone {i} topology {z['topology']!r} not in {TOPOLOGIES}")
+            if z["cell"] <= 0:
+                raise ValueError(f"zone {i} cell must be > 0")
+            if not (0 < z["radius_scale"] <= 2.0):
+                raise ValueError(f"zone {i} radius_scale must be in (0, 2]")
+            if z["z1"] <= z["z0"]:
+                raise ValueError(f"zone {i} needs z1 > z0")
+            if min(l.tier_radii) * z["radius_scale"] < 0.2:
+                raise ValueError(f"zone {i} scales strut radius below 0.2 mm")
+            if z["cell"] * 2 > min(e.length, e.width):
+                raise ValueError(f"zone {i} cell too large for the envelope")
+        if l.zones:
+            hz = e.height / 2
+            if zs[0]["z0"] > -hz + 1e-9 or zs[-1]["z1"] < hz - 1e-9:
+                raise ValueError("zones must cover the full envelope height")
+            for a_, b_ in zip(zs, zs[1:]):
+                if abs(a_["z1"] - b_["z0"]) > 1e-9:
+                    raise ValueError("zones must be contiguous and ascending")
         if self.tessellation.deflection_mm <= 0:
             raise ValueError("deflection must be > 0")
         if self.tessellation.max_edge_mm <= 0:

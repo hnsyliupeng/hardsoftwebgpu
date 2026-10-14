@@ -1,0 +1,250 @@
+[
+  {
+    "feature": "envelope_box",
+    "params": {
+      "L": 40.0,
+      "W": 40.0,
+      "H": 20.0,
+      "fillet_vertical": 3.0
+    },
+    "seconds": 0.019,
+    "volume": 31845.486678,
+    "solids": 1,
+    "faces": 10
+  },
+  {
+    "feature": "cavity_box",
+    "params": {
+      "L": 36.0,
+      "W": 36.0,
+      "H": 16.0,
+      "fillet_vertical": 1.0
+    },
+    "seconds": 0.013,
+    "volume": 20722.265482,
+    "solids": 1,
+    "faces": 10
+  },
+  {
+    "feature": "skin_boolean_cut",
+    "params": {
+      "thickness": 2.0
+    },
+    "seconds": 0.014,
+    "volume": 11123.221195,
+    "solids": 1,
+    "faces": 20
+  },
+  {
+    "feature": "skin_vent_cut",
+    "params": {
+      "diameter": 2.0,
+      "count": 4,
+      "positions": [
+        [
+          -10.0,
+          -10.0
+        ],
+        [
+          10.0,
+          -10.0
+        ],
+        [
+          -10.0,
+          10.0
+        ],
+        [
+          10.0,
+          10.0
+        ]
+      ]
+    },
+    "seconds": 0.011,
+    "volume": 11098.088454,
+    "solids": 1,
+    "faces": 24
+  },
+  {
+    "feature": "z0_layer-2_tier0",
+    "params": {
+      "radius": 0.8,
+      "struts": 920,
+      "topology": "bcc",
+      "cell": 5.0,
+      "twist_deg_per_mm": 0.0
+    },
+    "seconds": 36.067,
+    "volume": 6098.216279,
+    "solids": 1,
+    "faces": 1880
+  },
+  {
+    "feature": "z0_layer-2_clip",
+    "params": {
+      "z_range_mm": [
+        -10.0,
+        -5.0
+      ]
+    },
+    "seconds": 1.905,
+    "volume": 1667.233368,
+    "solids": 13,
+    "faces": 946
+  },
+  {
+    "feature": "z1_layer-1_tier0",
+    "params": {
+      "radius": 0.8,
+      "struts": 632,
+      "topology": "bcc",
+      "cell": 5.0,
+      "twist_deg_per_mm": 4.0
+    },
+    "seconds": 37.256,
+    "volume": 5392.337319,
+    "solids": 1,
+    "faces": 1334
+  },
+  {
+    "feature": "z1_layer-1_tier1",
+    "params": {
+      "radius": 0.6,
+      "struts": 188,
+      "topology": "bcc",
+      "cell": 5.0,
+      "twist_deg_per_mm": 4.0
+    },
+    "seconds": 7.719,
+    "volume": 852.738376,
+    "solids": 1,
+    "faces": 440
+  },
+  {
+    "feature": "z1_layer-1_tier2",
+    "params": {
+      "radius": 0.45,
+      "struts": 100,
+      "topology": "bcc",
+      "cell": 5.0,
+      "twist_deg_per_mm": 4.0
+    },
+    "seconds": 2.447,
+    "volume": 258.311196,
+    "solids": 1,
+    "faces": 300
+  },
+  {
+    "feature": "z1_layer-1_clip",
+    "params": {
+      "z_range_mm": [
+        -5.0,
+        0.0
+      ]
+    },
+    "seconds": 1.585,
+    "volume": 2129.423196,
+    "solids": 1,
+    "faces": 998
+  },
+  {
+    "feature": "z1_layer0_tier0",
+    "params": {
+      "radius": 0.8,
+      "struts": 632,
+      "topology": "bcc",
+      "cell": 5.0,
+      "twist_deg_per_mm": 4.0
+    },
+    "seconds": 36.743,
+    "volume": 5402.255844,
+    "solids": 1,
+    "faces": 1332
+  },
+  {
+    "feature": "z1_layer0_tier1",
+    "params": {
+      "radius": 0.6,
+      "struts": 188,
+      "topology": "bcc",
+      "cell": 5.0,
+      "twist_deg_per_mm": 4.0
+    },
+    "seconds": 6.366,
+    "volume": 852.738376,
+    "solids": 1,
+    "faces": 440
+  },
+  {
+    "feature": "z1_layer0_tier2",
+    "params": {
+      "radius": 0.45,
+      "struts": 100,
+      "topology": "bcc",
+      "cell": 5.0,
+      "twist_deg_per_mm": 4.0
+    },
+    "seconds": 2.57,
+    "volume": 258.311196,
+    "solids": 1,
+    "faces": 300
+  },
+  {
+    "feature": "z1_layer0_clip",
+    "params": {
+      "z_range_mm": [
+        0.0,
+        5.0
+      ]
+    },
+    "seconds": 1.476,
+    "volume": 2129.423194,
+    "solids": 1,
+    "faces": 998
+  },
+  {
+    "feature": "z2_layer1_tier0",
+    "params": {
+      "radius": 0.8,
+      "struts": 920,
+      "topology": "bcc",
+      "cell": 5.0,
+      "twist_deg_per_mm": 8.0
+    },
+    "seconds": 93.096,
+    "volume": 9406.132707,
+    "solids": 1,
+    "faces": 2496
+  },
+  {
+    "feature": "z2_layer1_clip",
+    "params": {
+      "z_range_mm": [
+        5.0,
+        10.0
+      ]
+    },
+    "seconds": 3.877,
+    "volume": 2336.719455,
+    "solids": 9,
+    "faces": 998
+  },
+  {
+    "feature": "lattice_core_union",
+    "params": {
+      "layers": 4,
+      "zones": 3
+    },
+    "seconds": 22.298,
+    "volume": 8044.795452,
+    "solids": 21,
+    "faces": 2744
+  },
+  {
+    "feature": "union_skin_core",
+    "params": {},
+    "seconds": 8.764,
+    "volume": 18669.595367,
+    "solids": 1,
+    "faces": 2394
+  }
+]

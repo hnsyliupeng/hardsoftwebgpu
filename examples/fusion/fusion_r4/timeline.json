@@ -1,0 +1,291 @@
+[
+  {
+    "feature": "envelope_box",
+    "params": {
+      "L": 40.0,
+      "W": 40.0,
+      "H": 20.0,
+      "fillet_vertical": 3.0
+    },
+    "seconds": 0.019,
+    "volume": 31845.486678,
+    "solids": 1,
+    "faces": 10
+  },
+  {
+    "feature": "cavity_box",
+    "params": {
+      "L": 36.0,
+      "W": 36.0,
+      "H": 16.0,
+      "fillet_vertical": 1.0
+    },
+    "seconds": 0.013,
+    "volume": 20722.265482,
+    "solids": 1,
+    "faces": 10
+  },
+  {
+    "feature": "skin_boolean_cut",
+    "params": {
+      "thickness": 2.0
+    },
+    "seconds": 0.01,
+    "volume": 11123.221195,
+    "solids": 1,
+    "faces": 20
+  },
+  {
+    "feature": "skin_vent_cut",
+    "params": {
+      "diameter": 2.0,
+      "count": 4,
+      "positions": [
+        [
+          -10.0,
+          -10.0
+        ],
+        [
+          10.0,
+          -10.0
+        ],
+        [
+          -10.0,
+          10.0
+        ],
+        [
+          10.0,
+          10.0
+        ]
+      ]
+    },
+    "seconds": 0.014,
+    "volume": 11098.088454,
+    "solids": 1,
+    "faces": 24
+  },
+  {
+    "feature": "z0_layer-2_tier0",
+    "params": {
+      "radius": 0.8,
+      "struts": 2776,
+      "topology": "octet",
+      "cell": 5.0,
+      "twist_deg_per_mm": 2.0
+    },
+    "seconds": 245.802,
+    "volume": 12238.321301,
+    "solids": 1,
+    "faces": 3908
+  },
+  {
+    "feature": "z0_layer-2_clip",
+    "params": {
+      "z_range_mm": [
+        -10.0,
+        -5.0
+      ]
+    },
+    "seconds": 7.433,
+    "volume": 2990.26211,
+    "solids": 9,
+    "faces": 2193
+  },
+  {
+    "feature": "z0_layer-1_tier0",
+    "params": {
+      "radius": 0.8,
+      "struts": 1864,
+      "topology": "octet",
+      "cell": 5.0,
+      "twist_deg_per_mm": 2.0
+    },
+    "seconds": 156.156,
+    "volume": 8514.463922,
+    "solids": 1,
+    "faces": 2840
+  },
+  {
+    "feature": "z0_layer-1_tier1",
+    "params": {
+      "radius": 0.6,
+      "struts": 592,
+      "topology": "octet",
+      "cell": 5.0,
+      "twist_deg_per_mm": 2.0
+    },
+    "seconds": 37.51,
+    "volume": 1771.23598,
+    "solids": 1,
+    "faces": 996
+  },
+  {
+    "feature": "z0_layer-1_tier2",
+    "params": {
+      "radius": 0.45,
+      "struts": 320,
+      "topology": "octet",
+      "cell": 5.0,
+      "twist_deg_per_mm": 2.0
+    },
+    "seconds": 16.172,
+    "volume": 587.712315,
+    "solids": 1,
+    "faces": 620
+  },
+  {
+    "feature": "z0_layer-1_clip",
+    "params": {
+      "z_range_mm": [
+        -5.0,
+        0.0
+      ]
+    },
+    "seconds": 5.979,
+    "volume": 3813.463874,
+    "solids": 1,
+    "faces": 2152
+  },
+  {
+    "feature": "z0_layer0_tier0",
+    "params": {
+      "radius": 0.8,
+      "struts": 1864,
+      "topology": "octet",
+      "cell": 5.0,
+      "twist_deg_per_mm": 2.0
+    },
+    "seconds": 149.771,
+    "volume": 8514.46391,
+    "solids": 1,
+    "faces": 2840
+  },
+  {
+    "feature": "z0_layer0_tier1",
+    "params": {
+      "radius": 0.6,
+      "struts": 492,
+      "topology": "octet",
+      "cell": 5.0,
+      "twist_deg_per_mm": 2.0
+    },
+    "seconds": 24.998,
+    "volume": 1527.101929,
+    "solids": 1,
+    "faces": 1164
+  },
+  {
+    "feature": "z0_layer0_tier2",
+    "params": {
+      "radius": 0.45,
+      "struts": 420,
+      "topology": "octet",
+      "cell": 5.0,
+      "twist_deg_per_mm": 2.0
+    },
+    "seconds": 26.607,
+    "volume": 750.698668,
+    "solids": 1,
+    "faces": 576
+  },
+  {
+    "feature": "z0_layer0_clip",
+    "params": {
+      "z_range_mm": [
+        0.0,
+        5.0
+      ]
+    },
+    "seconds": 6.268,
+    "volume": 3710.123817,
+    "solids": 1,
+    "faces": 2184
+  },
+  {
+    "feature": "z0_layer1_tier0",
+    "params": {
+      "radius": 0.8,
+      "struts": 2632,
+      "topology": "octet",
+      "cell": 5.0,
+      "twist_deg_per_mm": 2.0
+    },
+    "seconds": 256.241,
+    "volume": 11725.009574,
+    "solids": 1,
+    "faces": 4088
+  },
+  {
+    "feature": "z0_layer1_tier1",
+    "params": {
+      "radius": 0.6,
+      "struts": 144,
+      "topology": "octet",
+      "cell": 5.0,
+      "twist_deg_per_mm": 2.0
+    },
+    "seconds": 2.183,
+    "volume": 499.765629,
+    "solids": 1,
+    "faces": 188
+  },
+  {
+    "feature": "z0_layer1_clip",
+    "params": {
+      "z_range_mm": [
+        5.0,
+        10.0
+      ]
+    },
+    "seconds": 8.404,
+    "volume": 3516.517741,
+    "solids": 9,
+    "faces": 2405
+  },
+  {
+    "feature": "z0_layer2_tier0",
+    "params": {
+      "radius": 0.8,
+      "struts": 460,
+      "topology": "octet",
+      "cell": 5.0,
+      "twist_deg_per_mm": 2.0
+    },
+    "seconds": 7.239,
+    "volume": 2674.6765,
+    "solids": 1,
+    "faces": 512
+  },
+  {
+    "feature": "z0_layer2_clip",
+    "params": {
+      "z_range_mm": [
+        10.0,
+        15.0
+      ]
+    },
+    "seconds": 0.152,
+    "volume": 0.0,
+    "solids": 0,
+    "faces": 0
+  },
+  {
+    "feature": "lattice_core_union",
+    "params": {
+      "layers": 5,
+      "zones": 1
+    },
+    "seconds": 70.012,
+    "volume": 13163.12773,
+    "solids": 17,
+    "faces": 7150
+  },
+  {
+    "feature": "union_skin_core",
+    "params": {},
+    "seconds": 27.667,
+    "volume": 23517.168974,
+    "solids": 1,
+    "faces": 7112
+  }
+]

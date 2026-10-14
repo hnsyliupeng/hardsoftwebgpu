@@ -1,0 +1,87 @@
+{
+  "name": "fusion_r5",
+  "envelope": {
+    "length": 40.0,
+    "width": 40.0,
+    "height": 20.0,
+    "edge_fillet": 3.0
+  },
+  "skin": {
+    "thickness": 2.0
+  },
+  "lattice": {
+    "topology": "bcc",
+    "cell": 5.0,
+    "twist_deg_per_mm": 2.0,
+    "overlap": 0.2,
+    "tier_depths": [
+      4.0,
+      7.0
+    ],
+    "tier_radii": [
+      0.8,
+      0.6,
+      0.45
+    ],
+    "zones": [
+      {
+        "z0": -10,
+        "z1": -5,
+        "topology": "fcc",
+        "cell": 5.0,
+        "twist_deg_per_mm": 1.0,
+        "radius_scale": 1.0
+      },
+      {
+        "z0": -5,
+        "z1": 0,
+        "topology": "octet",
+        "cell": 5.0,
+        "twist_deg_per_mm": 2.0,
+        "radius_scale": 0.9
+      },
+      {
+        "z0": 0,
+        "z1": 5,
+        "topology": "bcc",
+        "cell": 5.0,
+        "twist_deg_per_mm": 3.0,
+        "radius_scale": 0.8
+      },
+      {
+        "z0": 5,
+        "z1": 10,
+        "topology": "bcc",
+        "cell": 5.0,
+        "twist_deg_per_mm": 4.0,
+        "radius_scale": 1.0
+      }
+    ]
+  },
+  "vents": {
+    "enabled": true,
+    "diameter": 2.0,
+    "positions": [
+      [
+        -10.0,
+        -10.0
+      ],
+      [
+        10.0,
+        -10.0
+      ],
+      [
+        -10.0,
+        10.0
+      ],
+      [
+        10.0,
+        10.0
+      ]
+    ]
+  },
+  "tessellation": {
+    "deflection_mm": 0.02,
+    "angular_rad": 0.1
+  }
+}

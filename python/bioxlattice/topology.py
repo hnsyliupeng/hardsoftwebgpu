@@ -13,7 +13,7 @@ import itertools
 Point = tuple[float, float, float]
 Segment = tuple[Point, Point]
 
-TOPOLOGIES = ("sc", "bcc", "fcc")
+TOPOLOGIES = ("sc", "bcc", "fcc", "bccz", "octet")
 
 
 def _cell_segments(kind: str, i: int, j: int, k: int) -> list[Segment]:
@@ -41,6 +41,26 @@ def _cell_segments(kind: str, i: int, j: int, k: int) -> list[Segment]:
                     corner[others[0]] = u
                     corner[others[1]] = v
                     segs.append((cp, P(*corner)))
+        return segs
+    if kind == "bccz":
+        # BCC plus the four vertical cell edges (reinforced body-centred cell)
+        c = P(0.5, 0.5, 0.5)
+        segs = [(P(*corner), c) for corner in itertools.product((0.0, 1.0), repeat=3)]
+        segs += [(P(x, y, 0.0), P(x, y, 1.0)) for x, y in itertools.product((0.0, 1.0), repeat=2)]
+        return segs
+    if kind == "octet":
+        # FCC star (face centre to its four corners) plus the twelve octahedron edges that join
+        # face centres of adjacent faces (octet truss; all struts have length sqrt(2)/2)
+        segs = _cell_segments("fcc", i, j, k)
+        faces = []
+        for axis in range(3):
+            for side in (0.0, 1.0):
+                f = [0.5, 0.5, 0.5]
+                f[axis] = side
+                faces.append((axis, tuple(f)))
+        for (ax1, f1), (ax2, f2) in itertools.combinations(faces, 2):
+            if ax1 != ax2:
+                segs.append((P(*f1), P(*f2)))
         return segs
     raise ValueError(f"unknown topology {kind!r}; expected one of {TOPOLOGIES}")
 

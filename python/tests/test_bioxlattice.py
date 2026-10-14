@@ -227,7 +227,7 @@ class MultiLevel(unittest.TestCase):
 
     def test_levels_are_all_reported(self):
         self.assertEqual(set(self.report["levels"]),
-                         {"L0_envelope", "L1_skin", "L2_lattice", "L3_tiers", "coupling", "printability", "export"})
+                         {"L0_envelope", "L1_skin", "L2_lattice", "L2_zones", "L3_tiers", "coupling", "printability", "export"})
 
     def test_skin_matches_closed_form(self):
         from bioxlattice.structural import analytic_cavity, analytic_envelope, analytic_vent_volume
@@ -236,9 +236,10 @@ class MultiLevel(unittest.TestCase):
 
     def test_tier_counts_rederived(self):
         from bioxlattice.structural import _tier_counts_from_spec
-        counts, kept = _tier_counts_from_spec(self.spec)
+        counts, kept, per_zone = _tier_counts_from_spec(self.spec)
         self.assertEqual(counts, self.result.lattice["struts_per_tier"])
         self.assertEqual(kept, self.result.lattice["struts_kept"])
+        self.assertEqual(sum(per_zone), kept)
 
     def test_coupling_identity_holds(self):
         overlap = self.result.skin.intersect(self.result.core).Volume()
@@ -333,3 +334,95 @@ class MeshRefine(unittest.TestCase):
 
     def test_default_bound_in_spec(self):
         self.assertEqual(CoupledSpec().tessellation.max_edge_mm, 2.5)
+
+
+class Fusion(unittest.TestCase):
+    """Multi-zone fusion: new topologies, zone resolution, twist continuity, regression of counts."""
+
+    def test_bccz_segment_lengths_and_count(self):
+        from bioxlattice.topology import _cell_segments
+        segs = _cell_segments("bccz", 0, 0, 0)
+        self.assertEqual(len(segs), 12)  # 8 BCC corner struts + 4 vertical cell edges
+        lengths = sorted({round(math.dist(a, b), 6) for a, b in segs})
+        self.assertEqual(lengths, sorted({round(math.sqrt(3) / 2, 6), 1.0}))
+
+    def test_octet_all_struts_equal_length(self):
+        from bioxlattice.topology import _cell_segments
+        segs = _cell_segments("octet", 0, 0, 0)
+        self.assertEqual(len(segs), 36)  # 24 FCC star struts + 12 octahedron edges
+        for a, b in segs:
+            self.assertAlmostEqual(math.dist(a, b), math.sqrt(2) / 2, places=9)
+        self.assertEqual(len({frozenset((a, b)) for a, b in segs}), 36)
+
+    def test_single_zone_default_covers_envelope(self):
+        from bioxlattice.spec import resolved_zones
+        spec = small_spec()
+        zs = resolved_zones(spec)
+        self.assertEqual(len(zs), 1)
+        hz = spec.envelope.height / 2
+        self.assertEqual((zs[0]["z0"], zs[0]["z1"]), (-hz, hz))
+        self.assertEqual(zs[0]["topology"], spec.lattice.topology)
+
+    def test_zone_validation_rejects_gaps_overlaps_and_bad_keys(self):
+        spec = small_spec()
+        base = [{"z0": -10, "z1": 0}, {"z0": 0, "z1": 10}]  # envelope height 20 mm
+        spec.lattice.zones = [dict(z, topology="bcc", cell=5.0) for z in base]
+        spec.validate()  # contiguous full cover is valid
+        bad = [
+            [{"z0": -10, "z1": 0}, {"z0": 1, "z1": 10}],        # gap
+            [{"z0": -10, "z1": 1}, {"z0": 0, "z1": 10}],        # overlap
+            [{"z0": -10, "z1": 0}],                             # does not reach the top
+            [{"z0": -10, "z1": 0, "bogus": 1}, {"z0": 0, "z1": 10}],
+        ]
+        for zones in bad:
+            spec.lattice.zones = zones
+            with self.assertRaises(ValueError):
+                spec.validate()
+        spec.lattice.zones = [{"z0": -10, "z1": 0, "topology": "gyroid"}, {"z0": 0, "z1": 10}]
+        with self.assertRaises(ValueError):
+            spec.validate()
+
+    def test_twist_angle_single_zone_is_kappa_z(self):
+        from bioxlattice.build import twist_angle
+        from bioxlattice.spec import resolved_zones
+        zs = resolved_zones(small_spec())
+        for z in (-7.0, -1.0, 0.0, 3.0, 9.0):
+            self.assertAlmostEqual(twist_angle(zs, z), math.radians(small_spec().lattice.twist_deg_per_mm) * z, places=12)
+
+    def test_twist_gradient_is_continuous_across_interfaces(self):
+        from bioxlattice.build import twist_angle
+        from bioxlattice.spec import resolved_zones
+        spec = small_spec()
+        spec.lattice.zones = [
+            {"z0": -10, "z1": 0, "topology": "bcc", "cell": 5.0, "twist_deg_per_mm": 0.0},
+            {"z0": 0, "z1": 10, "topology": "bcc", "cell": 5.0, "twist_deg_per_mm": 4.0},
+        ]
+        zs = resolved_zones(spec)
+        self.assertAlmostEqual(twist_angle(zs, 0.0 - 1e-9), twist_angle(zs, 0.0 + 1e-9), places=8)
+        # 0 -> 5 mm at 4 deg/mm gives 20 degrees
+        self.assertAlmostEqual(math.degrees(twist_angle(zs, 5.0)), 20.0, places=9)
+
+    def test_regression_single_zone_counts_match_committed_examples(self):
+        # The zone-aware re-derivation must reproduce the recorded counts of the committed
+        # single-zone examples (same rules as before zones were added).
+        from bioxlattice.structural import _tier_counts_from_spec
+        fcc = CoupledSpec.load(os.path.join(os.path.dirname(__file__), "..", "..", "examples", "fcc_graded_test", "spec.json"))
+        counts, kept, per_zone = _tier_counts_from_spec(fcc)
+        self.assertEqual(counts, [1600, 188, 132])
+        self.assertEqual(kept, 1920)
+        self.assertEqual(per_zone, [1920])
+
+    def test_zone_counts_sum_to_total(self):
+        from bioxlattice.structural import _tier_counts_from_spec
+        spec = small_spec()
+        spec.lattice.zones = [
+            {"z0": -10, "z1": -5, "topology": "fcc", "cell": 5.0},
+            {"z0": -5, "z1": 5, "topology": "bcc", "cell": 5.0},
+            {"z0": 5, "z1": 10, "topology": "bccz", "cell": 5.0, "radius_scale": 0.9},
+        ]
+        spec.validate()
+        counts, kept, per_zone = _tier_counts_from_spec(spec)
+        self.assertEqual(sum(per_zone), kept)
+        self.assertEqual(sum(counts), kept)
+        self.assertTrue(all(n > 0 for n in per_zone))
+

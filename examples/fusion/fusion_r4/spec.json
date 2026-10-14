@@ -1,0 +1,53 @@
+{
+  "name": "fusion_r4",
+  "envelope": {
+    "length": 40.0,
+    "width": 40.0,
+    "height": 20.0,
+    "edge_fillet": 3.0
+  },
+  "skin": {
+    "thickness": 2.0
+  },
+  "lattice": {
+    "topology": "octet",
+    "cell": 5.0,
+    "twist_deg_per_mm": 2.0,
+    "overlap": 0.2,
+    "tier_depths": [
+      4.0,
+      7.0
+    ],
+    "tier_radii": [
+      0.8,
+      0.6,
+      0.45
+    ]
+  },
+  "vents": {
+    "enabled": true,
+    "diameter": 2.0,
+    "positions": [
+      [
+        -10.0,
+        -10.0
+      ],
+      [
+        10.0,
+        -10.0
+      ],
+      [
+        -10.0,
+        10.0
+      ],
+      [
+        10.0,
+        10.0
+      ]
+    ]
+  },
+  "tessellation": {
+    "deflection_mm": 0.02,
+    "angular_rad": 0.1
+  }
+}

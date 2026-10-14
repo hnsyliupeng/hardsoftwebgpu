@@ -1,0 +1,282 @@
+{
+  "prompt": "Coupled bio-inspired lattice: 2.0 mm skin with 4 bottom printability vents around a BCC strut core, helical twist of the lattice along z (2.0 deg/mm, Bouligand-like) and 3 depth-graded strut radii, exported as editable B-Rep STEP with a high-resolution STL.",
+  "design_spec": {
+    "topology": "hybrid",
+    "bio_motif": "helical (Bouligand-like) twist of a BCC strut lattice core inside a skin with vents",
+    "parameters": {
+      "name": "fusion_r1",
+      "envelope": {
+        "length": 40.0,
+        "width": 40.0,
+        "height": 20.0,
+        "edge_fillet": 3.0
+      },
+      "skin": {
+        "thickness": 2.0
+      },
+      "lattice": {
+        "topology": "bcc",
+        "cell": 5.0,
+        "twist_deg_per_mm": 2.0,
+        "overlap": 0.2,
+        "tier_depths": [
+          4.0,
+          7.0
+        ],
+        "tier_radii": [
+          0.8,
+          0.6,
+          0.45
+        ],
+        "phase": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "zones": [
+          {
+            "z0": -10,
+            "z1": -5,
+            "topology": "fcc",
+            "cell": 5.0,
+            "twist_deg_per_mm": 2.0,
+            "radius_scale": 1.0
+          },
+          {
+            "z0": -5,
+            "z1": 5,
+            "topology": "bcc",
+            "cell": 5.0,
+            "twist_deg_per_mm": 2.0,
+            "radius_scale": 1.0
+          },
+          {
+            "z0": 5,
+            "z1": 10,
+            "topology": "bcc",
+            "cell": 5.0,
+            "twist_deg_per_mm": 2.0,
+            "radius_scale": 0.9
+          }
+        ]
+      },
+      "vents": {
+        "enabled": true,
+        "diameter": 2.0,
+        "positions": [
+          [
+            -10.0,
+            -10.0
+          ],
+          [
+            10.0,
+            -10.0
+          ],
+          [
+            -10.0,
+            10.0
+          ],
+          [
+            10.0,
+            10.0
+          ]
+        ]
+      },
+      "tessellation": {
+        "deflection_mm": 0.02,
+        "angular_rad": 0.1,
+        "max_edge_mm": 2.5
+      }
+    },
+    "heterogeneity_field": {
+      "type": "depth_tiered_strut_radius",
+      "description": "strut radius chosen by depth below the envelope surface",
+      "tier_depths_mm": [
+        4.0,
+        7.0
+      ],
+      "tier_radii_mm": [
+        0.8,
+        0.6,
+        0.45
+      ],
+      "twist_map": "theta(z) = 2.0 deg/mm * z, rotation about Z"
+    },
+    "coupling_levels": [
+      {
+        "level": "L0",
+        "name": "envelope",
+        "kind": "box, filleted vertical edges"
+      },
+      {
+        "level": "L1",
+        "name": "skin",
+        "kind": "boolean cut, 2.0 mm wall with bottom vents"
+      },
+      {
+        "level": "L2",
+        "name": "lattice core",
+        "kind": "bcc struts, cell 5.0 mm, twisted nodes"
+      },
+      {
+        "level": "L3",
+        "name": "graded struts",
+        "kind": "radius by depth tier, fused into L1 by overlap"
+      }
+    ],
+    "target_metrics": {
+      "min_printable_wall_mm": 0.4
+    },
+    "constraints": {
+      "envelope_mm": [
+        40.0,
+        40.0,
+        20.0
+      ],
+      "kernel": "OpenCASCADE via CadQuery 2.8 (exact B-Rep)"
+    }
+  },
+  "code": "\"\"\"Copy-executable parametric build (run from this folder: python design_code.py).\n\nNeeds cadquery 2.8 (see python/requirements.txt). The spec below is the DesignState parameter set.\n\"\"\"\nimport json, os, sys\nHERE = os.path.dirname(os.path.abspath(__file__))\nsys.path.insert(0, os.path.join(HERE, \"..\", \"..\", \"python\"))\nfrom bioxlattice.spec import CoupledSpec\nfrom bioxlattice.build import build\nfrom bioxlattice.exporter import write_step\n\nSPEC = json.loads('{\"name\": \"fusion_r1\", \"envelope\": {\"length\": 40.0, \"width\": 40.0, \"height\": 20.0, \"edge_fillet\": 3.0}, \"skin\": {\"thickness\": 2.0}, \"lattice\": {\"topology\": \"bcc\", \"cell\": 5.0, \"twist_deg_per_mm\": 2.0, \"overlap\": 0.2, \"tier_depths\": [4.0, 7.0], \"tier_radii\": [0.8, 0.6, 0.45], \"phase\": [0.0, 0.0, 0.0], \"zones\": [{\"z0\": -10, \"z1\": -5, \"topology\": \"fcc\", \"cell\": 5.0, \"twist_deg_per_mm\": 2.0, \"radius_scale\": 1.0}, {\"z0\": -5, \"z1\": 5, \"topology\": \"bcc\", \"cell\": 5.0, \"twist_deg_per_mm\": 2.0, \"radius_scale\": 1.0}, {\"z0\": 5, \"z1\": 10, \"topology\": \"bcc\", \"cell\": 5.0, \"twist_deg_per_mm\": 2.0, \"radius_scale\": 0.9}]}, \"vents\": {\"enabled\": true, \"diameter\": 2.0, \"positions\": [[-10.0, -10.0], [10.0, -10.0], [-10.0, 10.0], [10.0, 10.0]]}, \"tessellation\": {\"deflection_mm\": 0.02, \"angular_rad\": 0.1, \"max_edge_mm\": 2.5}}')\n\nif __name__ == \"__main__\":\n    spec = CoupledSpec.from_dict(SPEC)\n    result = build(spec)\n    write_step(result.part, os.path.join(HERE, spec.name + \".step\"))\n    print(\"volume_mm3\", round(result.part.Volume(), 3), \"solids\", len(result.part.Solids()))\n",
+  "metrics": {
+    "volume": 17319.166,
+    "surface_area": 24544.973,
+    "min_wall_thickness": 0.9,
+    "connectivity": true,
+    "genus": 1012
+  },
+  "render_preview": null,
+  "repair_history": [],
+  "limitations": [
+    "min_wall_thickness is a B-Rep proxy (min of skin and 2 x strut radius), not a ray or sphere-fit measurement",
+    "twist maps nodes and keeps straight struts between them; it is not an exact helicoid lattice",
+    "single-body result is checked for connectivity but the lattice is clipped to the cavity, so struts end on the skin overlap",
+    "STL is a tessellation at the given deflection; STEP is exact B-Rep",
+    "shell() is not used for the skin because it exports as a shell-based surface model; a boolean cut is used"
+  ],
+  "unknowns": [
+    "printability and mechanical response are not simulated",
+    "no Bioinspired123D reference geometry for this family; bio coupling is a parametric choice"
+  ],
+  "exports": {
+    "step": "fusion_r1.step",
+    "stl": "fusion_r1.stl",
+    "mesh_bin": "fusion_r1.mesh.bin",
+    "code": "design_code.py",
+    "timeline": "timeline.json"
+  },
+  "metrics_detail": {
+    "volume": 17319.166,
+    "surface_area": 24544.973,
+    "center_of_mass": [
+      -0.0,
+      0.0,
+      -0.0146
+    ],
+    "bbox_mm": [
+      40.015,
+      40.015,
+      20.015
+    ],
+    "min_wall_thickness": 0.9,
+    "min_wall_definition": "min(skin thickness, 2 * smallest used strut radius); B-Rep proxy, not ray-based",
+    "connectivity": true,
+    "genus": 1012,
+    "euler_characteristic": -2022,
+    "boundary_components": 1,
+    "internal_void_count": 0,
+    "internal_void_genera": [],
+    "boundary_watertight": true,
+    "porosity": 0.4562,
+    "levels": {
+      "L0_envelope_volume": 31845.487,
+      "L1_skin_volume": 11098.088,
+      "L2_lattice_core_volume": 6614.307,
+      "overlap_skin_core": 393.23
+    },
+    "face_types": {
+      "CYLINDER": 2256,
+      "PLANE": 28
+    },
+    "analytic_face_fraction": 1.0,
+    "strut_radii_mm": [
+      0.8,
+      0.6,
+      0.45
+    ],
+    "topology_counts": {
+      "vertices": 9754,
+      "edges": 13860,
+      "faces": 2284
+    }
+  },
+  "mesh_quality": {
+    "triangles": 1304972,
+    "max_edge_mm": 2.5,
+    "aspect_p50": 110.85,
+    "aspect_p99": 454.64,
+    "needles_aspect_gt_100_span_ge_5.0mm": 0
+  },
+  "lattice": {
+    "topology": "bcc",
+    "cell_mm": 5.0,
+    "struts_raw_unique": 30208,
+    "struts_kept": 4148,
+    "struts_per_tier": [
+      3572,
+      376,
+      200
+    ],
+    "tier_radii_mm": [
+      0.8,
+      0.6,
+      0.45
+    ],
+    "tier_depths_mm": [
+      4.0,
+      7.0
+    ],
+    "twist_deg_per_mm": 2.0,
+    "phase_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "zones": [
+      {
+        "z0": -10.0,
+        "z1": -5.0,
+        "topology": "fcc",
+        "cell": 5.0,
+        "twist_deg_per_mm": 2.0,
+        "radius_scale": 1.0
+      },
+      {
+        "z0": -5.0,
+        "z1": 5.0,
+        "topology": "bcc",
+        "cell": 5.0,
+        "twist_deg_per_mm": 2.0,
+        "radius_scale": 1.0
+      },
+      {
+        "z0": 5.0,
+        "z1": 10.0,
+        "topology": "bcc",
+        "cell": 5.0,
+        "twist_deg_per_mm": 2.0,
+        "radius_scale": 0.9
+      }
+    ],
+    "struts_per_zone": [
+      1388,
+      1840,
+      920
+    ],
+    "struts_raw_unique_all_zones": 30208
+  },
+  "timing_s": {
+    "build": 235.36,
+    "step_write": 4.56,
+    "tessellate": 27.81
+  }
+}

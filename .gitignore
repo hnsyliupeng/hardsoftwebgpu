@@ -11,3 +11,6 @@ examples/coupled_bio_lattice/*.step
 examples/coupled_bio_lattice/*.mesh.bin
 examples/fcc_graded_test/*.step
 examples/fcc_graded_test/*.mesh.bin
+# Fusion rounds: large STEP and mesh.bin are rebuilt locally, not tracked
+examples/fusion/*/*.step
+examples/fusion/*/*.mesh.bin

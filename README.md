@@ -85,6 +85,8 @@ Every build also writes `structural_tests.json`: multi-level checks (L0 envelope
 
 A second test model, `examples/fcc_graded_test/` (FCC, no twist, 30 × 30 × 16 mm), exercises the same pipeline. At phase 0 its structural report failed one gate: 60 sealed micro-pockets at the cavity walls. A lattice phase of (3, 3, 0) mm removes them; the structural report now passes all levels (`FccPhase` test).
 
+Multi-form fusion (`examples/fusion/`, five rounds): z-zones with different topologies (FCC, BCC, octet, reinforced BCC), a cell-size gradient, a twist gradient that stays continuous across zones, and per-zone radius scales. All five rounds pass the structural gates with zero enclosed voids. Two defects were found and repaired along the way (a node plane on a cavity wall, and sealed corner pockets from a zone-twist combination). See `docs/FUSION_ROUNDS.md`.
+
 ```
 bash scripts/python_env.sh
 LD_LIBRARY_PATH=.venv/stubs .venv/bin/python -m unittest discover -s python/tests -p "test_*.py"

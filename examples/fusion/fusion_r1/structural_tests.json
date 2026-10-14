@@ -1,0 +1,374 @@
+{
+  "pass": true,
+  "failed_checks": [],
+  "levels": {
+    "L0_envelope": {
+      "pass": true,
+      "checks": [
+        {
+          "id": "L0.bbox_x",
+          "observed": 40.001807287822785,
+          "expected": 40.0,
+          "tolerance": 0.05,
+          "pass": true,
+          "note": ""
+        },
+        {
+          "id": "L0.bbox_y",
+          "observed": 40.001807287822785,
+          "expected": 40.0,
+          "tolerance": 0.05,
+          "pass": true,
+          "note": ""
+        },
+        {
+          "id": "L0.bbox_z",
+          "observed": 20.001807287822782,
+          "expected": 20.0,
+          "tolerance": 0.05,
+          "pass": true,
+          "note": ""
+        },
+        {
+          "id": "L0.outer_volume_closed_form",
+          "observed": 31845.48667764616,
+          "expected": 31845.486677646164,
+          "tolerance": 0.001,
+          "pass": true,
+          "note": "LWH - (4 - pi) r^2 H"
+        }
+      ]
+    },
+    "L1_skin": {
+      "pass": true,
+      "checks": [
+        {
+          "id": "L1.skin_volume_closed_form",
+          "observed": 11098.08845396001,
+          "expected": 11098.088453960007,
+          "tolerance": 0.001,
+          "pass": true,
+          "note": "envelope - cavity - n*pi*(d/2)^2*t"
+        },
+        {
+          "id": "L1.skin_single_solid",
+          "observed": 1,
+          "expected": 1,
+          "tolerance": 0,
+          "pass": true,
+          "note": ""
+        }
+      ]
+    },
+    "L2_lattice": {
+      "pass": true,
+      "checks": [
+        {
+          "id": "L2.core_inside_clip_x",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": ""
+        },
+        {
+          "id": "L2.core_inside_clip_y",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": ""
+        },
+        {
+          "id": "L2.core_inside_clip_z",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": ""
+        },
+        {
+          "id": "L2.core_volume_below_clip_box",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": ""
+        },
+        {
+          "id": "L2.core_nonempty",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": ""
+        },
+        {
+          "id": "L2.struts_kept_equals_tier_sum",
+          "observed": 4148,
+          "expected": 4148,
+          "tolerance": 0,
+          "pass": true,
+          "note": ""
+        }
+      ]
+    },
+    "L2_zones": {
+      "pass": true,
+      "checks": [
+        {
+          "id": "L2.zones_cover_clip_height",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": "3 zone(s)"
+        },
+        {
+          "id": "L2.zones_contiguous",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": ""
+        }
+      ]
+    },
+    "L3_tiers": {
+      "pass": true,
+      "checks": [
+        {
+          "id": "L3.struts_kept_rederived",
+          "observed": 4148,
+          "expected": 4148,
+          "tolerance": 0,
+          "pass": true,
+          "note": ""
+        },
+        {
+          "id": "L3.zone0_struts_rederived",
+          "observed": 1388,
+          "expected": 1388,
+          "tolerance": 0,
+          "pass": true,
+          "note": "fcc cell 5.0 mm"
+        },
+        {
+          "id": "L3.zone1_struts_rederived",
+          "observed": 1840,
+          "expected": 1840,
+          "tolerance": 0,
+          "pass": true,
+          "note": "bcc cell 5.0 mm"
+        },
+        {
+          "id": "L3.zone2_struts_rederived",
+          "observed": 920,
+          "expected": 920,
+          "tolerance": 0,
+          "pass": true,
+          "note": "bcc cell 5.0 mm"
+        },
+        {
+          "id": "L3.tier0_count_rederived",
+          "observed": 3572,
+          "expected": 3572,
+          "tolerance": 0,
+          "pass": true,
+          "note": "radius 0.8 mm"
+        },
+        {
+          "id": "L3.tier1_count_rederived",
+          "observed": 376,
+          "expected": 376,
+          "tolerance": 0,
+          "pass": true,
+          "note": "radius 0.6 mm"
+        },
+        {
+          "id": "L3.tier2_count_rederived",
+          "observed": 200,
+          "expected": 200,
+          "tolerance": 0,
+          "pass": true,
+          "note": "radius 0.45 mm"
+        },
+        {
+          "id": "L3.depth_tiers_ascending",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": ""
+        }
+      ]
+    },
+    "coupling": {
+      "pass": true,
+      "checks": [
+        {
+          "id": "coupling.zone0_interface_crossed",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": "z = -5.0 mm, lattice volume in slab 24.4995 mm^3"
+        },
+        {
+          "id": "coupling.zone1_interface_crossed",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": "z = 5.0 mm, lattice volume in slab 25.4649 mm^3"
+        },
+        {
+          "id": "coupling.overlap_identity",
+          "observed": 393.22991493787424,
+          "expected": 393.2297940954377,
+          "tolerance": 0.03932297940954377,
+          "pass": true,
+          "note": "skin \u2229 core (direct) vs skin + core - part; relative tolerance 1e-4 (OCC boolean error on a multi-solid core is about 1e-5 relative)"
+        },
+        {
+          "id": "coupling.overlap_positive",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": ""
+        },
+        {
+          "id": "coupling.overlap_within_parts",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": ""
+        },
+        {
+          "id": "coupling.single_solid",
+          "observed": 1,
+          "expected": 1,
+          "tolerance": 0,
+          "pass": true,
+          "note": ""
+        }
+      ]
+    },
+    "printability": {
+      "pass": true,
+      "checks": [
+        {
+          "id": "printability.watertight",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": ""
+        },
+        {
+          "id": "printability.enclosed_voids",
+          "observed": 0,
+          "expected": 0,
+          "tolerance": 0,
+          "pass": true,
+          "note": "0 sealed components; 0 against lateral walls; total 0.000 mm^3; see voids[]"
+        },
+        {
+          "id": "printability.min_wall_proxy_ge_0.4",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": "proxy 0.90 mm"
+        },
+        {
+          "id": "mesh.max_edge_within_bound",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": "max edge 2.5 mm, bound 2.5 mm"
+        },
+        {
+          "id": "mesh.no_needles",
+          "observed": 0,
+          "expected": 0,
+          "tolerance": 0,
+          "pass": true,
+          "note": "triangles with aspect > 100 spanning >= 5 mm in z"
+        },
+        {
+          "id": "printability.vent0_open",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": "vent at (-10.0, -10.0): no bottom-face triangle inside the hole, rim vertices 126"
+        },
+        {
+          "id": "printability.vent1_open",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": "vent at (10.0, -10.0): no bottom-face triangle inside the hole, rim vertices 126"
+        },
+        {
+          "id": "printability.vent2_open",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": "vent at (-10.0, 10.0): no bottom-face triangle inside the hole, rim vertices 126"
+        },
+        {
+          "id": "printability.vent3_open",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": "vent at (10.0, 10.0): no bottom-face triangle inside the hole, rim vertices 126"
+        }
+      ]
+    },
+    "export": {
+      "pass": true,
+      "checks": [
+        {
+          "id": "export.step_volume_rel_error",
+          "observed": 3.377e-09,
+          "expected": 0.0,
+          "tolerance": 1e-06,
+          "pass": true,
+          "note": ""
+        },
+        {
+          "id": "export.editable_brep",
+          "observed": true,
+          "expected": true,
+          "tolerance": 0,
+          "pass": true,
+          "note": ""
+        },
+        {
+          "id": "export.no_shell_based_model",
+          "observed": 0,
+          "expected": 0,
+          "tolerance": 0,
+          "pass": true,
+          "note": ""
+        }
+      ]
+    }
+  },
+  "voids": [],
+  "spec_summary": {
+    "topology": "bcc",
+    "cell_mm": 5.0,
+    "twist_deg_per_mm": 2.0,
+    "vents": 4
+  },
+  "model": "fusion_r1"
+}

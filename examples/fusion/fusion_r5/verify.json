@@ -1,0 +1,35 @@
+{
+  "step": {
+    "file": "/home/user/hardsoftwebgpu/examples/fusion/fusion_r5/fusion_r5.step",
+    "reimported_solids": 1,
+    "reimported_volume": 18380.108,
+    "volume_rel_error": 2.114e-09,
+    "volume_ok": true,
+    "manifold_solid_brep_entities": 1,
+    "solids_with_internal_voids": 1,
+    "shell_based_surface_model_entities": 0,
+    "advanced_face_entities": 3772,
+    "cylindrical_surface_entities": 3356,
+    "reimported_face_types": {
+      "CYLINDER": 3356,
+      "PLANE": 416
+    },
+    "editable_brep_ok": true
+  },
+  "mesh": {
+    "vertices": 813955,
+    "triangles": 1634690,
+    "non_manifold_or_boundary_edges": 0,
+    "watertight": true,
+    "components": 5,
+    "outer_component_genus": 1700,
+    "void_component_genus": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "euler_characteristic": -3390
+  },
+  "pass": true
+}
