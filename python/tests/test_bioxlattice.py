@@ -171,3 +171,30 @@ class Export(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+EX_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+
+
+class ExampleSpecs(unittest.TestCase):
+    """The FCC test model in examples/fcc_graded_test must validate and be labelled as FCC, untwisted."""
+
+    def test_fcc_example_spec_validates(self):
+        from bioxlattice.spec import CoupledSpec
+        spec = CoupledSpec.load(os.path.join(EX_ROOT, "examples", "fcc_graded_test", "spec.json"))
+        spec.validate()
+        self.assertEqual(spec.lattice.topology, "fcc")
+        self.assertEqual(spec.lattice.twist_deg_per_mm, 0.0)
+
+    def test_description_follows_spec(self):
+        from bioxlattice.__main__ import describe
+        from bioxlattice.spec import CoupledSpec
+        spec = CoupledSpec.load(os.path.join(EX_ROOT, "examples", "fcc_graded_test", "spec.json"))
+        prompt, motif = describe(spec, None, None)
+        self.assertIn("FCC", prompt)
+        self.assertIn("no twist", prompt)
+        self.assertNotIn("BCC", prompt)
+        self.assertNotIn("helical", motif)
+        default_prompt, _ = describe(CoupledSpec(), None, None)
+        self.assertIn("BCC", default_prompt)
+        self.assertIn("helical", default_prompt)

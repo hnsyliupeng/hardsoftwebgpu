@@ -70,3 +70,30 @@ The sandbox has no libGL. `scripts/make_gl_stub.sh` builds a stub `libGL.so.1` t
 - The cutaway screenshot removes the half nearest the camera by triangle centroid. Thin vertical slivers at the part corners are a CPU-rasteriser artefact at grazing angles, not geometry.
 - The STL (32 MB) is not committed. The CLI writes it. The STEP and mesh.bin are committed.
 - Not verified here: WebGPU presentation (see the earlier notes), mechanical response, printability.
+
+## Test model 2: FCC graded scaffold (`examples/fcc_graded_test/`)
+
+A second, smaller test of the same pipeline with a different topology, no twist, a different envelope and different tiers. Build: `cd python && ../.venv/bin/python -m bioxlattice build ../examples/fcc_graded_test/spec.json ../examples/fcc_graded_test`. The STL (14 MB) is written to `artifacts/` and is not committed.
+
+| Parameter | Value |
+|---|---|
+| envelope | 30 × 30 × 16 mm, edge fillet 2 mm |
+| skin | 1.5 mm boolean cut |
+| lattice | FCC, cell 6 mm, twist 0 deg/mm, overlap 0.2 mm |
+| tiers | depths 3 and 6 mm, radii 0.9 / 0.6 / 0.4 mm |
+| vents | 4 × Ø1.6 mm at (±7, ±7) |
+
+| Metric | Value |
+|---|---|
+| volume | 7 567.6 mm³ (envelope 14 345.1, skin 4 858.8, core 3 021.3, overlap 312.5) |
+| surface area | 10 886.2 mm² |
+| min wall (B-Rep proxy) | 0.8 mm (≥ 0.4 mm floor) |
+| struts | 1 920 kept of 11 520 unique candidates; per tier 1 536 / 276 / 108 |
+| porosity | 0.4725 |
+| STEP | 25.6 MB, 1 `MANIFOLD_SOLID_BREP`, re-import volume error 1.0e-8 |
+| mesh | 280 108 triangles, watertight, 0 non-manifold edges |
+| build | 61.6 s build, 1.7 s STEP, 3.8 s tessellation |
+
+**Finding: the vent layout is not sufficient for this topology.** `internal_void_count` is 60. The four vents open only some of the enclosed FCC gaps, so 60 sealed cavities remain inside the skin. The CLI now writes this into `design.json` `limitations`. The coupled BCC example has 0 internal voids, so it is not affected. The fix (more or differently placed vents, or a smaller strut overlap) is not done in this commit.
+
+Screenshots: `fcc_graded_test.png` (cutaway, far half kept) and `fcc_graded_test_full.png`.

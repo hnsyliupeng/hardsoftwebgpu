@@ -19,10 +19,6 @@ from .metrics import part_metrics
 from .spec import CoupledSpec
 from .verify import verify_mesh, verify_step
 
-PROMPT = ("Coupled bio-inspired lattice: 2 mm skin with four bottom printability vents around a BCC strut core, helical twist "
-          "of the lattice along z (Bouligand-like) and three depth-graded strut radii, exported as "
-          "editable B-Rep STEP with a high-resolution STL.")
-
 CODE_TEMPLATE = '''"""Copy-executable parametric build (run from this folder: python design_code.py).
 
 Needs cadquery 2.8 (see python/requirements.txt). The spec below is the DesignState parameter set.
@@ -44,6 +40,27 @@ if __name__ == "__main__":
 '''
 
 
+_TOPO_NAME = {"sc": "simple-cubic", "bcc": "BCC", "fcc": "FCC"}
+
+
+def describe(spec: CoupledSpec, prompt: str | None, motif: str | None) -> tuple[str, str]:
+    """Prompt and bio-motif text derived from the spec (so non-default designs are not mislabelled)."""
+    topo = _TOPO_NAME.get(spec.lattice.topology, spec.lattice.topology)
+    twist = spec.lattice.twist_deg_per_mm
+    twist_txt = (f"helical twist of the lattice along z ({twist} deg/mm, Bouligand-like)" if twist
+                 else "no twist (straight, untwisted lattice)")
+    vents_txt = (f"{len(spec.vents.positions)} bottom printability vents" if spec.vents.enabled
+                 else "no vents")
+    if prompt is None:
+        prompt = (f"Coupled bio-inspired lattice: {spec.skin.thickness} mm skin with {vents_txt} around a "
+                  f"{topo} strut core, {twist_txt} and {len(spec.lattice.tier_radii)} depth-graded strut radii, "
+                  "exported as editable B-Rep STEP with a high-resolution STL.")
+    if motif is None:
+        motif = (f"{'helical (Bouligand-like) twist' if twist else 'untwisted'} of a {topo} strut lattice core "
+                 f"inside a skin{' with vents' if spec.vents.enabled else ''}")
+    return prompt, motif
+
+
 def cmd_build(args) -> None:
     spec = CoupledSpec.load(args.spec) if args.spec else CoupledSpec()
     if args.name:
@@ -51,6 +68,7 @@ def cmd_build(args) -> None:
     if args.deflection:
         spec.tessellation.deflection_mm = args.deflection
     spec.validate()
+    prompt, motif = describe(spec, args.prompt, args.motif)
     out = args.out
     os.makedirs(out, exist_ok=True)
     name = spec.name
@@ -79,10 +97,10 @@ def cmd_build(args) -> None:
         json.dump(result.timeline, fh, indent=2)
 
     design = {
-        "prompt": PROMPT,
+        "prompt": prompt,
         "design_spec": {
             "topology": "hybrid",
-            "bio_motif": "helical (Bouligand-like) twist of a strut lattice core inside a skin with vents",
+            "bio_motif": motif,
             "parameters": spec.to_dict(),
             "heterogeneity_field": {
                 "type": "depth_tiered_strut_radius",
@@ -93,8 +111,8 @@ def cmd_build(args) -> None:
             },
             "coupling_levels": [
                 {"level": "L0", "name": "envelope", "kind": "box, filleted vertical edges"},
-                {"level": "L1", "name": "skin", "kind": f"boolean cut, {spec.skin.thickness} mm wall with bottom vents"},
-                {"level": "L2", "name": "lattice core", "kind": f"{spec.lattice.topology} struts, cell {spec.lattice.cell} mm, twisted nodes"},
+                {"level": "L1", "name": "skin", "kind": f"boolean cut, {spec.skin.thickness} mm wall" + (" with bottom vents" if spec.vents.enabled else "")},
+                {"level": "L2", "name": "lattice core", "kind": f"{spec.lattice.topology} struts, cell {spec.lattice.cell} mm" + (", twisted nodes" if spec.lattice.twist_deg_per_mm else ", untwisted nodes")},
                 {"level": "L3", "name": "graded struts", "kind": "radius by depth tier, fused into L1 by overlap"},
             ],
             "target_metrics": {"min_printable_wall_mm": 0.4},
@@ -107,7 +125,7 @@ def cmd_build(args) -> None:
         "repair_history": [],
         "limitations": [
             "min_wall_thickness is a B-Rep proxy (min of skin and 2 x strut radius), not a ray or sphere-fit measurement",
-            "twist maps nodes and keeps straight struts between them; it is not an exact helicoid lattice",
+            "twist maps nodes and keeps straight struts between them; it is not an exact helicoid lattice" if spec.lattice.twist_deg_per_mm else "no twist applied; the lattice is a plain straight-strut topology",
             "single-body result is checked for connectivity but the lattice is clipped to the cavity, so struts end on the skin overlap",
             "STL is a tessellation at the given deflection; STEP is exact B-Rep",
             "shell() is not used for the skin because it exports as a shell-based surface model; a boolean cut is used",
@@ -124,6 +142,10 @@ def cmd_build(args) -> None:
         "lattice": result.lattice,
         "timing_s": {"build": round(build_s, 2), "step_write": round(step_s, 2), "tessellate": round(tess_s, 2)},
     }
+    if metrics["internal_void_count"]:
+        design["limitations"].append(
+            f"{metrics['internal_void_count']} internal void(s) remain enclosed by the skin and the vents do not "
+            "reach them; they cannot drain during printing, so the vent layout is not sufficient for this topology")
     with open(os.path.join(out, "design.json"), "w", encoding="utf8") as fh:
         json.dump(design, fh, indent=2)
     print(f"built {name}: volume {metrics['volume']} mm3, genus {metrics['genus']}, "
@@ -169,6 +191,8 @@ def main() -> None:
     b.add_argument("out")
     b.add_argument("--name", default=None)
     b.add_argument("--deflection", type=float, default=None)
+    b.add_argument("--prompt", default=None, help="override the DesignState prompt text")
+    b.add_argument("--motif", default=None, help="override the bio_motif text")
     v = sub.add_parser("verify")
     v.add_argument("out")
     args = ap.parse_args()

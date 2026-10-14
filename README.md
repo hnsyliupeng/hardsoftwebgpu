@@ -81,6 +81,8 @@ Parameter ranges and base-code semantics come from `lamm-mit/Bioinspired123D` (A
 
 A second, high-resolution path built with CadQuery / OpenCASCADE: a 2 mm skin with four printability vents, a twisted BCC lattice core, and three depth-graded strut radii. See `docs/COUPLED_LATTICE.md`. Outputs are in `examples/coupled_bio_lattice/`, and the web app's "Coupled bio-lattice" mode loads them.
 
+A second test model, `examples/fcc_graded_test/` (FCC, no twist, 30 × 30 × 16 mm), exercises the same pipeline. It has 60 enclosed voids that the vents do not reach; see `docs/COUPLED_LATTICE.md`.
+
 ```
 bash scripts/python_env.sh
 LD_LIBRARY_PATH=.venv/stubs .venv/bin/python -m unittest discover -s python/tests -p "test_*.py"
