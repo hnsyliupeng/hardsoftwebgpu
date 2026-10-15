@@ -1,0 +1,218 @@
+{
+  "prompt": "cellular voronoi smooth rounded",
+  "design_spec": {
+    "topology": "cellular",
+    "bio_motif": "cellular_voronoi",
+    "family": "cellular",
+    "variant": "cellular_voronoi",
+    "parameters": {
+      "thickness": 0.2,
+      "smoothlevel": 3,
+      "seed": 42
+    },
+    "heterogeneity_field": null,
+    "target_metrics": {
+      "connectivity": true
+    },
+    "constraints": {
+      "size_mm": 20,
+      "min_printable_wall_mm": 0.4,
+      "resolution": 256
+    },
+    "retrieval": {
+      "base_id": "cellular_voronoi",
+      "top_k": [
+        {
+          "id": "cellular_voronoi",
+          "score": 8.274
+        },
+        {
+          "id": "cellular_vorosand",
+          "score": 8.274
+        },
+        {
+          "id": "cellular_generic",
+          "score": 5.086
+        }
+      ]
+    },
+    "confidence": 0.7,
+    "unknowns": [
+      "Build edge length not given; 20 mm cube assumed.",
+      "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
+      "Parameter thickness not stated; default 0.2 used.",
+      "Parameter smoothlevel not stated; default 3 used."
+    ],
+    "notes": []
+  },
+  "metrics": {
+    "volume": 5770.899526569539,
+    "surface_area": 3940.728616649535,
+    "min_wall_thickness": 1.2267807305099205,
+    "connectivity": true,
+    "genus": 8
+  },
+  "render_preview": null,
+  "repair_history": [],
+  "limitations": [
+    "Smoothing: 3 blur pass(es) on the sampled field (approximates the upstream subdivision).",
+    "No exact B-Rep plan for this family; geometry is SDF-only (mesh export, no STEP).",
+    "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+    "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
+    "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
+    "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
+    "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 1 sub-voxel chords discarded. Not a certified manufacturing check.",
+    "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
+    "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
+  ],
+  "unknowns": [
+    "Build edge length not given; 20 mm cube assumed.",
+    "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
+    "Parameter thickness not stated; default 0.2 used.",
+    "Parameter smoothlevel not stated; default 3 used.",
+    "Resolution above 160 per axis may exceed browser memory budgets."
+  ],
+  "validation": {
+    "id": "bio_cellular_voronoi",
+    "group": "bio",
+    "title": "Cellular Voronoi, smoothed",
+    "prompt": "cellular voronoi smooth rounded",
+    "pass": false,
+    "checks": [
+      {
+        "name": "harnesses_ok",
+        "pass": true,
+        "value": "all",
+        "rule": "all harnesses ok"
+      },
+      {
+        "name": "single_solid",
+        "pass": true,
+        "value": "1 component(s)",
+        "rule": "one connected solid"
+      },
+      {
+        "name": "volume_mc_agreement",
+        "pass": false,
+        "value": "mesh at 320 6357.0 vs MC 5753.9 mm3 (10.48 %)",
+        "rule": "<= 5 % (finer mesh)"
+      },
+      {
+        "name": "watertight",
+        "pass": true,
+        "value": "0 open edges",
+        "rule": "0 open edges"
+      },
+      {
+        "name": "resolution_convergence",
+        "pass": false,
+        "value": "256 px-grid 5770.9 vs 320 6357.0 mm3 (9.22 %)",
+        "rule": "<= 5 %"
+      },
+      {
+        "name": "design_ts_runs",
+        "pass": true,
+        "value": "exit 0",
+        "rule": "node design.ts exits 0"
+      }
+    ],
+    "topology": "cellular",
+    "variant": "cellular_voronoi",
+    "grid": {
+      "resolution": 256,
+      "resolution_convergence": 320
+    },
+    "metrics": {
+      "volume_mm3": 5770.9,
+      "volume_mc_mm3": 5753.92,
+      "surface_area_mm2": 3940.729,
+      "volume_fraction": 0.72136,
+      "porosity": 0.27864,
+      "components": 1,
+      "cavities": 18,
+      "genus_handles": 8,
+      "euler_characteristic": 11,
+      "min_wall_p5_mm": 1.2268,
+      "min_wall_median_mm": 4.3555,
+      "triangles": 1732864,
+      "center_of_mass": [
+        9.9724,
+        10.2276,
+        9.9117
+      ]
+    },
+    "coupling_metrics": null,
+    "harness_ok": {
+      "IntentHarness": true,
+      "TopologyHarness": true,
+      "GeometryHarness": true,
+      "ValidationHarness": true,
+      "RepairHarness": true
+    },
+    "repair_history": [],
+    "limitations": [
+      "Smoothing: 3 blur pass(es) on the sampled field (approximates the upstream subdivision).",
+      "No exact B-Rep plan for this family; geometry is SDF-only (mesh export, no STEP).",
+      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
+      "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
+      "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
+      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 1 sub-voxel chords discarded. Not a certified manufacturing check.",
+      "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
+      "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
+    ],
+    "unknowns": [
+      "Build edge length not given; 20 mm cube assumed.",
+      "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
+      "Parameter thickness not stated; default 0.2 used.",
+      "Parameter smoothlevel not stated; default 3 used.",
+      "Resolution above 160 per axis may exceed browser memory budgets."
+    ],
+    "design_spec": {
+      "topology": "cellular",
+      "bio_motif": "cellular_voronoi",
+      "family": "cellular",
+      "variant": "cellular_voronoi",
+      "parameters": {
+        "thickness": 0.2,
+        "smoothlevel": 3,
+        "seed": 42
+      },
+      "heterogeneity_field": null,
+      "target_metrics": {
+        "connectivity": true
+      },
+      "constraints": {
+        "size_mm": 20,
+        "min_printable_wall_mm": 0.4,
+        "resolution": 256
+      },
+      "retrieval": {
+        "base_id": "cellular_voronoi",
+        "top_k": [
+          {
+            "id": "cellular_voronoi",
+            "score": 8.274
+          },
+          {
+            "id": "cellular_vorosand",
+            "score": 8.274
+          },
+          {
+            "id": "cellular_generic",
+            "score": 5.086
+          }
+        ]
+      },
+      "confidence": 0.7,
+      "unknowns": [
+        "Build edge length not given; 20 mm cube assumed.",
+        "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
+        "Parameter thickness not stated; default 0.2 used.",
+        "Parameter smoothlevel not stated; default 3 used."
+      ],
+      "notes": []
+    },
+    "timing_s": 193.8
+  }
+}

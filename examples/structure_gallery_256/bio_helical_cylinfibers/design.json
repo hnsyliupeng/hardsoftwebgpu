@@ -1,0 +1,272 @@
+{
+  "prompt": "helical cylindrical fibers",
+  "design_spec": {
+    "topology": "helical",
+    "bio_motif": "helical_cylinfibers",
+    "family": "helical",
+    "variant": "helical_cylinfibers",
+    "parameters": {
+      "num_plies": 9,
+      "rotation": 10,
+      "seed": 42
+    },
+    "heterogeneity_field": null,
+    "target_metrics": {
+      "connectivity": true
+    },
+    "constraints": {
+      "size_mm": 20,
+      "min_printable_wall_mm": 0.4,
+      "resolution": 256
+    },
+    "retrieval": {
+      "base_id": "helical_cylinfibers",
+      "top_k": [
+        {
+          "id": "helical_cylinfibers",
+          "score": 7.779
+        },
+        {
+          "id": "helical_rectfibers",
+          "score": 5.248
+        },
+        {
+          "id": "helical_generic",
+          "score": 1.901
+        }
+      ]
+    },
+    "confidence": 0.7,
+    "unknowns": [
+      "Build edge length not given; 20 mm cube assumed.",
+      "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
+      "Parameter num_plies not stated; default 10 used.",
+      "Parameter rotation not stated; default 10 used."
+    ],
+    "notes": []
+  },
+  "metrics": {
+    "volume": 5551.35995702168,
+    "surface_area": 9447.457673162584,
+    "min_wall_thickness": 1.8303909848107573,
+    "connectivity": true,
+    "genus": 558
+  },
+  "render_preview": null,
+  "repair_history": [
+    {
+      "round": 1,
+      "trigger": "2 solid components (need 1)",
+      "action": "fewer, thicker plies (topology parameter)",
+      "parameter": "num_plies",
+      "from": 10,
+      "to": 9,
+      "before": {
+        "volume": 5622.273341096333,
+        "min_wall_thickness": 1.8114225624651732,
+        "connectivity": false,
+        "genus": 656,
+        "components": 2,
+        "volume_fraction": 0.7027841676370417,
+        "porosity": 0.29721583236295834
+      },
+      "after": {
+        "volume": 5551.35995702168,
+        "min_wall_thickness": 1.8303909848107573,
+        "connectivity": true,
+        "genus": 558,
+        "components": 1,
+        "volume_fraction": 0.69391999462771,
+        "porosity": 0.30608000537228996
+      },
+      "accepted": true
+    }
+  ],
+  "limitations": [
+    "Helical plies are centred at (i+1/2)t (no half-ply overlap), a deviation from the upstream centre at i*t.",
+    "smlibwasm B-Rep kernel unavailable (fuse: the kernel returned a result that is not a closed, manifold solid; the operands may touch only along an edge, at a point or tangentially (move one so they overlap), or a tool overlaps an earlier cut or boss along a parallel face (combine the tools first and apply them at once: part.cut(tool1.fuse(tool2)))); SDF mesh used, STEP export disabled.",
+    "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
+    "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
+    "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
+    "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
+    "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
+    "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
+  ],
+  "unknowns": [
+    "Build edge length not given; 20 mm cube assumed.",
+    "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
+    "Parameter num_plies not stated; default 10 used.",
+    "Parameter rotation not stated; default 10 used.",
+    "Resolution above 160 per axis may exceed browser memory budgets."
+  ],
+  "validation": {
+    "id": "bio_helical_cylinfibers",
+    "group": "bio",
+    "title": "Helical cylindrical fibres",
+    "prompt": "helical cylindrical fibers",
+    "pass": true,
+    "checks": [
+      {
+        "name": "harnesses_ok",
+        "pass": true,
+        "value": "all",
+        "rule": "all harnesses ok"
+      },
+      {
+        "name": "single_solid",
+        "pass": true,
+        "value": "1 component(s)",
+        "rule": "one connected solid"
+      },
+      {
+        "name": "volume_mc_agreement",
+        "pass": true,
+        "value": "mesh at 320 5552.7 vs MC 5553.8 mm3 (0.02 %)",
+        "rule": "<= 5 % (finer mesh)"
+      },
+      {
+        "name": "watertight",
+        "pass": true,
+        "value": "0 open edges",
+        "rule": "0 open edges"
+      },
+      {
+        "name": "resolution_convergence",
+        "pass": true,
+        "value": "256 px-grid 5551.4 vs 320 5552.7 mm3 (0.02 %)",
+        "rule": "<= 5 %"
+      },
+      {
+        "name": "design_ts_runs",
+        "pass": true,
+        "value": "exit 0",
+        "rule": "node design.ts exits 0"
+      }
+    ],
+    "topology": "helical",
+    "variant": "helical_cylinfibers",
+    "grid": {
+      "resolution": 256,
+      "resolution_convergence": 320
+    },
+    "metrics": {
+      "volume_mm3": 5551.36,
+      "volume_mc_mm3": 5553.84,
+      "surface_area_mm2": 9447.458,
+      "volume_fraction": 0.69392,
+      "porosity": 0.30608,
+      "components": 1,
+      "cavities": 0,
+      "genus_handles": 558,
+      "euler_characteristic": -557,
+      "min_wall_p5_mm": 1.8304,
+      "min_wall_median_mm": 2.2222,
+      "triangles": 4502780,
+      "center_of_mass": [
+        10,
+        10,
+        9.8559
+      ]
+    },
+    "coupling_metrics": null,
+    "harness_ok": {
+      "IntentHarness": true,
+      "TopologyHarness": true,
+      "GeometryHarness": true,
+      "ValidationHarness": true,
+      "RepairHarness": true
+    },
+    "repair_history": [
+      {
+        "round": 1,
+        "trigger": "2 solid components (need 1)",
+        "action": "fewer, thicker plies (topology parameter)",
+        "parameter": "num_plies",
+        "from": 10,
+        "to": 9,
+        "before": {
+          "volume": 5622.273341096333,
+          "min_wall_thickness": 1.8114225624651732,
+          "connectivity": false,
+          "genus": 656,
+          "components": 2,
+          "volume_fraction": 0.7027841676370417,
+          "porosity": 0.29721583236295834
+        },
+        "after": {
+          "volume": 5551.35995702168,
+          "min_wall_thickness": 1.8303909848107573,
+          "connectivity": true,
+          "genus": 558,
+          "components": 1,
+          "volume_fraction": 0.69391999462771,
+          "porosity": 0.30608000537228996
+        },
+        "accepted": true
+      }
+    ],
+    "limitations": [
+      "Helical plies are centred at (i+1/2)t (no half-ply overlap), a deviation from the upstream centre at i*t.",
+      "smlibwasm B-Rep kernel unavailable (fuse: the kernel returned a result that is not a closed, manifold solid; the operands may touch only along an edge, at a point or tangentially (move one so they overlap), or a tool overlaps an earlier cut or boss along a parallel face (combine the tools first and apply them at once: part.cut(tool1.fuse(tool2)))); SDF mesh used, STEP export disabled.",
+      "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
+      "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
+      "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
+      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
+      "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
+      "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
+    ],
+    "unknowns": [
+      "Build edge length not given; 20 mm cube assumed.",
+      "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
+      "Parameter num_plies not stated; default 10 used.",
+      "Parameter rotation not stated; default 10 used.",
+      "Resolution above 160 per axis may exceed browser memory budgets."
+    ],
+    "design_spec": {
+      "topology": "helical",
+      "bio_motif": "helical_cylinfibers",
+      "family": "helical",
+      "variant": "helical_cylinfibers",
+      "parameters": {
+        "num_plies": 9,
+        "rotation": 10,
+        "seed": 42
+      },
+      "heterogeneity_field": null,
+      "target_metrics": {
+        "connectivity": true
+      },
+      "constraints": {
+        "size_mm": 20,
+        "min_printable_wall_mm": 0.4,
+        "resolution": 256
+      },
+      "retrieval": {
+        "base_id": "helical_cylinfibers",
+        "top_k": [
+          {
+            "id": "helical_cylinfibers",
+            "score": 7.779
+          },
+          {
+            "id": "helical_rectfibers",
+            "score": 5.248
+          },
+          {
+            "id": "helical_generic",
+            "score": 1.901
+          }
+        ]
+      },
+      "confidence": 0.7,
+      "unknowns": [
+        "Build edge length not given; 20 mm cube assumed.",
+        "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
+        "Parameter num_plies not stated; default 10 used.",
+        "Parameter rotation not stated; default 10 used."
+      ],
+      "notes": []
+    },
+    "timing_s": 170.7
+  }
+}
