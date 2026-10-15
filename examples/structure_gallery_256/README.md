@@ -11,7 +11,7 @@ The cellular `smoothlevel` step was a voxel-count 3x3x3 box blur, so its smoothi
 
 ## Known open items
 
-- Helical plate designs (`bio_helical_generic`, `fusion_helical_cap_iwp`) show small triangular teeth on the top edge. Diagnosed: not a mesh error. Each ply is a square plate rotated about z and intersected with the 20 mm envelope, so the top ply's corners are cut by the side walls, leaving 2 mm high triangular facets (exact planar B-Rep, 340 triangles). Removing them means changing the plate design (e.g. a clip shape that matches the rotated plies); not changed.
+- Helical plate designs (`bio_helical_generic`, `fusion_helical_cap_iwp`) show small triangular teeth on the top edge. Diagnosed as a feature of the design, not a mesh error: each ply is a 20 mm square plate rotated about z and clipped by the envelope, so the corners left uncovered by a rotated plate show as triangular facets on the walls (exact planar B-Rep). Tried: making the plates cover the full section. That turns the stack into a solid 20 mm cube (8000 mm³ instead of 7166) and no longer matches the SDF field, so it was reverted. A real fix needs a different ply clip shape, which is a design decision.
 - Deep R2/R5 ply twist is not visually obvious at this scale (coupling effect 44–45 % numerically).
 
 ## Periodic lattices
