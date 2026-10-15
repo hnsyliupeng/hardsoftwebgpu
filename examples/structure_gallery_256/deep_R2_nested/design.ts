@@ -17,7 +17,7 @@ const heterogeneity_field = null;
 // ---- Design specification (IntentHarness output, with the constants above applied) ----------
 const spec: DesignSpec = {
   topology: "coupled",
-  coupled: {"round":"R2","params":{}} as unknown as NonNullable<DesignSpec["coupled"]>,
+  coupled: {"round":"R2","params":{"skin_mm":0}} as unknown as NonNullable<DesignSpec["coupled"]>,
   
   
   bio_motif: "coupled:R2",

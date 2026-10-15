@@ -201,7 +201,7 @@ const DEEP_ENTRIES: Entry[] = [
   {
     id: "fieldfuse_r2_ply_tpms", group: "deep", title: "R2 helical plies: gyroid orientation follows the ply angle",
     prompt: "deep fusion ply tpms: gyroid sheets twisted 18 deg per ply",
-    make: () => deepSpec("ply_tpms", { plies: 10, twist_deg: 18, wall_mm: 0.7 }),
+    make: () => deepSpec("ply_tpms", { plies: 10, twist_deg: 18, wall_mm: 1.1 }),
   },
   {
     id: "fieldfuse_r3_graded_tpms", group: "deep", title: "R3 gyroid whose wall thickness is driven by Voronoi cells",
@@ -216,7 +216,7 @@ const DEEP_ENTRIES: Entry[] = [
   {
     id: "fieldfuse_r5_ply_graded_tpms", group: "deep", title: "R5 triple coupling: ply twist and Voronoi-graded thickness",
     prompt: "deep fusion triple: twisted helical plies of gyroid with Voronoi-graded thickness",
-    make: () => deepSpec("ply_graded_tpms", { plies: 10, twist_deg: 18, seeds: 4, t_min_mm: 0.7, t_max_mm: 1.0 }),
+    make: () => deepSpec("ply_graded_tpms", { plies: 10, twist_deg: 18, seeds: 4, t_min_mm: 1.1, t_max_mm: 1.4 }),
   },
 ];
 

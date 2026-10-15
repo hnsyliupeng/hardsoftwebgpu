@@ -143,6 +143,8 @@ export interface DesignMetrics {
   /** Absolute minimum of the ray chords (mm); can be set by a single junction sample. */
   min_wall_thickness_absolute: number;
   min_wall_thickness_median: number;
+  /** 5th percentile of inward-ray chords (diagnostic; equals min_wall_thickness except for strut lattices). */
+  min_wall_thickness_chord?: number;
   components: number;
   cavities: number;
   euler_characteristic: number;

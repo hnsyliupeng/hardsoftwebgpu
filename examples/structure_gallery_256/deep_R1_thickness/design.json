@@ -37,15 +37,17 @@
     "notes": [],
     "coupled": {
       "round": "R1",
-      "params": {}
+      "params": {
+        "skin_mm": 0
+      }
     }
   },
   "metrics": {
-    "volume": 5195.337622181914,
-    "surface_area": 9693.159270653303,
-    "min_wall_thickness": 0.4894232532140026,
+    "volume": 4032.1817897569003,
+    "surface_area": 9498.335836666909,
+    "min_wall_thickness": 0.48193373589489796,
     "connectivity": true,
-    "genus": 324
+    "genus": 490
   },
   "render_preview": null,
   "repair_history": [],
@@ -84,7 +86,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 5194.2 vs MC 5195.9 mm3 (0.03 %)",
+        "value": "mesh at 320 4032.8 vs MC 4033.7 mm3 (0.02 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -96,7 +98,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 5195.3 vs 320 5194.2 mm3 (0.02 %)",
+        "value": "256 px-grid 4032.2 vs 320 4032.8 mm3 (0.01 %)",
         "rule": "<= 5 %"
       },
       {
@@ -113,22 +115,22 @@
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 5195.338,
-      "volume_mc_mm3": 5195.88,
-      "surface_area_mm2": 9693.159,
-      "volume_fraction": 0.64942,
-      "porosity": 0.35058,
+      "volume_mm3": 4032.182,
+      "volume_mc_mm3": 4033.72,
+      "surface_area_mm2": 9498.336,
+      "volume_fraction": 0.50402,
+      "porosity": 0.49598,
       "components": 1,
-      "cavities": 3,
-      "genus_handles": 324,
-      "euler_characteristic": -320,
-      "min_wall_p5_mm": 0.4894,
-      "min_wall_median_mm": 1,
-      "triangles": 4384940,
+      "cavities": 0,
+      "genus_handles": 490,
+      "euler_characteristic": -489,
+      "min_wall_p5_mm": 0.4819,
+      "min_wall_median_mm": 0.9758,
+      "triangles": 4742296,
       "center_of_mass": [
-        9.9722,
-        10.0209,
-        9.9706
+        9.9719,
+        10.0901,
+        9.96
       ]
     },
     "coupling_metrics": {
@@ -196,9 +198,11 @@
       "notes": [],
       "coupled": {
         "round": "R1",
-        "params": {}
+        "params": {
+          "skin_mm": 0
+        }
       }
     },
-    "timing_s": 110
+    "timing_s": 122.5
   }
 }

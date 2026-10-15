@@ -495,3 +495,76 @@ export function voxelTopology(g: Grid, occ = occupancy(g)): VoxelTopology {
  * of the solid to the nearest empty node; medial candidates are local maxima of the distance.
  * Thickness at a medial point ~ (2d - 1) h. Returns the 1st-percentile (robust) and the raw min.
  */
+
+/**
+ * Remove solid fragments that are not connected to the largest solid component.
+ *
+ * A lattice or TPMS clipped by the build envelope can leave whole cells (or a corner of a sheet)
+ * that touch the rest of the design only outside the box. Such fragments are floating in the
+ * printed part, so they are set to outside before the mesh is extracted. Connectivity is 26-neighbour,
+ * as in voxelTopology. Designs that are already one component are returned unchanged.
+ * The removed amount is reported so that it is visible in the design record.
+ */
+export function removeFloatingComponents(g: Grid): {
+  grid: Grid;
+  removedComponents: number;
+  removedNodes: number;
+  removedVolumeMm3: number;
+} {
+  const { nx, ny, nz } = g;
+  const N = nx * ny * nz;
+  const tol = 1e-9 * g.h;
+  const occ = new Uint8Array(N);
+  for (let i = 0; i < N; i++) occ[i] = g.values[i] <= tol ? 1 : 0;
+  const parent = new Int32Array(N);
+  for (let i = 0; i < N; i++) parent[i] = i;
+  const find = (x: number): number => {
+    while (parent[x] !== x) {
+      parent[x] = parent[parent[x]];
+      x = parent[x];
+    }
+    return x;
+  };
+  for (let k = 0; k < nz; k++)
+    for (let j = 0; j < ny; j++)
+      for (let i = 0; i < nx; i++) {
+        const id = nodeIndex(g, i, j, k);
+        if (!occ[id]) continue;
+        for (let dk = -1; dk <= 1; dk++)
+          for (let dj = -1; dj <= 1; dj++)
+            for (let di = -1; di <= 1; di++) {
+              if (di === 0 && dj === 0 && dk === 0) continue;
+              if (di < 0 || (di === 0 && (dj < 0 || (dj === 0 && dk < 0)))) continue;
+              const ii = i + di;
+              const jj = j + dj;
+              const kk = k + dk;
+              if (ii < 0 || jj < 0 || kk < 0 || ii >= nx || jj >= ny || kk >= nz) continue;
+              const nid = nodeIndex(g, ii, jj, kk);
+              if (!occ[nid]) continue;
+              const a = find(id);
+              const b = find(nid);
+              if (a !== b) parent[a] = b;
+            }
+      }
+  const sizes = new Map<number, number>();
+  for (let id = 0; id < N; id++) {
+    if (!occ[id]) continue;
+    const r = find(id);
+    sizes.set(r, (sizes.get(r) ?? 0) + 1);
+  }
+  if (sizes.size <= 1) return { grid: g, removedComponents: 0, removedNodes: 0, removedVolumeMm3: 0 };
+  let main = -1;
+  let mainN = -1;
+  for (const [r, n] of sizes) if (n > mainN) { mainN = n; main = r; }
+  let removedComponents = 0;
+  let removedNodes = 0;
+  for (const r of sizes.keys()) if (r !== main) removedComponents++;
+  for (let id = 0; id < N; id++) {
+    if (!occ[id]) continue;
+    if (find(id) === main) continue;
+    g.values[id] = g.h; // outside, one voxel
+    removedNodes++;
+  }
+  const voxelVol = g.h * g.h * g.h;
+  return { grid: g, removedComponents, removedNodes, removedVolumeMm3: removedNodes * voxelVol };
+}

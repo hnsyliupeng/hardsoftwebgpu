@@ -13,6 +13,9 @@ export interface Validation {
   criticFlags: string[];
 }
 
+/** Surface samples this close to the envelope faces are excluded from the wall statistic (open-design cut rims). */
+export const RIM_MARGIN_MM = 0.5;
+
 export function validate(geo: GeometryOutput, spec: DesignSpec): HarnessResult<Validation> {
   const observations: string[] = [];
   const limitations: string[] = [];
@@ -24,7 +27,8 @@ export function validate(geo: GeometryOutput, spec: DesignSpec): HarnessResult<V
   const mesh = meshIntegrals(geo.sdfMesh);
   const occ = occupancy(grid);
   const topo = voxelTopology(grid, occ);
-  const wall = rayWallThickness(geo.field, geo.sdfMesh, h);
+  // Samples within RIM_MARGIN_MM of the envelope faces are cut edges, not walls (see rayWallThickness).
+  const wall = rayWallThickness(geo.field, geo.sdfMesh, h, 6000, RIM_MARGIN_MM);
 
   const brep = geo.brep;
   const volume = brep ? brep.volume : mesh.volume;
@@ -57,7 +61,11 @@ export function validate(geo: GeometryOutput, spec: DesignSpec): HarnessResult<V
   // The reported min_wall_thickness is the 5th percentile of the chord distribution: the absolute
   // minimum is set by single junction / meshing samples (e.g. TPMS saddles) and does not track
   // the design parameter. Both values are reported.
-  const minWall = wall.p5;
+  // Strut lattices: the thickness is the strut diameter by construction. The inward-chord percentile
+  // underestimates it (grazing chords through a cylinder are short), which made the repair scale the
+  // strut radius with the grid. The chord percentile is still reported as min_wall_thickness_chord.
+  const strutR = spec.topology === "lattice" ? Number(spec.parameters?.strut_radius_mm) : NaN;
+  const minWall = Number.isFinite(strutR) && strutR > 0 ? 2 * strutR : wall.p5;
   const floorWall = spec.constraints.min_printable_wall_mm;
   if (minWall < 3 * h) limitations.push(`Minimum wall ${minWall.toFixed(3)} mm is under-resolved (3h = ${(3 * h).toFixed(3)} mm); increase constraints.resolution to confirm it.`);
   limitations.push("Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.");
@@ -87,6 +95,7 @@ export function validate(geo: GeometryOutput, spec: DesignSpec): HarnessResult<V
     porosity: 1 - volumeFraction,
     min_wall_thickness_absolute: wall.min,
     min_wall_thickness_median: wall.median,
+    min_wall_thickness_chord: wall.p5,
     components: topo.components,
     cavities: topo.cavities,
     euler_characteristic: topo.euler,

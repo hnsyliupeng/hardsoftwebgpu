@@ -48,9 +48,9 @@
     "notes": []
   },
   "metrics": {
-    "volume": 6443.553013267134,
-    "surface_area": 4278.642425467282,
-    "min_wall_thickness": 1.5560609397818326,
+    "volume": 6443.532880669282,
+    "surface_area": 4279.501459616767,
+    "min_wall_thickness": 1.7331106686061013,
     "connectivity": true,
     "genus": 6
   },
@@ -97,7 +97,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 6443.1 vs MC 6423.0 mm3 (0.31 %)",
+        "value": "mesh at 320 6443.2 vs MC 6423.0 mm3 (0.31 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -109,7 +109,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 6443.6 vs 320 6443.1 mm3 (0.01 %)",
+        "value": "256 px-grid 6443.5 vs 320 6443.2 mm3 (0.01 %)",
         "rule": "<= 5 %"
       },
       {
@@ -126,22 +126,22 @@
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 6443.553,
+      "volume_mm3": 6443.533,
       "volume_mc_mm3": 6422.96,
-      "surface_area_mm2": 4278.642,
+      "surface_area_mm2": 4279.501,
       "volume_fraction": 0.80544,
       "porosity": 0.19456,
       "components": 1,
       "cavities": 21,
       "genus_handles": 6,
       "euler_characteristic": 16,
-      "min_wall_p5_mm": 1.5561,
-      "min_wall_median_mm": 4.6686,
-      "triangles": 1766232,
+      "min_wall_p5_mm": 1.7331,
+      "min_wall_median_mm": 3.8058,
+      "triangles": 1779084,
       "center_of_mass": [
-        9.8897,
-        10.0602,
-        9.9336
+        9.8896,
+        10.0601,
+        9.9335
       ]
     },
     "coupling_metrics": null,
@@ -219,6 +219,6 @@
       ],
       "notes": []
     },
-    "timing_s": 132.2
+    "timing_s": 144.5
   }
 }

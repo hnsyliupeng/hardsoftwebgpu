@@ -48,7 +48,7 @@
   "metrics": {
     "volume": 6581.917488060425,
     "surface_area": 8582.204681936366,
-    "min_wall_thickness": 1.4859436088095612,
+    "min_wall_thickness": 1.999999999999996,
     "connectivity": true,
     "genus": 200
   },
@@ -60,7 +60,7 @@
     "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
     "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
     "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
-    "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 1 sub-voxel chords discarded. Not a certified manufacturing check.",
+    "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
     "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
     "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
   ],
@@ -128,10 +128,10 @@
       "volume_fraction": 0.82274,
       "porosity": 0.17726,
       "components": 1,
-      "cavities": 678,
+      "cavities": 670,
       "genus_handles": 200,
-      "euler_characteristic": 479,
-      "min_wall_p5_mm": 1.4859,
+      "euler_characteristic": 471,
+      "min_wall_p5_mm": 2,
       "min_wall_median_mm": 2,
       "triangles": 3124,
       "center_of_mass": [
@@ -155,7 +155,7 @@
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
-      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 1 sub-voxel chords discarded. Not a certified manufacturing check.",
+      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
       "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
       "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
     ],
@@ -211,6 +211,6 @@
       ],
       "notes": []
     },
-    "timing_s": 96.4
+    "timing_s": 119.2
   }
 }

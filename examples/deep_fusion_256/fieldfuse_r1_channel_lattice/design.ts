@@ -19,7 +19,7 @@ const spec: DesignSpec = {
   topology: "deep",
   
   
-  deep: {"kind":"channel_lattice"} as NonNullable<DesignSpec["deep"]>,
+  deep: {"kind":"channel_lattice","skin_mm":0} as NonNullable<DesignSpec["deep"]>,
   bio_motif: "deep:channel_lattice",
   family: "deep",
   variant: "channel_lattice",

@@ -1,11 +1,15 @@
 {
   "prompt": "iwp TPMS, 5 mm cell, wall 0.5 mm",
   "design_spec": {
-    "topology": "fusion",
-    "bio_motif": "fusion:union",
-    "family": "fusion",
-    "variant": "union",
-    "parameters": {},
+    "topology": "tpms",
+    "bio_motif": "tpms:iwp",
+    "family": "tpms",
+    "variant": "iwp",
+    "parameters": {
+      "seed": 42,
+      "cell_size_mm": 5,
+      "wall_thickness_mm": 0.5
+    },
     "heterogeneity_field": null,
     "target_metrics": {
       "connectivity": true
@@ -32,90 +36,41 @@
         }
       ]
     },
-    "confidence": 0.25,
+    "confidence": 0.85,
     "unknowns": [
-      "No topology keyword recognised; the closest base structure was chosen by retrieval.",
       "Build edge length not given; 20 mm cube assumed.",
       "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-      "Parameter thickness not stated; default 0.2 used.",
-      "Low intent confidence: please confirm the topology."
+      "Unit cell size not given; 4 mm assumed.",
+      "TPMS wall thickness not given; 12% of the period assumed."
     ],
-    "notes": [],
-    "fusion": {
-      "mode": "union",
-      "a": {
-        "topology": "tpms",
-        "bio_motif": "tpms:iwp",
-        "family": "tpms",
-        "variant": "iwp",
-        "parameters": {
-          "seed": 42,
-          "cell_size_mm": 5,
-          "wall_thickness_mm": 0.5
-        },
-        "heterogeneity_field": null,
-        "target_metrics": {
-          "connectivity": true
-        },
-        "constraints": {
-          "size_mm": 20,
-          "min_printable_wall_mm": 0.4,
-          "resolution": 256
-        },
-        "retrieval": {
-          "base_id": "cellular_generic",
-          "top_k": [
-            {
-              "id": "cellular_generic",
-              "score": 0
-            },
-            {
-              "id": "cellular_sandwich",
-              "score": 0
-            },
-            {
-              "id": "cellular_voronoi",
-              "score": 0
-            }
-          ]
-        },
-        "confidence": 0.85,
-        "unknowns": [
-          "Build edge length not given; 20 mm cube assumed.",
-          "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-          "Unit cell size not given; 4 mm assumed.",
-          "TPMS wall thickness not given; 12% of the period assumed."
-        ],
-        "notes": []
-      },
-      "skin_mm": 1
-    }
+    "notes": []
   },
   "metrics": {
-    "volume": 4079.7340149451666,
-    "surface_area": 11347.857747953623,
-    "min_wall_thickness": 0.4719776954209245,
+    "volume": 2655.8149706328604,
+    "surface_area": 11270.530459273137,
+    "min_wall_thickness": 0.47169877186275805,
     "connectivity": true,
-    "genus": 505
+    "genus": 745
   },
   "render_preview": null,
   "repair_history": [],
   "limitations": [
-    "Fusion geometry is SDF-only. Zoned fusion cuts each part with a half-space and unites them over an overlap band; the seam is a planar cut, not an exact B-Rep boolean.",
+    "TPMS sheets use the first-order distance |F|/|grad F| - t/2 (not an exact Euclidean SDF); accurate near the sheet.",
+    "TPMS geometry is SDF-only; STL/glTF are produced by surface nets, STEP is not available.",
     "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
     "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
     "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
     "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
     "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
     "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
-    "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
+    "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated).",
+    "TPMS: the absolute chord minimum is junction-dominated and does not track thickness, so repairs use the 5th-percentile wall."
   ],
   "unknowns": [
-    "No topology keyword recognised; the closest base structure was chosen by retrieval.",
     "Build edge length not given; 20 mm cube assumed.",
     "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-    "Parameter thickness not stated; default 0.2 used.",
-    "Low intent confidence: please confirm the topology.",
+    "Unit cell size not given; 4 mm assumed.",
+    "TPMS wall thickness not given; 12% of the period assumed.",
     "Resolution above 160 per axis may exceed browser memory budgets."
   ],
   "validation": {
@@ -140,7 +95,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 4079.6 vs MC 4097.0 mm3 (0.42 %)",
+        "value": "mesh at 320 2656.3 vs MC 2667.3 mm3 (0.41 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -152,13 +107,13 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 4079.7 vs 320 4079.6 mm3 (0.00 %)",
+        "value": "256 px-grid 2655.8 vs 320 2656.3 mm3 (0.02 %)",
         "rule": "<= 5 %"
       },
       {
         "name": "wall_matches_design",
         "pass": true,
-        "value": "median 0.475 mm vs design 0.5 mm (4.9 %)",
+        "value": "median 0.474 mm vs design 0.5 mm (5.2 %)",
         "rule": "<= 25 %"
       },
       {
@@ -168,41 +123,35 @@
         "rule": "< 1e-6"
       },
       {
-        "name": "skin_attached",
-        "pass": true,
-        "value": "|result| 102425 >= |core| 66682 (samples); components 1",
-        "rule": "result ⊇ core and one solid"
-      },
-      {
         "name": "design_ts_runs",
         "pass": true,
         "value": "exit 0",
         "rule": "node design.ts exits 0"
       }
     ],
-    "topology": "fusion",
-    "variant": "union",
+    "topology": "tpms",
+    "variant": "iwp",
     "grid": {
       "resolution": 256,
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 4079.734,
-      "volume_mc_mm3": 4097,
-      "surface_area_mm2": 11347.858,
-      "volume_fraction": 0.50997,
-      "porosity": 0.49003,
+      "volume_mm3": 2655.815,
+      "volume_mc_mm3": 2667.28,
+      "surface_area_mm2": 11270.53,
+      "volume_fraction": 0.33198,
+      "porosity": 0.66802,
       "components": 1,
-      "cavities": 2,
-      "genus_handles": 505,
-      "euler_characteristic": -502,
-      "min_wall_p5_mm": 0.472,
-      "min_wall_median_mm": 0.4753,
-      "triangles": 4885368,
+      "cavities": 0,
+      "genus_handles": 745,
+      "euler_characteristic": -744,
+      "min_wall_p5_mm": 0.4717,
+      "min_wall_median_mm": 0.4742,
+      "triangles": 5285376,
       "center_of_mass": [
-        10,
-        10,
-        10
+        9.9952,
+        9.9952,
+        9.9952
       ]
     },
     "coupling_metrics": null,
@@ -215,29 +164,34 @@
     },
     "repair_history": [],
     "limitations": [
-      "Fusion geometry is SDF-only. Zoned fusion cuts each part with a half-space and unites them over an overlap band; the seam is a planar cut, not an exact B-Rep boolean.",
+      "TPMS sheets use the first-order distance |F|/|grad F| - t/2 (not an exact Euclidean SDF); accurate near the sheet.",
+      "TPMS geometry is SDF-only; STL/glTF are produced by surface nets, STEP is not available.",
       "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
       "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
       "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
-      "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
+      "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated).",
+      "TPMS: the absolute chord minimum is junction-dominated and does not track thickness, so repairs use the 5th-percentile wall."
     ],
     "unknowns": [
-      "No topology keyword recognised; the closest base structure was chosen by retrieval.",
       "Build edge length not given; 20 mm cube assumed.",
       "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-      "Parameter thickness not stated; default 0.2 used.",
-      "Low intent confidence: please confirm the topology.",
+      "Unit cell size not given; 4 mm assumed.",
+      "TPMS wall thickness not given; 12% of the period assumed.",
       "Resolution above 160 per axis may exceed browser memory budgets."
     ],
     "design_spec": {
-      "topology": "fusion",
-      "bio_motif": "fusion:union",
-      "family": "fusion",
-      "variant": "union",
-      "parameters": {},
+      "topology": "tpms",
+      "bio_motif": "tpms:iwp",
+      "family": "tpms",
+      "variant": "iwp",
+      "parameters": {
+        "seed": 42,
+        "cell_size_mm": 5,
+        "wall_thickness_mm": 0.5
+      },
       "heterogeneity_field": null,
       "target_metrics": {
         "connectivity": true
@@ -264,65 +218,15 @@
           }
         ]
       },
-      "confidence": 0.25,
+      "confidence": 0.85,
       "unknowns": [
-        "No topology keyword recognised; the closest base structure was chosen by retrieval.",
         "Build edge length not given; 20 mm cube assumed.",
         "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-        "Parameter thickness not stated; default 0.2 used.",
-        "Low intent confidence: please confirm the topology."
+        "Unit cell size not given; 4 mm assumed.",
+        "TPMS wall thickness not given; 12% of the period assumed."
       ],
-      "notes": [],
-      "fusion": {
-        "mode": "union",
-        "a": {
-          "topology": "tpms",
-          "bio_motif": "tpms:iwp",
-          "family": "tpms",
-          "variant": "iwp",
-          "parameters": {
-            "seed": 42,
-            "cell_size_mm": 5,
-            "wall_thickness_mm": 0.5
-          },
-          "heterogeneity_field": null,
-          "target_metrics": {
-            "connectivity": true
-          },
-          "constraints": {
-            "size_mm": 20,
-            "min_printable_wall_mm": 0.4,
-            "resolution": 256
-          },
-          "retrieval": {
-            "base_id": "cellular_generic",
-            "top_k": [
-              {
-                "id": "cellular_generic",
-                "score": 0
-              },
-              {
-                "id": "cellular_sandwich",
-                "score": 0
-              },
-              {
-                "id": "cellular_voronoi",
-                "score": 0
-              }
-            ]
-          },
-          "confidence": 0.85,
-          "unknowns": [
-            "Build edge length not given; 20 mm cube assumed.",
-            "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-            "Unit cell size not given; 4 mm assumed.",
-            "TPMS wall thickness not given; 12% of the period assumed."
-          ],
-          "notes": []
-        },
-        "skin_mm": 1
-      }
+      "notes": []
     },
-    "timing_s": 124
+    "timing_s": 115.7
   }
 }

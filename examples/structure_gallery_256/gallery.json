@@ -21,7 +21,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 2552.8 vs MC 2560.3 mm3 (0.29 %)",
+        "value": "mesh at 320 672.8 vs MC 659.2 mm3 (2.05 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -33,20 +33,14 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 2551.0 vs 320 2552.8 mm3 (0.07 %)",
+        "value": "256 px-grid 671.8 vs 320 672.8 mm3 (0.15 %)",
         "rule": "<= 5 %"
       },
       {
         "name": "wall_matches_design",
         "pass": true,
-        "value": "median 1.000 mm vs design 0.8 mm (25.0 %)",
+        "value": "median 0.800 mm vs design 0.8 mm (0.0 %)",
         "rule": "<= 25 %"
-      },
-      {
-        "name": "skin_attached",
-        "pass": true,
-        "value": "|result| 64008 >= |core| 16481 (samples); components 1",
-        "rule": "result ⊇ core and one solid"
       },
       {
         "name": "design_ts_runs",
@@ -55,29 +49,29 @@
         "rule": "node design.ts exits 0"
       }
     ],
-    "topology": "fusion",
-    "variant": "union",
+    "topology": "lattice",
+    "variant": "sc",
     "grid": {
       "resolution": 256,
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 2551.04,
-      "volume_mc_mm3": 2560.32,
-      "surface_area_mm2": 6077.089,
-      "volume_fraction": 0.31888,
-      "porosity": 0.68112,
+      "volume_mm3": 671.758,
+      "volume_mc_mm3": 659.24,
+      "surface_area_mm2": 3861.689,
+      "volume_fraction": 0.08397,
+      "porosity": 0.91603,
       "components": 1,
-      "cavities": 1,
-      "genus_handles": 176,
-      "euler_characteristic": -174,
+      "cavities": 0,
+      "genus_handles": 325,
+      "euler_characteristic": -324,
       "min_wall_p5_mm": 0.8,
-      "min_wall_median_mm": 1,
-      "triangles": 2151432,
+      "min_wall_median_mm": 0.8,
+      "triangles": 1569312,
       "center_of_mass": [
-        10,
-        10,
-        10
+        9.9678,
+        9.9678,
+        9.9678
       ]
     },
     "coupling_metrics": null,
@@ -90,7 +84,7 @@
     },
     "repair_history": [],
     "limitations": [
-      "Fusion geometry is SDF-only. Zoned fusion cuts each part with a half-space and unites them over an overlap band; the seam is a planar cut, not an exact B-Rep boolean.",
+      "Strut lattices are SDF-only (capsule unions); exact STEP export is not generated for them.",
       "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
@@ -100,19 +94,22 @@
       "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
     ],
     "unknowns": [
-      "No topology keyword recognised; the closest base structure was chosen by retrieval.",
       "Build edge length not given; 20 mm cube assumed.",
       "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-      "Parameter thickness not stated; default 0.2 used.",
-      "Low intent confidence: please confirm the topology.",
+      "Unit cell size not given; 4 mm assumed.",
+      "Strut radius not given; 10% of the cell size assumed.",
       "Resolution above 160 per axis may exceed browser memory budgets."
     ],
     "design_spec": {
-      "topology": "fusion",
-      "bio_motif": "fusion:union",
-      "family": "fusion",
-      "variant": "union",
-      "parameters": {},
+      "topology": "lattice",
+      "bio_motif": "lattice:sc",
+      "family": "lattice",
+      "variant": "sc",
+      "parameters": {
+        "seed": 42,
+        "cell_size_mm": 4,
+        "strut_radius_mm": 0.4
+      },
       "heterogeneity_field": null,
       "target_metrics": {
         "connectivity": true
@@ -127,7 +124,7 @@
         "top_k": [
           {
             "id": "cellular_generic",
-            "score": 0
+            "score": 2.49
           },
           {
             "id": "cellular_sandwich",
@@ -139,66 +136,16 @@
           }
         ]
       },
-      "confidence": 0.25,
+      "confidence": 0.85,
       "unknowns": [
-        "No topology keyword recognised; the closest base structure was chosen by retrieval.",
         "Build edge length not given; 20 mm cube assumed.",
         "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-        "Parameter thickness not stated; default 0.2 used.",
-        "Low intent confidence: please confirm the topology."
+        "Unit cell size not given; 4 mm assumed.",
+        "Strut radius not given; 10% of the cell size assumed."
       ],
-      "notes": [],
-      "fusion": {
-        "mode": "union",
-        "a": {
-          "topology": "lattice",
-          "bio_motif": "lattice:sc",
-          "family": "lattice",
-          "variant": "sc",
-          "parameters": {
-            "seed": 42,
-            "cell_size_mm": 4,
-            "strut_radius_mm": 0.4
-          },
-          "heterogeneity_field": null,
-          "target_metrics": {
-            "connectivity": true
-          },
-          "constraints": {
-            "size_mm": 20,
-            "min_printable_wall_mm": 0.4,
-            "resolution": 256
-          },
-          "retrieval": {
-            "base_id": "cellular_generic",
-            "top_k": [
-              {
-                "id": "cellular_generic",
-                "score": 2.49
-              },
-              {
-                "id": "cellular_sandwich",
-                "score": 0
-              },
-              {
-                "id": "cellular_voronoi",
-                "score": 0
-              }
-            ]
-          },
-          "confidence": 0.85,
-          "unknowns": [
-            "Build edge length not given; 20 mm cube assumed.",
-            "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-            "Unit cell size not given; 4 mm assumed.",
-            "Strut radius not given; 10% of the cell size assumed."
-          ],
-          "notes": []
-        },
-        "skin_mm": 1
-      }
+      "notes": []
     },
-    "timing_s": 198.8
+    "timing_s": 176.9
   },
   {
     "id": "lattice_bcc",
@@ -222,7 +169,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 3229.0 vs MC 3247.9 mm3 (0.58 %)",
+        "value": "mesh at 320 1422.0 vs MC 1434.5 mm3 (0.87 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -234,7 +181,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 3227.4 vs 320 3229.0 mm3 (0.05 %)",
+        "value": "256 px-grid 1416.2 vs 320 1422.0 mm3 (0.41 %)",
         "rule": "<= 5 %"
       },
       {
@@ -244,41 +191,35 @@
         "rule": "<= 25 %"
       },
       {
-        "name": "skin_attached",
-        "pass": true,
-        "value": "|result| 81197 >= |core| 35863 (samples); components 1",
-        "rule": "result ⊇ core and one solid"
-      },
-      {
         "name": "design_ts_runs",
         "pass": true,
         "value": "exit 0",
         "rule": "node design.ts exits 0"
       }
     ],
-    "topology": "fusion",
-    "variant": "union",
+    "topology": "lattice",
+    "variant": "bcc",
     "grid": {
       "resolution": 256,
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 3227.353,
-      "volume_mc_mm3": 3247.88,
-      "surface_area_mm2": 8494.895,
-      "volume_fraction": 0.40342,
-      "porosity": 0.59658,
+      "volume_mm3": 1416.194,
+      "volume_mc_mm3": 1434.52,
+      "surface_area_mm2": 6434.573,
+      "volume_fraction": 0.17702,
+      "porosity": 0.82298,
       "components": 1,
-      "cavities": 1,
-      "genus_handles": 811,
-      "euler_characteristic": -809,
+      "cavities": 0,
+      "genus_handles": 660,
+      "euler_characteristic": -659,
       "min_wall_p5_mm": 0.8,
       "min_wall_median_mm": 0.8,
-      "triangles": 3692916,
+      "triangles": 3277932,
       "center_of_mass": [
-        10,
-        10,
-        10
+        9.9972,
+        9.9972,
+        9.9972
       ]
     },
     "coupling_metrics": null,
@@ -291,7 +232,7 @@
     },
     "repair_history": [],
     "limitations": [
-      "Fusion geometry is SDF-only. Zoned fusion cuts each part with a half-space and unites them over an overlap band; the seam is a planar cut, not an exact B-Rep boolean.",
+      "Strut lattices are SDF-only (capsule unions); exact STEP export is not generated for them.",
       "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
@@ -301,19 +242,22 @@
       "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
     ],
     "unknowns": [
-      "No topology keyword recognised; the closest base structure was chosen by retrieval.",
       "Build edge length not given; 20 mm cube assumed.",
       "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-      "Parameter thickness not stated; default 0.2 used.",
-      "Low intent confidence: please confirm the topology.",
+      "Unit cell size not given; 4 mm assumed.",
+      "Strut radius not given; 10% of the cell size assumed.",
       "Resolution above 160 per axis may exceed browser memory budgets."
     ],
     "design_spec": {
-      "topology": "fusion",
-      "bio_motif": "fusion:union",
-      "family": "fusion",
-      "variant": "union",
-      "parameters": {},
+      "topology": "lattice",
+      "bio_motif": "lattice:bcc",
+      "family": "lattice",
+      "variant": "bcc",
+      "parameters": {
+        "seed": 42,
+        "cell_size_mm": 4,
+        "strut_radius_mm": 0.4
+      },
       "heterogeneity_field": null,
       "target_metrics": {
         "connectivity": true
@@ -328,7 +272,7 @@
         "top_k": [
           {
             "id": "cellular_generic",
-            "score": 0
+            "score": 2.49
           },
           {
             "id": "cellular_sandwich",
@@ -340,66 +284,16 @@
           }
         ]
       },
-      "confidence": 0.25,
+      "confidence": 0.85,
       "unknowns": [
-        "No topology keyword recognised; the closest base structure was chosen by retrieval.",
         "Build edge length not given; 20 mm cube assumed.",
         "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-        "Parameter thickness not stated; default 0.2 used.",
-        "Low intent confidence: please confirm the topology."
+        "Unit cell size not given; 4 mm assumed.",
+        "Strut radius not given; 10% of the cell size assumed."
       ],
-      "notes": [],
-      "fusion": {
-        "mode": "union",
-        "a": {
-          "topology": "lattice",
-          "bio_motif": "lattice:bcc",
-          "family": "lattice",
-          "variant": "bcc",
-          "parameters": {
-            "seed": 42,
-            "cell_size_mm": 4,
-            "strut_radius_mm": 0.4
-          },
-          "heterogeneity_field": null,
-          "target_metrics": {
-            "connectivity": true
-          },
-          "constraints": {
-            "size_mm": 20,
-            "min_printable_wall_mm": 0.4,
-            "resolution": 256
-          },
-          "retrieval": {
-            "base_id": "cellular_generic",
-            "top_k": [
-              {
-                "id": "cellular_generic",
-                "score": 2.49
-              },
-              {
-                "id": "cellular_sandwich",
-                "score": 0
-              },
-              {
-                "id": "cellular_voronoi",
-                "score": 0
-              }
-            ]
-          },
-          "confidence": 0.85,
-          "unknowns": [
-            "Build edge length not given; 20 mm cube assumed.",
-            "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-            "Unit cell size not given; 4 mm assumed.",
-            "Strut radius not given; 10% of the cell size assumed."
-          ],
-          "notes": []
-        },
-        "skin_mm": 1
-      }
+      "notes": []
     },
-    "timing_s": 190.9
+    "timing_s": 176.4
   },
   {
     "id": "lattice_fcc",
@@ -423,7 +317,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 3296.2 vs MC 3311.8 mm3 (0.47 %)",
+        "value": "mesh at 320 1707.5 vs MC 1694.2 mm3 (0.78 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -435,7 +329,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 3293.2 vs 320 3296.2 mm3 (0.09 %)",
+        "value": "256 px-grid 1704.2 vs 320 1707.5 mm3 (0.19 %)",
         "rule": "<= 5 %"
       },
       {
@@ -445,41 +339,35 @@
         "rule": "<= 25 %"
       },
       {
-        "name": "skin_attached",
-        "pass": true,
-        "value": "|result| 82796 >= |core| 42355 (samples); components 1",
-        "rule": "result ⊇ core and one solid"
-      },
-      {
         "name": "design_ts_runs",
         "pass": true,
         "value": "exit 0",
         "rule": "node design.ts exits 0"
       }
     ],
-    "topology": "fusion",
-    "variant": "union",
+    "topology": "lattice",
+    "variant": "fcc",
     "grid": {
       "resolution": 256,
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 3293.223,
-      "volume_mc_mm3": 3311.84,
-      "surface_area_mm2": 8920.501,
-      "volume_fraction": 0.41165,
-      "porosity": 0.58835,
+      "volume_mm3": 1704.208,
+      "volume_mc_mm3": 1694.2,
+      "surface_area_mm2": 8355.79,
+      "volume_fraction": 0.21303,
+      "porosity": 0.78697,
       "components": 1,
-      "cavities": 1,
-      "genus_handles": 836,
-      "euler_characteristic": -834,
+      "cavities": 0,
+      "genus_handles": 1135,
+      "euler_characteristic": -1134,
       "min_wall_p5_mm": 0.8,
       "min_wall_median_mm": 0.8,
-      "triangles": 3776040,
+      "triangles": 4021968,
       "center_of_mass": [
-        10,
-        10,
-        10
+        9.9823,
+        9.9823,
+        9.9823
       ]
     },
     "coupling_metrics": null,
@@ -492,7 +380,7 @@
     },
     "repair_history": [],
     "limitations": [
-      "Fusion geometry is SDF-only. Zoned fusion cuts each part with a half-space and unites them over an overlap band; the seam is a planar cut, not an exact B-Rep boolean.",
+      "Strut lattices are SDF-only (capsule unions); exact STEP export is not generated for them.",
       "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
@@ -502,19 +390,22 @@
       "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
     ],
     "unknowns": [
-      "No topology keyword recognised; the closest base structure was chosen by retrieval.",
       "Build edge length not given; 20 mm cube assumed.",
       "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-      "Parameter thickness not stated; default 0.2 used.",
-      "Low intent confidence: please confirm the topology.",
+      "Unit cell size not given; 4 mm assumed.",
+      "Strut radius not given; 10% of the cell size assumed.",
       "Resolution above 160 per axis may exceed browser memory budgets."
     ],
     "design_spec": {
-      "topology": "fusion",
-      "bio_motif": "fusion:union",
-      "family": "fusion",
-      "variant": "union",
-      "parameters": {},
+      "topology": "lattice",
+      "bio_motif": "lattice:fcc",
+      "family": "lattice",
+      "variant": "fcc",
+      "parameters": {
+        "seed": 42,
+        "cell_size_mm": 4,
+        "strut_radius_mm": 0.4
+      },
       "heterogeneity_field": null,
       "target_metrics": {
         "connectivity": true
@@ -529,7 +420,7 @@
         "top_k": [
           {
             "id": "cellular_generic",
-            "score": 0
+            "score": 2.49
           },
           {
             "id": "cellular_sandwich",
@@ -541,66 +432,16 @@
           }
         ]
       },
-      "confidence": 0.25,
+      "confidence": 0.85,
       "unknowns": [
-        "No topology keyword recognised; the closest base structure was chosen by retrieval.",
         "Build edge length not given; 20 mm cube assumed.",
         "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-        "Parameter thickness not stated; default 0.2 used.",
-        "Low intent confidence: please confirm the topology."
+        "Unit cell size not given; 4 mm assumed.",
+        "Strut radius not given; 10% of the cell size assumed."
       ],
-      "notes": [],
-      "fusion": {
-        "mode": "union",
-        "a": {
-          "topology": "lattice",
-          "bio_motif": "lattice:fcc",
-          "family": "lattice",
-          "variant": "fcc",
-          "parameters": {
-            "seed": 42,
-            "cell_size_mm": 4,
-            "strut_radius_mm": 0.4
-          },
-          "heterogeneity_field": null,
-          "target_metrics": {
-            "connectivity": true
-          },
-          "constraints": {
-            "size_mm": 20,
-            "min_printable_wall_mm": 0.4,
-            "resolution": 256
-          },
-          "retrieval": {
-            "base_id": "cellular_generic",
-            "top_k": [
-              {
-                "id": "cellular_generic",
-                "score": 2.49
-              },
-              {
-                "id": "cellular_sandwich",
-                "score": 0
-              },
-              {
-                "id": "cellular_voronoi",
-                "score": 0
-              }
-            ]
-          },
-          "confidence": 0.85,
-          "unknowns": [
-            "Build edge length not given; 20 mm cube assumed.",
-            "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-            "Unit cell size not given; 4 mm assumed.",
-            "Strut radius not given; 10% of the cell size assumed."
-          ],
-          "notes": []
-        },
-        "skin_mm": 1
-      }
+      "notes": []
     },
-    "timing_s": 259.8
+    "timing_s": 253.3
   },
   {
     "id": "lattice_fbcc",
@@ -624,7 +465,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 4293.2 vs MC 4311.6 mm3 (0.43 %)",
+        "value": "mesh at 320 2971.4 vs MC 2956.8 mm3 (0.49 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -636,7 +477,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 4289.8 vs 320 4293.2 mm3 (0.08 %)",
+        "value": "256 px-grid 2967.6 vs 320 2971.4 mm3 (0.13 %)",
         "rule": "<= 5 %"
       },
       {
@@ -646,41 +487,35 @@
         "rule": "<= 25 %"
       },
       {
-        "name": "skin_attached",
-        "pass": true,
-        "value": "|result| 107790 >= |core| 73920 (samples); components 1",
-        "rule": "result ⊇ core and one solid"
-      },
-      {
         "name": "design_ts_runs",
         "pass": true,
         "value": "exit 0",
         "rule": "node design.ts exits 0"
       }
     ],
-    "topology": "fusion",
-    "variant": "union",
+    "topology": "lattice",
+    "variant": "fbcc",
     "grid": {
       "resolution": 256,
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 4289.788,
-      "volume_mc_mm3": 4311.6,
-      "surface_area_mm2": 12118.389,
-      "volume_fraction": 0.53622,
-      "porosity": 0.46378,
+      "volume_mm3": 2967.602,
+      "volume_mc_mm3": 2956.8,
+      "surface_area_mm2": 12787.357,
+      "volume_fraction": 0.37095,
+      "porosity": 0.62905,
       "components": 1,
-      "cavities": 1,
-      "genus_handles": 1791,
-      "euler_characteristic": -1789,
+      "cavities": 0,
+      "genus_handles": 2190,
+      "euler_characteristic": -2189,
       "min_wall_p5_mm": 0.8,
       "min_wall_median_mm": 0.8,
-      "triangles": 5553876,
+      "triangles": 6279628,
       "center_of_mass": [
-        10,
-        10,
-        10
+        9.987,
+        9.987,
+        9.9896
       ]
     },
     "coupling_metrics": null,
@@ -693,7 +528,7 @@
     },
     "repair_history": [],
     "limitations": [
-      "Fusion geometry is SDF-only. Zoned fusion cuts each part with a half-space and unites them over an overlap band; the seam is a planar cut, not an exact B-Rep boolean.",
+      "Strut lattices are SDF-only (capsule unions); exact STEP export is not generated for them.",
       "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
@@ -703,19 +538,22 @@
       "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
     ],
     "unknowns": [
-      "No topology keyword recognised; the closest base structure was chosen by retrieval.",
       "Build edge length not given; 20 mm cube assumed.",
       "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-      "Parameter thickness not stated; default 0.2 used.",
-      "Low intent confidence: please confirm the topology.",
+      "Unit cell size not given; 4 mm assumed.",
+      "Strut radius not given; 10% of the cell size assumed.",
       "Resolution above 160 per axis may exceed browser memory budgets."
     ],
     "design_spec": {
-      "topology": "fusion",
-      "bio_motif": "fusion:union",
-      "family": "fusion",
-      "variant": "union",
-      "parameters": {},
+      "topology": "lattice",
+      "bio_motif": "lattice:fbcc",
+      "family": "lattice",
+      "variant": "fbcc",
+      "parameters": {
+        "seed": 42,
+        "cell_size_mm": 4,
+        "strut_radius_mm": 0.4
+      },
       "heterogeneity_field": null,
       "target_metrics": {
         "connectivity": true
@@ -730,7 +568,7 @@
         "top_k": [
           {
             "id": "cellular_generic",
-            "score": 0
+            "score": 2.49
           },
           {
             "id": "cellular_sandwich",
@@ -742,66 +580,16 @@
           }
         ]
       },
-      "confidence": 0.25,
+      "confidence": 0.85,
       "unknowns": [
-        "No topology keyword recognised; the closest base structure was chosen by retrieval.",
         "Build edge length not given; 20 mm cube assumed.",
         "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-        "Parameter thickness not stated; default 0.2 used.",
-        "Low intent confidence: please confirm the topology."
+        "Unit cell size not given; 4 mm assumed.",
+        "Strut radius not given; 10% of the cell size assumed."
       ],
-      "notes": [],
-      "fusion": {
-        "mode": "union",
-        "a": {
-          "topology": "lattice",
-          "bio_motif": "lattice:fbcc",
-          "family": "lattice",
-          "variant": "fbcc",
-          "parameters": {
-            "seed": 42,
-            "cell_size_mm": 4,
-            "strut_radius_mm": 0.4
-          },
-          "heterogeneity_field": null,
-          "target_metrics": {
-            "connectivity": true
-          },
-          "constraints": {
-            "size_mm": 20,
-            "min_printable_wall_mm": 0.4,
-            "resolution": 256
-          },
-          "retrieval": {
-            "base_id": "cellular_generic",
-            "top_k": [
-              {
-                "id": "cellular_generic",
-                "score": 2.49
-              },
-              {
-                "id": "cellular_sandwich",
-                "score": 0
-              },
-              {
-                "id": "cellular_voronoi",
-                "score": 0
-              }
-            ]
-          },
-          "confidence": 0.85,
-          "unknowns": [
-            "Build edge length not given; 20 mm cube assumed.",
-            "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-            "Unit cell size not given; 4 mm assumed.",
-            "Strut radius not given; 10% of the cell size assumed."
-          ],
-          "notes": []
-        },
-        "skin_mm": 1
-      }
+      "notes": []
     },
-    "timing_s": 344.1
+    "timing_s": 341.7
   },
   {
     "id": "lattice_diamond",
@@ -825,7 +613,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 3201.7 vs MC 3215.1 mm3 (0.42 %)",
+        "value": "mesh at 320 1415.2 vs MC 1425.0 mm3 (0.69 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -837,7 +625,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 3199.0 vs 320 3201.7 mm3 (0.09 %)",
+        "value": "256 px-grid 1411.0 vs 320 1415.2 mm3 (0.29 %)",
         "rule": "<= 5 %"
       },
       {
@@ -847,41 +635,35 @@
         "rule": "<= 25 %"
       },
       {
-        "name": "skin_attached",
-        "pass": true,
-        "value": "|result| 80377 >= |core| 35624 (samples); components 1",
-        "rule": "result ⊇ core and one solid"
-      },
-      {
         "name": "design_ts_runs",
         "pass": true,
         "value": "exit 0",
         "rule": "node design.ts exits 0"
       }
     ],
-    "topology": "fusion",
-    "variant": "union",
+    "topology": "lattice",
+    "variant": "diamond",
     "grid": {
       "resolution": 256,
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 3198.997,
-      "volume_mc_mm3": 3215.08,
-      "surface_area_mm2": 8598.664,
-      "volume_fraction": 0.39987,
-      "porosity": 0.60013,
+      "volume_mm3": 1411.032,
+      "volume_mc_mm3": 1424.96,
+      "surface_area_mm2": 6485.411,
+      "volume_fraction": 0.17638,
+      "porosity": 0.82362,
       "components": 1,
-      "cavities": 1,
-      "genus_handles": 836,
-      "euler_characteristic": -834,
+      "cavities": 0,
+      "genus_handles": 839,
+      "euler_characteristic": -838,
       "min_wall_p5_mm": 0.8,
       "min_wall_median_mm": 0.8,
-      "triangles": 3707832,
+      "triangles": 3295788,
       "center_of_mass": [
-        10.0001,
-        10.0001,
-        10.0001
+        9.9957,
+        9.9957,
+        9.9957
       ]
     },
     "coupling_metrics": null,
@@ -894,7 +676,7 @@
     },
     "repair_history": [],
     "limitations": [
-      "Fusion geometry is SDF-only. Zoned fusion cuts each part with a half-space and unites them over an overlap band; the seam is a planar cut, not an exact B-Rep boolean.",
+      "Strut lattices are SDF-only (capsule unions); exact STEP export is not generated for them.",
       "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
@@ -904,19 +686,22 @@
       "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
     ],
     "unknowns": [
-      "No topology keyword recognised; the closest base structure was chosen by retrieval.",
       "Build edge length not given; 20 mm cube assumed.",
       "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-      "Parameter thickness not stated; default 0.2 used.",
-      "Low intent confidence: please confirm the topology.",
+      "Unit cell size not given; 4 mm assumed.",
+      "Strut radius not given; 10% of the cell size assumed.",
       "Resolution above 160 per axis may exceed browser memory budgets."
     ],
     "design_spec": {
-      "topology": "fusion",
-      "bio_motif": "fusion:union",
-      "family": "fusion",
-      "variant": "union",
-      "parameters": {},
+      "topology": "lattice",
+      "bio_motif": "lattice:diamond",
+      "family": "lattice",
+      "variant": "diamond",
+      "parameters": {
+        "seed": 42,
+        "cell_size_mm": 4,
+        "strut_radius_mm": 0.4
+      },
       "heterogeneity_field": null,
       "target_metrics": {
         "connectivity": true
@@ -931,7 +716,7 @@
         "top_k": [
           {
             "id": "cellular_generic",
-            "score": 0
+            "score": 2.49
           },
           {
             "id": "cellular_sandwich",
@@ -943,66 +728,16 @@
           }
         ]
       },
-      "confidence": 0.25,
+      "confidence": 0.85,
       "unknowns": [
-        "No topology keyword recognised; the closest base structure was chosen by retrieval.",
         "Build edge length not given; 20 mm cube assumed.",
         "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-        "Parameter thickness not stated; default 0.2 used.",
-        "Low intent confidence: please confirm the topology."
+        "Unit cell size not given; 4 mm assumed.",
+        "Strut radius not given; 10% of the cell size assumed."
       ],
-      "notes": [],
-      "fusion": {
-        "mode": "union",
-        "a": {
-          "topology": "lattice",
-          "bio_motif": "lattice:diamond",
-          "family": "lattice",
-          "variant": "diamond",
-          "parameters": {
-            "seed": 42,
-            "cell_size_mm": 4,
-            "strut_radius_mm": 0.4
-          },
-          "heterogeneity_field": null,
-          "target_metrics": {
-            "connectivity": true
-          },
-          "constraints": {
-            "size_mm": 20,
-            "min_printable_wall_mm": 0.4,
-            "resolution": 256
-          },
-          "retrieval": {
-            "base_id": "cellular_generic",
-            "top_k": [
-              {
-                "id": "cellular_generic",
-                "score": 2.49
-              },
-              {
-                "id": "cellular_sandwich",
-                "score": 0
-              },
-              {
-                "id": "cellular_voronoi",
-                "score": 0
-              }
-            ]
-          },
-          "confidence": 0.85,
-          "unknowns": [
-            "Build edge length not given; 20 mm cube assumed.",
-            "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-            "Unit cell size not given; 4 mm assumed.",
-            "Strut radius not given; 10% of the cell size assumed."
-          ],
-          "notes": []
-        },
-        "skin_mm": 1
-      }
+      "notes": []
     },
-    "timing_s": 227.1
+    "timing_s": 215.9
   },
   {
     "id": "lattice_bccz",
@@ -1026,7 +761,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 3332.8 vs MC 3350.9 mm3 (0.54 %)",
+        "value": "mesh at 320 1597.1 vs MC 1604.6 mm3 (0.46 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -1038,7 +773,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 3330.9 vs 320 3332.8 mm3 (0.06 %)",
+        "value": "256 px-grid 1591.8 vs 320 1597.1 mm3 (0.33 %)",
         "rule": "<= 5 %"
       },
       {
@@ -1048,41 +783,35 @@
         "rule": "<= 25 %"
       },
       {
-        "name": "skin_attached",
-        "pass": true,
-        "value": "|result| 83773 >= |core| 40114 (samples); components 1",
-        "rule": "result ⊇ core and one solid"
-      },
-      {
         "name": "design_ts_runs",
         "pass": true,
         "value": "exit 0",
         "rule": "node design.ts exits 0"
       }
     ],
-    "topology": "fusion",
-    "variant": "union",
+    "topology": "lattice",
+    "variant": "bccz",
     "grid": {
       "resolution": 256,
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 3330.879,
-      "volume_mc_mm3": 3350.92,
-      "surface_area_mm2": 8880.157,
-      "volume_fraction": 0.41636,
-      "porosity": 0.58364,
+      "volume_mm3": 1591.781,
+      "volume_mc_mm3": 1604.56,
+      "surface_area_mm2": 7280.972,
+      "volume_fraction": 0.19897,
+      "porosity": 0.80103,
       "components": 1,
-      "cavities": 1,
-      "genus_handles": 891,
-      "euler_characteristic": -889,
+      "cavities": 0,
+      "genus_handles": 840,
+      "euler_characteristic": -839,
       "min_wall_p5_mm": 0.8,
       "min_wall_median_mm": 0.8,
-      "triangles": 3847172,
+      "triangles": 3606244,
       "center_of_mass": [
-        10,
-        10,
-        10
+        9.9917,
+        9.9917,
+        9.9976
       ]
     },
     "coupling_metrics": null,
@@ -1095,7 +824,7 @@
     },
     "repair_history": [],
     "limitations": [
-      "Fusion geometry is SDF-only. Zoned fusion cuts each part with a half-space and unites them over an overlap band; the seam is a planar cut, not an exact B-Rep boolean.",
+      "Strut lattices are SDF-only (capsule unions); exact STEP export is not generated for them.",
       "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
@@ -1105,19 +834,22 @@
       "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
     ],
     "unknowns": [
-      "No topology keyword recognised; the closest base structure was chosen by retrieval.",
       "Build edge length not given; 20 mm cube assumed.",
       "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-      "Parameter thickness not stated; default 0.2 used.",
-      "Low intent confidence: please confirm the topology.",
+      "Unit cell size not given; 4 mm assumed.",
+      "Strut radius not given; 10% of the cell size assumed.",
       "Resolution above 160 per axis may exceed browser memory budgets."
     ],
     "design_spec": {
-      "topology": "fusion",
-      "bio_motif": "fusion:union",
-      "family": "fusion",
-      "variant": "union",
-      "parameters": {},
+      "topology": "lattice",
+      "bio_motif": "lattice:bccz",
+      "family": "lattice",
+      "variant": "bccz",
+      "parameters": {
+        "seed": 42,
+        "cell_size_mm": 4,
+        "strut_radius_mm": 0.4
+      },
       "heterogeneity_field": null,
       "target_metrics": {
         "connectivity": true
@@ -1132,7 +864,7 @@
         "top_k": [
           {
             "id": "cellular_generic",
-            "score": 0
+            "score": 2.49
           },
           {
             "id": "cellular_sandwich",
@@ -1144,66 +876,16 @@
           }
         ]
       },
-      "confidence": 0.25,
+      "confidence": 0.85,
       "unknowns": [
-        "No topology keyword recognised; the closest base structure was chosen by retrieval.",
         "Build edge length not given; 20 mm cube assumed.",
         "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-        "Parameter thickness not stated; default 0.2 used.",
-        "Low intent confidence: please confirm the topology."
+        "Unit cell size not given; 4 mm assumed.",
+        "Strut radius not given; 10% of the cell size assumed."
       ],
-      "notes": [],
-      "fusion": {
-        "mode": "union",
-        "a": {
-          "topology": "lattice",
-          "bio_motif": "lattice:bccz",
-          "family": "lattice",
-          "variant": "bccz",
-          "parameters": {
-            "seed": 42,
-            "cell_size_mm": 4,
-            "strut_radius_mm": 0.4
-          },
-          "heterogeneity_field": null,
-          "target_metrics": {
-            "connectivity": true
-          },
-          "constraints": {
-            "size_mm": 20,
-            "min_printable_wall_mm": 0.4,
-            "resolution": 256
-          },
-          "retrieval": {
-            "base_id": "cellular_generic",
-            "top_k": [
-              {
-                "id": "cellular_generic",
-                "score": 2.49
-              },
-              {
-                "id": "cellular_sandwich",
-                "score": 0
-              },
-              {
-                "id": "cellular_voronoi",
-                "score": 0
-              }
-            ]
-          },
-          "confidence": 0.85,
-          "unknowns": [
-            "Build edge length not given; 20 mm cube assumed.",
-            "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-            "Unit cell size not given; 4 mm assumed.",
-            "Strut radius not given; 10% of the cell size assumed."
-          ],
-          "notes": []
-        },
-        "skin_mm": 1
-      }
+      "notes": []
     },
-    "timing_s": 209.2
+    "timing_s": 202.6
   },
   {
     "id": "lattice_kelvin",
@@ -1227,7 +909,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 3346.5 vs MC 3355.9 mm3 (0.28 %)",
+        "value": "mesh at 320 1571.0 vs MC 1582.6 mm3 (0.73 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -1239,7 +921,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 3339.0 vs 320 3346.5 mm3 (0.22 %)",
+        "value": "256 px-grid 1569.6 vs 320 1571.0 mm3 (0.09 %)",
         "rule": "<= 5 %"
       },
       {
@@ -1249,41 +931,35 @@
         "rule": "<= 25 %"
       },
       {
-        "name": "skin_attached",
-        "pass": true,
-        "value": "|result| 83898 >= |core| 39565 (samples); components 1",
-        "rule": "result ⊇ core and one solid"
-      },
-      {
         "name": "design_ts_runs",
         "pass": true,
         "value": "exit 0",
         "rule": "node design.ts exits 0"
       }
     ],
-    "topology": "fusion",
-    "variant": "union",
+    "topology": "lattice",
+    "variant": "kelvin",
     "grid": {
       "resolution": 256,
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 3338.998,
-      "volume_mc_mm3": 3355.92,
-      "surface_area_mm2": 9085.534,
-      "volume_fraction": 0.41737,
-      "porosity": 0.58263,
+      "volume_mm3": 1569.58,
+      "volume_mc_mm3": 1582.6,
+      "surface_area_mm2": 7193.158,
+      "volume_fraction": 0.1962,
+      "porosity": 0.8038,
       "components": 1,
-      "cavities": 1,
-      "genus_handles": 1200,
-      "euler_characteristic": -1198,
+      "cavities": 0,
+      "genus_handles": 1216,
+      "euler_characteristic": -1215,
       "min_wall_p5_mm": 0.8,
       "min_wall_median_mm": 0.8,
-      "triangles": 3847080,
+      "triangles": 3527940,
       "center_of_mass": [
-        10.0026,
-        10.0026,
-        10.0026
+        9.809,
+        9.809,
+        9.809
       ]
     },
     "coupling_metrics": null,
@@ -1296,7 +972,7 @@
     },
     "repair_history": [],
     "limitations": [
-      "Fusion geometry is SDF-only. Zoned fusion cuts each part with a half-space and unites them over an overlap band; the seam is a planar cut, not an exact B-Rep boolean.",
+      "Strut lattices are SDF-only (capsule unions); exact STEP export is not generated for them.",
       "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
@@ -1306,19 +982,22 @@
       "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
     ],
     "unknowns": [
-      "No topology keyword recognised; the closest base structure was chosen by retrieval.",
       "Build edge length not given; 20 mm cube assumed.",
       "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-      "Parameter thickness not stated; default 0.2 used.",
-      "Low intent confidence: please confirm the topology.",
+      "Unit cell size not given; 4 mm assumed.",
+      "Strut radius not given; 10% of the cell size assumed.",
       "Resolution above 160 per axis may exceed browser memory budgets."
     ],
     "design_spec": {
-      "topology": "fusion",
-      "bio_motif": "fusion:union",
-      "family": "fusion",
-      "variant": "union",
-      "parameters": {},
+      "topology": "lattice",
+      "bio_motif": "lattice:kelvin",
+      "family": "lattice",
+      "variant": "kelvin",
+      "parameters": {
+        "seed": 42,
+        "cell_size_mm": 4,
+        "strut_radius_mm": 0.4
+      },
       "heterogeneity_field": null,
       "target_metrics": {
         "connectivity": true
@@ -1333,7 +1012,7 @@
         "top_k": [
           {
             "id": "cellular_generic",
-            "score": 0
+            "score": 2.49
           },
           {
             "id": "cellular_sandwich",
@@ -1345,66 +1024,16 @@
           }
         ]
       },
-      "confidence": 0.25,
+      "confidence": 0.85,
       "unknowns": [
-        "No topology keyword recognised; the closest base structure was chosen by retrieval.",
         "Build edge length not given; 20 mm cube assumed.",
         "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-        "Parameter thickness not stated; default 0.2 used.",
-        "Low intent confidence: please confirm the topology."
+        "Unit cell size not given; 4 mm assumed.",
+        "Strut radius not given; 10% of the cell size assumed."
       ],
-      "notes": [],
-      "fusion": {
-        "mode": "union",
-        "a": {
-          "topology": "lattice",
-          "bio_motif": "lattice:kelvin",
-          "family": "lattice",
-          "variant": "kelvin",
-          "parameters": {
-            "seed": 42,
-            "cell_size_mm": 4,
-            "strut_radius_mm": 0.4
-          },
-          "heterogeneity_field": null,
-          "target_metrics": {
-            "connectivity": true
-          },
-          "constraints": {
-            "size_mm": 20,
-            "min_printable_wall_mm": 0.4,
-            "resolution": 256
-          },
-          "retrieval": {
-            "base_id": "cellular_generic",
-            "top_k": [
-              {
-                "id": "cellular_generic",
-                "score": 2.49
-              },
-              {
-                "id": "cellular_sandwich",
-                "score": 0
-              },
-              {
-                "id": "cellular_voronoi",
-                "score": 0
-              }
-            ]
-          },
-          "confidence": 0.85,
-          "unknowns": [
-            "Build edge length not given; 20 mm cube assumed.",
-            "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-            "Unit cell size not given; 4 mm assumed.",
-            "Strut radius not given; 10% of the cell size assumed."
-          ],
-          "notes": []
-        },
-        "skin_mm": 1
-      }
+      "notes": []
     },
-    "timing_s": 254.8
+    "timing_s": 254.5
   },
   {
     "id": "tpms_gyroid",
@@ -1428,7 +1057,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 3869.5 vs MC 3870.5 mm3 (0.03 %)",
+        "value": "mesh at 320 2362.3 vs MC 2355.5 mm3 (0.29 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -1440,13 +1069,13 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 3870.2 vs 320 3869.5 mm3 (0.02 %)",
+        "value": "256 px-grid 2362.0 vs 320 2362.3 mm3 (0.01 %)",
         "rule": "<= 5 %"
       },
       {
         "name": "wall_matches_design",
         "pass": true,
-        "value": "median 0.483 mm vs design 0.5 mm (3.5 %)",
+        "value": "median 0.482 mm vs design 0.5 mm (3.6 %)",
         "rule": "<= 25 %"
       },
       {
@@ -1456,41 +1085,35 @@
         "rule": "< 1e-6"
       },
       {
-        "name": "skin_attached",
-        "pass": true,
-        "value": "|result| 96763 >= |core| 58888 (samples); components 1",
-        "rule": "result ⊇ core and one solid"
-      },
-      {
         "name": "design_ts_runs",
         "pass": true,
         "value": "exit 0",
         "rule": "node design.ts exits 0"
       }
     ],
-    "topology": "fusion",
-    "variant": "union",
+    "topology": "tpms",
+    "variant": "gyroid",
     "grid": {
       "resolution": 256,
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 3870.229,
-      "volume_mc_mm3": 3870.52,
-      "surface_area_mm2": 10645.607,
-      "volume_fraction": 0.48378,
-      "porosity": 0.51622,
+      "volume_mm3": 2361.974,
+      "volume_mc_mm3": 2355.52,
+      "surface_area_mm2": 10049.288,
+      "volume_fraction": 0.29525,
+      "porosity": 0.70475,
       "components": 1,
-      "cavities": 4,
-      "genus_handles": 324,
-      "euler_characteristic": -319,
+      "cavities": 0,
+      "genus_handles": 490,
+      "euler_characteristic": -489,
       "min_wall_p5_mm": 0.4798,
-      "min_wall_median_mm": 0.4826,
-      "triangles": 4810692,
+      "min_wall_median_mm": 0.4819,
+      "triangles": 5063508,
       "center_of_mass": [
-        10,
-        10,
-        10
+        9.9941,
+        9.9941,
+        9.9941
       ]
     },
     "coupling_metrics": null,
@@ -1503,29 +1126,34 @@
     },
     "repair_history": [],
     "limitations": [
-      "Fusion geometry is SDF-only. Zoned fusion cuts each part with a half-space and unites them over an overlap band; the seam is a planar cut, not an exact B-Rep boolean.",
+      "TPMS sheets use the first-order distance |F|/|grad F| - t/2 (not an exact Euclidean SDF); accurate near the sheet.",
+      "TPMS geometry is SDF-only; STL/glTF are produced by surface nets, STEP is not available.",
       "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
       "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
       "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
-      "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
+      "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated).",
+      "TPMS: the absolute chord minimum is junction-dominated and does not track thickness, so repairs use the 5th-percentile wall."
     ],
     "unknowns": [
-      "No topology keyword recognised; the closest base structure was chosen by retrieval.",
       "Build edge length not given; 20 mm cube assumed.",
       "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-      "Parameter thickness not stated; default 0.2 used.",
-      "Low intent confidence: please confirm the topology.",
+      "Unit cell size not given; 4 mm assumed.",
+      "TPMS wall thickness not given; 12% of the period assumed.",
       "Resolution above 160 per axis may exceed browser memory budgets."
     ],
     "design_spec": {
-      "topology": "fusion",
-      "bio_motif": "fusion:union",
-      "family": "fusion",
-      "variant": "union",
-      "parameters": {},
+      "topology": "tpms",
+      "bio_motif": "tpms:gyroid",
+      "family": "tpms",
+      "variant": "gyroid",
+      "parameters": {
+        "seed": 42,
+        "cell_size_mm": 5,
+        "wall_thickness_mm": 0.5
+      },
       "heterogeneity_field": null,
       "target_metrics": {
         "connectivity": true
@@ -1552,66 +1180,16 @@
           }
         ]
       },
-      "confidence": 0.25,
+      "confidence": 0.85,
       "unknowns": [
-        "No topology keyword recognised; the closest base structure was chosen by retrieval.",
         "Build edge length not given; 20 mm cube assumed.",
         "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-        "Parameter thickness not stated; default 0.2 used.",
-        "Low intent confidence: please confirm the topology."
+        "Unit cell size not given; 4 mm assumed.",
+        "TPMS wall thickness not given; 12% of the period assumed."
       ],
-      "notes": [],
-      "fusion": {
-        "mode": "union",
-        "a": {
-          "topology": "tpms",
-          "bio_motif": "tpms:gyroid",
-          "family": "tpms",
-          "variant": "gyroid",
-          "parameters": {
-            "seed": 42,
-            "cell_size_mm": 5,
-            "wall_thickness_mm": 0.5
-          },
-          "heterogeneity_field": null,
-          "target_metrics": {
-            "connectivity": true
-          },
-          "constraints": {
-            "size_mm": 20,
-            "min_printable_wall_mm": 0.4,
-            "resolution": 256
-          },
-          "retrieval": {
-            "base_id": "cellular_generic",
-            "top_k": [
-              {
-                "id": "cellular_generic",
-                "score": 0
-              },
-              {
-                "id": "cellular_sandwich",
-                "score": 0
-              },
-              {
-                "id": "cellular_voronoi",
-                "score": 0
-              }
-            ]
-          },
-          "confidence": 0.85,
-          "unknowns": [
-            "Build edge length not given; 20 mm cube assumed.",
-            "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-            "Unit cell size not given; 4 mm assumed.",
-            "TPMS wall thickness not given; 12% of the period assumed."
-          ],
-          "notes": []
-        },
-        "skin_mm": 1
-      }
+      "notes": []
     },
-    "timing_s": 94.4
+    "timing_s": 102.3
   },
   {
     "id": "tpms_schwarz_p",
@@ -1635,7 +1213,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 3544.7 vs MC 3544.6 mm3 (0.00 %)",
+        "value": "mesh at 320 1846.7 vs MC 1835.7 mm3 (0.60 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -1647,13 +1225,13 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 3545.1 vs 320 3544.7 mm3 (0.01 %)",
+        "value": "256 px-grid 1846.5 vs 320 1846.7 mm3 (0.01 %)",
         "rule": "<= 5 %"
       },
       {
         "name": "wall_matches_design",
         "pass": true,
-        "value": "median 0.496 mm vs design 0.5 mm (0.7 %)",
+        "value": "median 0.495 mm vs design 0.5 mm (0.9 %)",
         "rule": "<= 25 %"
       },
       {
@@ -1663,41 +1241,35 @@
         "rule": "< 1e-6"
       },
       {
-        "name": "skin_attached",
-        "pass": true,
-        "value": "|result| 88615 >= |core| 45892 (samples); components 1",
-        "rule": "result ⊇ core and one solid"
-      },
-      {
         "name": "design_ts_runs",
         "pass": true,
         "value": "exit 0",
         "rule": "node design.ts exits 0"
       }
     ],
-    "topology": "fusion",
-    "variant": "union",
+    "topology": "tpms",
+    "variant": "schwarz_p",
     "grid": {
       "resolution": 256,
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 3545.124,
-      "volume_mc_mm3": 3544.6,
-      "surface_area_mm2": 9018.327,
-      "volume_fraction": 0.44314,
-      "porosity": 0.55686,
+      "volume_mm3": 1846.5,
+      "volume_mc_mm3": 1835.68,
+      "surface_area_mm2": 7646.805,
+      "volume_fraction": 0.23081,
+      "porosity": 0.76919,
       "components": 1,
-      "cavities": 46,
-      "genus_handles": 109,
-      "euler_characteristic": -62,
-      "min_wall_p5_mm": 0.4912,
-      "min_wall_median_mm": 0.4964,
-      "triangles": 4061208,
+      "cavities": 0,
+      "genus_handles": 257,
+      "euler_characteristic": -256,
+      "min_wall_p5_mm": 0.4905,
+      "min_wall_median_mm": 0.4955,
+      "triangles": 3947712,
       "center_of_mass": [
-        10,
-        10,
-        10
+        9.9955,
+        9.9955,
+        9.9955
       ]
     },
     "coupling_metrics": null,
@@ -1710,29 +1282,34 @@
     },
     "repair_history": [],
     "limitations": [
-      "Fusion geometry is SDF-only. Zoned fusion cuts each part with a half-space and unites them over an overlap band; the seam is a planar cut, not an exact B-Rep boolean.",
+      "TPMS sheets use the first-order distance |F|/|grad F| - t/2 (not an exact Euclidean SDF); accurate near the sheet.",
+      "TPMS geometry is SDF-only; STL/glTF are produced by surface nets, STEP is not available.",
       "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
       "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
       "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
-      "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
+      "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated).",
+      "TPMS: the absolute chord minimum is junction-dominated and does not track thickness, so repairs use the 5th-percentile wall."
     ],
     "unknowns": [
-      "No topology keyword recognised; the closest base structure was chosen by retrieval.",
       "Build edge length not given; 20 mm cube assumed.",
       "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-      "Parameter thickness not stated; default 0.2 used.",
-      "Low intent confidence: please confirm the topology.",
+      "Unit cell size not given; 4 mm assumed.",
+      "TPMS wall thickness not given; 12% of the period assumed.",
       "Resolution above 160 per axis may exceed browser memory budgets."
     ],
     "design_spec": {
-      "topology": "fusion",
-      "bio_motif": "fusion:union",
-      "family": "fusion",
-      "variant": "union",
-      "parameters": {},
+      "topology": "tpms",
+      "bio_motif": "tpms:schwarz_p",
+      "family": "tpms",
+      "variant": "schwarz_p",
+      "parameters": {
+        "seed": 42,
+        "cell_size_mm": 5,
+        "wall_thickness_mm": 0.5
+      },
       "heterogeneity_field": null,
       "target_metrics": {
         "connectivity": true
@@ -1759,66 +1336,16 @@
           }
         ]
       },
-      "confidence": 0.25,
+      "confidence": 0.85,
       "unknowns": [
-        "No topology keyword recognised; the closest base structure was chosen by retrieval.",
         "Build edge length not given; 20 mm cube assumed.",
         "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-        "Parameter thickness not stated; default 0.2 used.",
-        "Low intent confidence: please confirm the topology."
+        "Unit cell size not given; 4 mm assumed.",
+        "TPMS wall thickness not given; 12% of the period assumed."
       ],
-      "notes": [],
-      "fusion": {
-        "mode": "union",
-        "a": {
-          "topology": "tpms",
-          "bio_motif": "tpms:schwarz_p",
-          "family": "tpms",
-          "variant": "schwarz_p",
-          "parameters": {
-            "seed": 42,
-            "cell_size_mm": 5,
-            "wall_thickness_mm": 0.5
-          },
-          "heterogeneity_field": null,
-          "target_metrics": {
-            "connectivity": true
-          },
-          "constraints": {
-            "size_mm": 20,
-            "min_printable_wall_mm": 0.4,
-            "resolution": 256
-          },
-          "retrieval": {
-            "base_id": "cellular_generic",
-            "top_k": [
-              {
-                "id": "cellular_generic",
-                "score": 0
-              },
-              {
-                "id": "cellular_sandwich",
-                "score": 0
-              },
-              {
-                "id": "cellular_voronoi",
-                "score": 0
-              }
-            ]
-          },
-          "confidence": 0.85,
-          "unknowns": [
-            "Build edge length not given; 20 mm cube assumed.",
-            "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-            "Unit cell size not given; 4 mm assumed.",
-            "TPMS wall thickness not given; 12% of the period assumed."
-          ],
-          "notes": []
-        },
-        "skin_mm": 1
-      }
+      "notes": []
     },
-    "timing_s": 96
+    "timing_s": 92.7
   },
   {
     "id": "tpms_schwarz_d",
@@ -1842,7 +1369,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 4231.9 vs MC 4232.6 mm3 (0.02 %)",
+        "value": "mesh at 320 2871.9 vs MC 2862.7 mm3 (0.32 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -1854,7 +1381,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 4233.7 vs 320 4231.9 mm3 (0.04 %)",
+        "value": "256 px-grid 2872.0 vs 320 2871.9 mm3 (0.00 %)",
         "rule": "<= 5 %"
       },
       {
@@ -1870,41 +1397,35 @@
         "rule": "< 1e-6"
       },
       {
-        "name": "skin_attached",
-        "pass": true,
-        "value": "|result| 105816 >= |core| 71567 (samples); components 1",
-        "rule": "result ⊇ core and one solid"
-      },
-      {
         "name": "design_ts_runs",
         "pass": true,
         "value": "exit 0",
         "rule": "node design.ts exits 0"
       }
     ],
-    "topology": "fusion",
-    "variant": "union",
+    "topology": "tpms",
+    "variant": "schwarz_d",
     "grid": {
       "resolution": 256,
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 4233.704,
-      "volume_mc_mm3": 4232.64,
-      "surface_area_mm2": 12013.418,
-      "volume_fraction": 0.52921,
-      "porosity": 0.47079,
+      "volume_mm3": 2871.98,
+      "volume_mc_mm3": 2862.68,
+      "surface_area_mm2": 12190.04,
+      "volume_fraction": 0.359,
+      "porosity": 0.641,
       "components": 1,
-      "cavities": 2,
-      "genus_handles": 666,
-      "euler_characteristic": -663,
-      "min_wall_p5_mm": 0.4715,
-      "min_wall_median_mm": 0.4752,
-      "triangles": 5547804,
+      "cavities": 0,
+      "genus_handles": 1002,
+      "euler_characteristic": -1001,
+      "min_wall_p5_mm": 0.4712,
+      "min_wall_median_mm": 0.4749,
+      "triangles": 6139860,
       "center_of_mass": [
-        10,
-        10,
-        10
+        9.9941,
+        9.9941,
+        9.9941
       ]
     },
     "coupling_metrics": null,
@@ -1917,29 +1438,34 @@
     },
     "repair_history": [],
     "limitations": [
-      "Fusion geometry is SDF-only. Zoned fusion cuts each part with a half-space and unites them over an overlap band; the seam is a planar cut, not an exact B-Rep boolean.",
+      "TPMS sheets use the first-order distance |F|/|grad F| - t/2 (not an exact Euclidean SDF); accurate near the sheet.",
+      "TPMS geometry is SDF-only; STL/glTF are produced by surface nets, STEP is not available.",
       "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
       "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
       "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
-      "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
+      "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated).",
+      "TPMS: the absolute chord minimum is junction-dominated and does not track thickness, so repairs use the 5th-percentile wall."
     ],
     "unknowns": [
-      "No topology keyword recognised; the closest base structure was chosen by retrieval.",
       "Build edge length not given; 20 mm cube assumed.",
       "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-      "Parameter thickness not stated; default 0.2 used.",
-      "Low intent confidence: please confirm the topology.",
+      "Unit cell size not given; 4 mm assumed.",
+      "TPMS wall thickness not given; 12% of the period assumed.",
       "Resolution above 160 per axis may exceed browser memory budgets."
     ],
     "design_spec": {
-      "topology": "fusion",
-      "bio_motif": "fusion:union",
-      "family": "fusion",
-      "variant": "union",
-      "parameters": {},
+      "topology": "tpms",
+      "bio_motif": "tpms:schwarz_d",
+      "family": "tpms",
+      "variant": "schwarz_d",
+      "parameters": {
+        "seed": 42,
+        "cell_size_mm": 5,
+        "wall_thickness_mm": 0.5
+      },
       "heterogeneity_field": null,
       "target_metrics": {
         "connectivity": true
@@ -1966,66 +1492,16 @@
           }
         ]
       },
-      "confidence": 0.25,
+      "confidence": 0.85,
       "unknowns": [
-        "No topology keyword recognised; the closest base structure was chosen by retrieval.",
         "Build edge length not given; 20 mm cube assumed.",
         "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-        "Parameter thickness not stated; default 0.2 used.",
-        "Low intent confidence: please confirm the topology."
+        "Unit cell size not given; 4 mm assumed.",
+        "TPMS wall thickness not given; 12% of the period assumed."
       ],
-      "notes": [],
-      "fusion": {
-        "mode": "union",
-        "a": {
-          "topology": "tpms",
-          "bio_motif": "tpms:schwarz_d",
-          "family": "tpms",
-          "variant": "schwarz_d",
-          "parameters": {
-            "seed": 42,
-            "cell_size_mm": 5,
-            "wall_thickness_mm": 0.5
-          },
-          "heterogeneity_field": null,
-          "target_metrics": {
-            "connectivity": true
-          },
-          "constraints": {
-            "size_mm": 20,
-            "min_printable_wall_mm": 0.4,
-            "resolution": 256
-          },
-          "retrieval": {
-            "base_id": "cellular_generic",
-            "top_k": [
-              {
-                "id": "cellular_generic",
-                "score": 0
-              },
-              {
-                "id": "cellular_sandwich",
-                "score": 0
-              },
-              {
-                "id": "cellular_voronoi",
-                "score": 0
-              }
-            ]
-          },
-          "confidence": 0.85,
-          "unknowns": [
-            "Build edge length not given; 20 mm cube assumed.",
-            "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-            "Unit cell size not given; 4 mm assumed.",
-            "TPMS wall thickness not given; 12% of the period assumed."
-          ],
-          "notes": []
-        },
-        "skin_mm": 1
-      }
+      "notes": []
     },
-    "timing_s": 113.6
+    "timing_s": 114.8
   },
   {
     "id": "tpms_neovius",
@@ -2049,7 +1525,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 4123.7 vs MC 4118.8 mm3 (0.12 %)",
+        "value": "mesh at 320 2764.9 vs MC 2750.8 mm3 (0.51 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -2061,13 +1537,13 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 4125.8 vs 320 4123.7 mm3 (0.05 %)",
+        "value": "256 px-grid 2763.4 vs 320 2764.9 mm3 (0.05 %)",
         "rule": "<= 5 %"
       },
       {
         "name": "wall_matches_design",
         "pass": true,
-        "value": "median 0.519 mm vs design 0.5 mm (3.8 %)",
+        "value": "median 0.509 mm vs design 0.5 mm (1.8 %)",
         "rule": "<= 25 %"
       },
       {
@@ -2077,41 +1553,35 @@
         "rule": "< 1e-6"
       },
       {
-        "name": "skin_attached",
-        "pass": true,
-        "value": "|result| 102971 >= |core| 68770 (samples); components 1",
-        "rule": "result ⊇ core and one solid"
-      },
-      {
         "name": "design_ts_runs",
         "pass": true,
         "value": "exit 0",
         "rule": "node design.ts exits 0"
       }
     ],
-    "topology": "fusion",
-    "variant": "union",
+    "topology": "tpms",
+    "variant": "neovius",
     "grid": {
       "resolution": 256,
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 4125.775,
-      "volume_mc_mm3": 4118.84,
-      "surface_area_mm2": 11068.045,
-      "volume_fraction": 0.51572,
-      "porosity": 0.48428,
+      "volume_mm3": 2763.446,
+      "volume_mc_mm3": 2750.8,
+      "surface_area_mm2": 10944.772,
+      "volume_fraction": 0.34543,
+      "porosity": 0.65457,
       "components": 1,
-      "cavities": 10,
-      "genus_handles": 577,
-      "euler_characteristic": -566,
-      "min_wall_p5_mm": 0.48,
-      "min_wall_median_mm": 0.5188,
-      "triangles": 4686072,
+      "cavities": 0,
+      "genus_handles": 1001,
+      "euler_characteristic": -1000,
+      "min_wall_p5_mm": 0.4791,
+      "min_wall_median_mm": 0.5091,
+      "triangles": 4900992,
       "center_of_mass": [
-        10,
-        10,
-        10
+        9.9955,
+        9.9955,
+        9.9955
       ]
     },
     "coupling_metrics": null,
@@ -2124,29 +1594,34 @@
     },
     "repair_history": [],
     "limitations": [
-      "Fusion geometry is SDF-only. Zoned fusion cuts each part with a half-space and unites them over an overlap band; the seam is a planar cut, not an exact B-Rep boolean.",
+      "TPMS sheets use the first-order distance |F|/|grad F| - t/2 (not an exact Euclidean SDF); accurate near the sheet.",
+      "TPMS geometry is SDF-only; STL/glTF are produced by surface nets, STEP is not available.",
       "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
       "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
       "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
-      "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
+      "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated).",
+      "TPMS: the absolute chord minimum is junction-dominated and does not track thickness, so repairs use the 5th-percentile wall."
     ],
     "unknowns": [
-      "No topology keyword recognised; the closest base structure was chosen by retrieval.",
       "Build edge length not given; 20 mm cube assumed.",
       "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-      "Parameter thickness not stated; default 0.2 used.",
-      "Low intent confidence: please confirm the topology.",
+      "Unit cell size not given; 4 mm assumed.",
+      "TPMS wall thickness not given; 12% of the period assumed.",
       "Resolution above 160 per axis may exceed browser memory budgets."
     ],
     "design_spec": {
-      "topology": "fusion",
-      "bio_motif": "fusion:union",
-      "family": "fusion",
-      "variant": "union",
-      "parameters": {},
+      "topology": "tpms",
+      "bio_motif": "tpms:neovius",
+      "family": "tpms",
+      "variant": "neovius",
+      "parameters": {
+        "seed": 42,
+        "cell_size_mm": 5,
+        "wall_thickness_mm": 0.5
+      },
       "heterogeneity_field": null,
       "target_metrics": {
         "connectivity": true
@@ -2173,66 +1648,16 @@
           }
         ]
       },
-      "confidence": 0.25,
+      "confidence": 0.85,
       "unknowns": [
-        "No topology keyword recognised; the closest base structure was chosen by retrieval.",
         "Build edge length not given; 20 mm cube assumed.",
         "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-        "Parameter thickness not stated; default 0.2 used.",
-        "Low intent confidence: please confirm the topology."
+        "Unit cell size not given; 4 mm assumed.",
+        "TPMS wall thickness not given; 12% of the period assumed."
       ],
-      "notes": [],
-      "fusion": {
-        "mode": "union",
-        "a": {
-          "topology": "tpms",
-          "bio_motif": "tpms:neovius",
-          "family": "tpms",
-          "variant": "neovius",
-          "parameters": {
-            "seed": 42,
-            "cell_size_mm": 5,
-            "wall_thickness_mm": 0.5
-          },
-          "heterogeneity_field": null,
-          "target_metrics": {
-            "connectivity": true
-          },
-          "constraints": {
-            "size_mm": 20,
-            "min_printable_wall_mm": 0.4,
-            "resolution": 256
-          },
-          "retrieval": {
-            "base_id": "cellular_generic",
-            "top_k": [
-              {
-                "id": "cellular_generic",
-                "score": 0
-              },
-              {
-                "id": "cellular_sandwich",
-                "score": 0
-              },
-              {
-                "id": "cellular_voronoi",
-                "score": 0
-              }
-            ]
-          },
-          "confidence": 0.85,
-          "unknowns": [
-            "Build edge length not given; 20 mm cube assumed.",
-            "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-            "Unit cell size not given; 4 mm assumed.",
-            "TPMS wall thickness not given; 12% of the period assumed."
-          ],
-          "notes": []
-        },
-        "skin_mm": 1
-      }
+      "notes": []
     },
-    "timing_s": 112
+    "timing_s": 105
   },
   {
     "id": "tpms_iwp",
@@ -2256,7 +1681,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 4079.6 vs MC 4097.0 mm3 (0.42 %)",
+        "value": "mesh at 320 2656.3 vs MC 2667.3 mm3 (0.41 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -2268,13 +1693,13 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 4079.7 vs 320 4079.6 mm3 (0.00 %)",
+        "value": "256 px-grid 2655.8 vs 320 2656.3 mm3 (0.02 %)",
         "rule": "<= 5 %"
       },
       {
         "name": "wall_matches_design",
         "pass": true,
-        "value": "median 0.475 mm vs design 0.5 mm (4.9 %)",
+        "value": "median 0.474 mm vs design 0.5 mm (5.2 %)",
         "rule": "<= 25 %"
       },
       {
@@ -2284,41 +1709,35 @@
         "rule": "< 1e-6"
       },
       {
-        "name": "skin_attached",
-        "pass": true,
-        "value": "|result| 102425 >= |core| 66682 (samples); components 1",
-        "rule": "result ⊇ core and one solid"
-      },
-      {
         "name": "design_ts_runs",
         "pass": true,
         "value": "exit 0",
         "rule": "node design.ts exits 0"
       }
     ],
-    "topology": "fusion",
-    "variant": "union",
+    "topology": "tpms",
+    "variant": "iwp",
     "grid": {
       "resolution": 256,
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 4079.734,
-      "volume_mc_mm3": 4097,
-      "surface_area_mm2": 11347.858,
-      "volume_fraction": 0.50997,
-      "porosity": 0.49003,
+      "volume_mm3": 2655.815,
+      "volume_mc_mm3": 2667.28,
+      "surface_area_mm2": 11270.53,
+      "volume_fraction": 0.33198,
+      "porosity": 0.66802,
       "components": 1,
-      "cavities": 2,
-      "genus_handles": 505,
-      "euler_characteristic": -502,
-      "min_wall_p5_mm": 0.472,
-      "min_wall_median_mm": 0.4753,
-      "triangles": 4885368,
+      "cavities": 0,
+      "genus_handles": 745,
+      "euler_characteristic": -744,
+      "min_wall_p5_mm": 0.4717,
+      "min_wall_median_mm": 0.4742,
+      "triangles": 5285376,
       "center_of_mass": [
-        10,
-        10,
-        10
+        9.9952,
+        9.9952,
+        9.9952
       ]
     },
     "coupling_metrics": null,
@@ -2331,29 +1750,34 @@
     },
     "repair_history": [],
     "limitations": [
-      "Fusion geometry is SDF-only. Zoned fusion cuts each part with a half-space and unites them over an overlap band; the seam is a planar cut, not an exact B-Rep boolean.",
+      "TPMS sheets use the first-order distance |F|/|grad F| - t/2 (not an exact Euclidean SDF); accurate near the sheet.",
+      "TPMS geometry is SDF-only; STL/glTF are produced by surface nets, STEP is not available.",
       "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
       "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
       "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
-      "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
+      "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated).",
+      "TPMS: the absolute chord minimum is junction-dominated and does not track thickness, so repairs use the 5th-percentile wall."
     ],
     "unknowns": [
-      "No topology keyword recognised; the closest base structure was chosen by retrieval.",
       "Build edge length not given; 20 mm cube assumed.",
       "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-      "Parameter thickness not stated; default 0.2 used.",
-      "Low intent confidence: please confirm the topology.",
+      "Unit cell size not given; 4 mm assumed.",
+      "TPMS wall thickness not given; 12% of the period assumed.",
       "Resolution above 160 per axis may exceed browser memory budgets."
     ],
     "design_spec": {
-      "topology": "fusion",
-      "bio_motif": "fusion:union",
-      "family": "fusion",
-      "variant": "union",
-      "parameters": {},
+      "topology": "tpms",
+      "bio_motif": "tpms:iwp",
+      "family": "tpms",
+      "variant": "iwp",
+      "parameters": {
+        "seed": 42,
+        "cell_size_mm": 5,
+        "wall_thickness_mm": 0.5
+      },
       "heterogeneity_field": null,
       "target_metrics": {
         "connectivity": true
@@ -2380,66 +1804,16 @@
           }
         ]
       },
-      "confidence": 0.25,
+      "confidence": 0.85,
       "unknowns": [
-        "No topology keyword recognised; the closest base structure was chosen by retrieval.",
         "Build edge length not given; 20 mm cube assumed.",
         "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-        "Parameter thickness not stated; default 0.2 used.",
-        "Low intent confidence: please confirm the topology."
+        "Unit cell size not given; 4 mm assumed.",
+        "TPMS wall thickness not given; 12% of the period assumed."
       ],
-      "notes": [],
-      "fusion": {
-        "mode": "union",
-        "a": {
-          "topology": "tpms",
-          "bio_motif": "tpms:iwp",
-          "family": "tpms",
-          "variant": "iwp",
-          "parameters": {
-            "seed": 42,
-            "cell_size_mm": 5,
-            "wall_thickness_mm": 0.5
-          },
-          "heterogeneity_field": null,
-          "target_metrics": {
-            "connectivity": true
-          },
-          "constraints": {
-            "size_mm": 20,
-            "min_printable_wall_mm": 0.4,
-            "resolution": 256
-          },
-          "retrieval": {
-            "base_id": "cellular_generic",
-            "top_k": [
-              {
-                "id": "cellular_generic",
-                "score": 0
-              },
-              {
-                "id": "cellular_sandwich",
-                "score": 0
-              },
-              {
-                "id": "cellular_voronoi",
-                "score": 0
-              }
-            ]
-          },
-          "confidence": 0.85,
-          "unknowns": [
-            "Build edge length not given; 20 mm cube assumed.",
-            "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-            "Unit cell size not given; 4 mm assumed.",
-            "TPMS wall thickness not given; 12% of the period assumed."
-          ],
-          "notes": []
-        },
-        "skin_mm": 1
-      }
+      "notes": []
     },
-    "timing_s": 124
+    "timing_s": 115.7
   },
   {
     "id": "tpms_lidinoid",
@@ -2463,7 +1837,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 5404.7 vs MC 5394.7 mm3 (0.19 %)",
+        "value": "mesh at 320 4489.5 vs MC 4463.4 mm3 (0.58 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -2475,13 +1849,13 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 5411.0 vs 320 5404.7 mm3 (0.12 %)",
+        "value": "256 px-grid 4495.4 vs 320 4489.5 mm3 (0.13 %)",
         "rule": "<= 5 %"
       },
       {
         "name": "wall_matches_design",
         "pass": true,
-        "value": "median 0.468 mm vs design 0.5 mm (6.4 %)",
+        "value": "median 0.460 mm vs design 0.5 mm (7.9 %)",
         "rule": "<= 25 %"
       },
       {
@@ -2491,41 +1865,35 @@
         "rule": "< 1e-6"
       },
       {
-        "name": "skin_attached",
-        "pass": true,
-        "value": "|result| 134868 >= |core| 111586 (samples); components 1",
-        "rule": "result ⊇ core and one solid"
-      },
-      {
         "name": "design_ts_runs",
         "pass": true,
         "value": "exit 0",
         "rule": "node design.ts exits 0"
       }
     ],
-    "topology": "fusion",
-    "variant": "union",
+    "topology": "tpms",
+    "variant": "lidinoid",
     "grid": {
       "resolution": 256,
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 5410.97,
-      "volume_mc_mm3": 5394.72,
-      "surface_area_mm2": 15136.728,
-      "volume_fraction": 0.67637,
-      "porosity": 0.32363,
+      "volume_mm3": 4495.402,
+      "volume_mc_mm3": 4463.44,
+      "surface_area_mm2": 17444.878,
+      "volume_fraction": 0.56193,
+      "porosity": 0.43807,
       "components": 1,
-      "cavities": 1181,
-      "genus_handles": 1530,
-      "euler_characteristic": -348,
-      "min_wall_p5_mm": 0.4353,
-      "min_wall_median_mm": 0.4682,
-      "triangles": 7104408,
+      "cavities": 1344,
+      "genus_handles": 2707,
+      "euler_characteristic": -1362,
+      "min_wall_p5_mm": 0.434,
+      "min_wall_median_mm": 0.4603,
+      "triangles": 8676936,
       "center_of_mass": [
-        10,
-        10,
-        10
+        9.9944,
+        9.9944,
+        9.9944
       ]
     },
     "coupling_metrics": null,
@@ -2538,29 +1906,34 @@
     },
     "repair_history": [],
     "limitations": [
-      "Fusion geometry is SDF-only. Zoned fusion cuts each part with a half-space and unites them over an overlap band; the seam is a planar cut, not an exact B-Rep boolean.",
+      "TPMS sheets use the first-order distance |F|/|grad F| - t/2 (not an exact Euclidean SDF); accurate near the sheet.",
+      "TPMS geometry is SDF-only; STL/glTF are produced by surface nets, STEP is not available.",
       "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
       "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
       "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
-      "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
+      "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated).",
+      "TPMS: the absolute chord minimum is junction-dominated and does not track thickness, so repairs use the 5th-percentile wall."
     ],
     "unknowns": [
-      "No topology keyword recognised; the closest base structure was chosen by retrieval.",
       "Build edge length not given; 20 mm cube assumed.",
       "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-      "Parameter thickness not stated; default 0.2 used.",
-      "Low intent confidence: please confirm the topology.",
+      "Unit cell size not given; 4 mm assumed.",
+      "TPMS wall thickness not given; 12% of the period assumed.",
       "Resolution above 160 per axis may exceed browser memory budgets."
     ],
     "design_spec": {
-      "topology": "fusion",
-      "bio_motif": "fusion:union",
-      "family": "fusion",
-      "variant": "union",
-      "parameters": {},
+      "topology": "tpms",
+      "bio_motif": "tpms:lidinoid",
+      "family": "tpms",
+      "variant": "lidinoid",
+      "parameters": {
+        "seed": 42,
+        "cell_size_mm": 5,
+        "wall_thickness_mm": 0.5
+      },
       "heterogeneity_field": null,
       "target_metrics": {
         "connectivity": true
@@ -2587,66 +1960,16 @@
           }
         ]
       },
-      "confidence": 0.25,
+      "confidence": 0.85,
       "unknowns": [
-        "No topology keyword recognised; the closest base structure was chosen by retrieval.",
         "Build edge length not given; 20 mm cube assumed.",
         "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-        "Parameter thickness not stated; default 0.2 used.",
-        "Low intent confidence: please confirm the topology."
+        "Unit cell size not given; 4 mm assumed.",
+        "TPMS wall thickness not given; 12% of the period assumed."
       ],
-      "notes": [],
-      "fusion": {
-        "mode": "union",
-        "a": {
-          "topology": "tpms",
-          "bio_motif": "tpms:lidinoid",
-          "family": "tpms",
-          "variant": "lidinoid",
-          "parameters": {
-            "seed": 42,
-            "cell_size_mm": 5,
-            "wall_thickness_mm": 0.5
-          },
-          "heterogeneity_field": null,
-          "target_metrics": {
-            "connectivity": true
-          },
-          "constraints": {
-            "size_mm": 20,
-            "min_printable_wall_mm": 0.4,
-            "resolution": 256
-          },
-          "retrieval": {
-            "base_id": "cellular_generic",
-            "top_k": [
-              {
-                "id": "cellular_generic",
-                "score": 0
-              },
-              {
-                "id": "cellular_sandwich",
-                "score": 0
-              },
-              {
-                "id": "cellular_voronoi",
-                "score": 0
-              }
-            ]
-          },
-          "confidence": 0.85,
-          "unknowns": [
-            "Build edge length not given; 20 mm cube assumed.",
-            "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-            "Unit cell size not given; 4 mm assumed.",
-            "TPMS wall thickness not given; 12% of the period assumed."
-          ],
-          "notes": []
-        },
-        "skin_mm": 1
-      }
+      "notes": []
     },
-    "timing_s": 142.6
+    "timing_s": 154.3
   },
   {
     "id": "bio_helical_generic",
@@ -2708,8 +2031,8 @@
       "cavities": 0,
       "genus_handles": 0,
       "euler_characteristic": 1,
-      "min_wall_p5_mm": 3.9891,
-      "min_wall_median_mm": 20,
+      "min_wall_p5_mm": 4,
+      "min_wall_median_mm": 19.708,
       "triangles": 340,
       "center_of_mass": [
         10,
@@ -2785,7 +2108,7 @@
       ],
       "notes": []
     },
-    "timing_s": 83.5
+    "timing_s": 102.6
   },
   {
     "id": "bio_helical_rectfibers",
@@ -2844,10 +2167,10 @@
       "volume_fraction": 0.82274,
       "porosity": 0.17726,
       "components": 1,
-      "cavities": 678,
+      "cavities": 670,
       "genus_handles": 200,
-      "euler_characteristic": 479,
-      "min_wall_p5_mm": 1.4859,
+      "euler_characteristic": 471,
+      "min_wall_p5_mm": 2,
       "min_wall_median_mm": 2,
       "triangles": 3124,
       "center_of_mass": [
@@ -2871,7 +2194,7 @@
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
-      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 1 sub-voxel chords discarded. Not a certified manufacturing check.",
+      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
       "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
       "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
     ],
@@ -2927,7 +2250,7 @@
       ],
       "notes": []
     },
-    "timing_s": 96.4
+    "timing_s": 119.2
   },
   {
     "id": "bio_helical_cylinfibers",
@@ -2951,7 +2274,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 5552.7 vs MC 5553.8 mm3 (0.02 %)",
+        "value": "mesh at 320 5627.7 vs MC 5624.4 mm3 (0.06 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -2963,7 +2286,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 5551.4 vs 320 5552.7 mm3 (0.02 %)",
+        "value": "256 px-grid 5620.8 vs 320 5627.7 mm3 (0.12 %)",
         "rule": "<= 5 %"
       },
       {
@@ -2980,22 +2303,22 @@
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 5551.36,
-      "volume_mc_mm3": 5553.84,
-      "surface_area_mm2": 9447.458,
-      "volume_fraction": 0.69392,
-      "porosity": 0.30608,
+      "volume_mm3": 5620.762,
+      "volume_mc_mm3": 5624.4,
+      "surface_area_mm2": 10489.99,
+      "volume_fraction": 0.7026,
+      "porosity": 0.2974,
       "components": 1,
       "cavities": 0,
-      "genus_handles": 558,
-      "euler_characteristic": -557,
-      "min_wall_p5_mm": 1.8304,
-      "min_wall_median_mm": 2.2222,
-      "triangles": 4502780,
+      "genus_handles": 710,
+      "euler_characteristic": -709,
+      "min_wall_p5_mm": 1.971,
+      "min_wall_median_mm": 2,
+      "triangles": 4978312,
       "center_of_mass": [
-        10,
-        10,
-        9.8559
+        9.9995,
+        9.9995,
+        9.9982
       ]
     },
     "coupling_metrics": null,
@@ -3006,35 +2329,7 @@
       "ValidationHarness": true,
       "RepairHarness": true
     },
-    "repair_history": [
-      {
-        "round": 1,
-        "trigger": "2 solid components (need 1)",
-        "action": "fewer, thicker plies (topology parameter)",
-        "parameter": "num_plies",
-        "from": 10,
-        "to": 9,
-        "before": {
-          "volume": 5622.273341096333,
-          "min_wall_thickness": 1.8114225624651732,
-          "connectivity": false,
-          "genus": 656,
-          "components": 2,
-          "volume_fraction": 0.7027841676370417,
-          "porosity": 0.29721583236295834
-        },
-        "after": {
-          "volume": 5551.35995702168,
-          "min_wall_thickness": 1.8303909848107573,
-          "connectivity": true,
-          "genus": 558,
-          "components": 1,
-          "volume_fraction": 0.69391999462771,
-          "porosity": 0.30608000537228996
-        },
-        "accepted": true
-      }
-    ],
+    "repair_history": [],
     "limitations": [
       "Helical plies are centred at (i+1/2)t (no half-ply overlap), a deviation from the upstream centre at i*t.",
       "smlibwasm B-Rep kernel unavailable (fuse: the kernel returned a result that is not a closed, manifold solid; the operands may touch only along an edge, at a point or tangentially (move one so they overlap), or a tool overlaps an earlier cut or boss along a parallel face (combine the tools first and apply them at once: part.cut(tool1.fuse(tool2)))); SDF mesh used, STEP export disabled.",
@@ -3058,7 +2353,7 @@
       "family": "helical",
       "variant": "helical_cylinfibers",
       "parameters": {
-        "num_plies": 9,
+        "num_plies": 10,
         "rotation": 10,
         "seed": 42
       },
@@ -3097,7 +2392,7 @@
       ],
       "notes": []
     },
-    "timing_s": 170.7
+    "timing_s": 132.3
   },
   {
     "id": "bio_helical_noise",
@@ -3159,8 +2454,8 @@
       "cavities": 0,
       "genus_handles": 0,
       "euler_characteristic": 1,
-      "min_wall_p5_mm": 3.9898,
-      "min_wall_median_mm": 20,
+      "min_wall_p5_mm": 4,
+      "min_wall_median_mm": 19.7412,
       "triangles": 388,
       "center_of_mass": [
         10,
@@ -3243,7 +2538,7 @@
       ],
       "notes": []
     },
-    "timing_s": 75.3
+    "timing_s": 96.7
   },
   {
     "id": "bio_cellular_generic",
@@ -3267,7 +2562,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 5764.9 vs MC 5753.9 mm3 (0.19 %)",
+        "value": "mesh at 320 5765.3 vs MC 5753.9 mm3 (0.20 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -3279,7 +2574,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 5765.1 vs 320 5764.9 mm3 (0.00 %)",
+        "value": "256 px-grid 5765.7 vs 320 5765.3 mm3 (0.01 %)",
         "rule": "<= 5 %"
       },
       {
@@ -3296,22 +2591,22 @@
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 5765.064,
+      "volume_mm3": 5765.656,
       "volume_mc_mm3": 5753.92,
-      "surface_area_mm2": 4115.68,
-      "volume_fraction": 0.72063,
-      "porosity": 0.27937,
+      "surface_area_mm2": 4124.714,
+      "volume_fraction": 0.72071,
+      "porosity": 0.27929,
       "components": 1,
       "cavities": 21,
-      "genus_handles": 17,
-      "euler_characteristic": 5,
-      "min_wall_p5_mm": 1.1155,
-      "min_wall_median_mm": 4.3517,
-      "triangles": 1811916,
+      "genus_handles": 21,
+      "euler_characteristic": 1,
+      "min_wall_p5_mm": 1.6494,
+      "min_wall_median_mm": 4.0149,
+      "triangles": 1827620,
       "center_of_mass": [
-        9.9717,
-        10.2275,
-        9.9116
+        9.9712,
+        10.2271,
+        9.9112
       ]
     },
     "coupling_metrics": null,
@@ -3329,7 +2624,7 @@
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
-      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 1 sub-voxel chords discarded. Not a certified manufacturing check.",
+      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 2 sub-voxel chords discarded. Not a certified manufacturing check.",
       "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
       "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
     ],
@@ -3382,7 +2677,7 @@
       ],
       "notes": []
     },
-    "timing_s": 107
+    "timing_s": 132.4
   },
   {
     "id": "bio_cellular_voronoi",
@@ -3406,7 +2701,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 5770.5 vs MC 5753.9 mm3 (0.29 %)",
+        "value": "mesh at 320 5770.6 vs MC 5753.9 mm3 (0.29 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -3418,7 +2713,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 5770.9 vs 320 5770.5 mm3 (0.01 %)",
+        "value": "256 px-grid 5770.9 vs 320 5770.6 mm3 (0.01 %)",
         "rule": "<= 5 %"
       },
       {
@@ -3435,21 +2730,21 @@
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 5770.862,
+      "volume_mm3": 5770.893,
       "volume_mc_mm3": 5753.92,
-      "surface_area_mm2": 3942.465,
+      "surface_area_mm2": 3942.685,
       "volume_fraction": 0.72136,
       "porosity": 0.27864,
       "components": 1,
       "cavities": 18,
       "genus_handles": 8,
       "euler_characteristic": 11,
-      "min_wall_p5_mm": 1.2165,
-      "min_wall_median_mm": 4.4137,
-      "triangles": 1733332,
+      "min_wall_p5_mm": 1.64,
+      "min_wall_median_mm": 3.8864,
+      "triangles": 1745384,
       "center_of_mass": [
-        9.9724,
-        10.2276,
+        9.9723,
+        10.2275,
         9.9117
       ]
     },
@@ -3469,7 +2764,7 @@
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
-      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 1 sub-voxel chords discarded. Not a certified manufacturing check.",
+      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
       "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
       "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
     ],
@@ -3525,7 +2820,7 @@
       ],
       "notes": []
     },
-    "timing_s": 119.5
+    "timing_s": 148.7
   },
   {
     "id": "bio_cellular_sandwich",
@@ -3549,7 +2844,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 6433.5 vs MC 6423.0 mm3 (0.16 %)",
+        "value": "mesh at 320 6434.5 vs MC 6423.0 mm3 (0.18 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -3561,7 +2856,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 6433.9 vs 320 6433.5 mm3 (0.01 %)",
+        "value": "256 px-grid 6434.8 vs 320 6434.5 mm3 (0.01 %)",
         "rule": "<= 5 %"
       },
       {
@@ -3578,22 +2873,22 @@
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 6433.949,
+      "volume_mm3": 6434.805,
       "volume_mc_mm3": 6422.96,
-      "surface_area_mm2": 4463.654,
-      "volume_fraction": 0.80424,
-      "porosity": 0.19576,
+      "surface_area_mm2": 4475.154,
+      "volume_fraction": 0.80435,
+      "porosity": 0.19565,
       "components": 1,
-      "cavities": 24,
-      "genus_handles": 11,
-      "euler_characteristic": 14,
-      "min_wall_p5_mm": 1.5462,
-      "min_wall_median_mm": 4.6488,
-      "triangles": 1842476,
+      "cavities": 23,
+      "genus_handles": 13,
+      "euler_characteristic": 11,
+      "min_wall_p5_mm": 1.6888,
+      "min_wall_median_mm": 3.9701,
+      "triangles": 1857520,
       "center_of_mass": [
-        9.8915,
-        10.0613,
-        9.9337
+        9.8909,
+        10.0609,
+        9.933
       ]
     },
     "coupling_metrics": null,
@@ -3611,7 +2906,7 @@
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
-      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 2 sub-voxel chords discarded. Not a certified manufacturing check.",
+      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 1 sub-voxel chords discarded. Not a certified manufacturing check.",
       "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
       "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
     ],
@@ -3667,7 +2962,7 @@
       ],
       "notes": []
     },
-    "timing_s": 115
+    "timing_s": 141.3
   },
   {
     "id": "bio_cellular_vorosand",
@@ -3691,7 +2986,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 6443.1 vs MC 6423.0 mm3 (0.31 %)",
+        "value": "mesh at 320 6443.2 vs MC 6423.0 mm3 (0.31 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -3703,7 +2998,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 6443.6 vs 320 6443.1 mm3 (0.01 %)",
+        "value": "256 px-grid 6443.5 vs 320 6443.2 mm3 (0.01 %)",
         "rule": "<= 5 %"
       },
       {
@@ -3720,22 +3015,22 @@
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 6443.553,
+      "volume_mm3": 6443.533,
       "volume_mc_mm3": 6422.96,
-      "surface_area_mm2": 4278.642,
+      "surface_area_mm2": 4279.501,
       "volume_fraction": 0.80544,
       "porosity": 0.19456,
       "components": 1,
       "cavities": 21,
       "genus_handles": 6,
       "euler_characteristic": 16,
-      "min_wall_p5_mm": 1.5561,
-      "min_wall_median_mm": 4.6686,
-      "triangles": 1766232,
+      "min_wall_p5_mm": 1.7331,
+      "min_wall_median_mm": 3.8058,
+      "triangles": 1779084,
       "center_of_mass": [
-        9.8897,
-        10.0602,
-        9.9336
+        9.8896,
+        10.0601,
+        9.9335
       ]
     },
     "coupling_metrics": null,
@@ -3813,7 +3108,7 @@
       ],
       "notes": []
     },
-    "timing_s": 132.2
+    "timing_s": 144.5
   },
   {
     "id": "bio_tubular_generic",
@@ -3875,8 +3170,8 @@
       "cavities": 0,
       "genus_handles": 16,
       "euler_characteristic": -15,
-      "min_wall_p5_mm": 1.7523,
-      "min_wall_median_mm": 16.2928,
+      "min_wall_p5_mm": 1.538,
+      "min_wall_median_mm": 4.2298,
       "triangles": 2124,
       "center_of_mass": [
         10,
@@ -3951,7 +3246,7 @@
       ],
       "notes": []
     },
-    "timing_s": 116.9
+    "timing_s": 135
   },
   {
     "id": "bio_tubular_shapesize",
@@ -4013,8 +3308,8 @@
       "cavities": 0,
       "genus_handles": 16,
       "euler_characteristic": -15,
-      "min_wall_p5_mm": 1.15,
-      "min_wall_median_mm": 4.6184,
+      "min_wall_p5_mm": 1.3091,
+      "min_wall_median_mm": 3.3544,
       "triangles": 2380,
       "center_of_mass": [
         10,
@@ -4096,7 +3391,7 @@
       ],
       "notes": []
     },
-    "timing_s": 112.7
+    "timing_s": 128.3
   },
   {
     "id": "bio_tubular_layers",
@@ -4158,8 +3453,8 @@
       "cavities": 0,
       "genus_handles": 16,
       "euler_characteristic": -15,
-      "min_wall_p5_mm": 1.966,
-      "min_wall_median_mm": 20,
+      "min_wall_p5_mm": 1.9275,
+      "min_wall_median_mm": 6.0625,
       "triangles": 2124,
       "center_of_mass": [
         10,
@@ -4238,7 +3533,7 @@
       ],
       "notes": []
     },
-    "timing_s": 223.7
+    "timing_s": 224.1
   },
   {
     "id": "bio_tubular_noise",
@@ -4300,8 +3595,8 @@
       "cavities": 0,
       "genus_handles": 16,
       "euler_characteristic": -15,
-      "min_wall_p5_mm": 1.5593,
-      "min_wall_median_mm": 6.8278,
+      "min_wall_p5_mm": 1.5505,
+      "min_wall_median_mm": 4.4131,
       "triangles": 2124,
       "center_of_mass": [
         10.0096,
@@ -4379,7 +3674,7 @@
       ],
       "notes": []
     },
-    "timing_s": 118.4
+    "timing_s": 133.3
   },
   {
     "id": "fusion_gyroid_plus_helical",
@@ -4403,7 +3698,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 7407.4 vs MC 7411.1 mm3 (0.05 %)",
+        "value": "mesh at 320 7419.8 vs MC 7411.1 mm3 (0.12 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -4415,7 +3710,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 7408.1 vs 320 7407.4 mm3 (0.01 %)",
+        "value": "256 px-grid 7419.5 vs 320 7419.8 mm3 (0.00 %)",
         "rule": "<= 5 %"
       },
       {
@@ -4438,22 +3733,22 @@
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 7408.095,
+      "volume_mm3": 7419.539,
       "volume_mc_mm3": 7411.08,
-      "surface_area_mm2": 3739.986,
-      "volume_fraction": 0.92601,
-      "porosity": 0.07399,
+      "surface_area_mm2": 3305.654,
+      "volume_fraction": 0.92744,
+      "porosity": 0.07256,
       "components": 1,
-      "cavities": 4,
-      "genus_handles": 46,
-      "euler_characteristic": -41,
-      "min_wall_p5_mm": 0.4797,
-      "min_wall_median_mm": 18.6655,
-      "triangles": 1465924,
+      "cavities": 6,
+      "genus_handles": 50,
+      "euler_characteristic": -43,
+      "min_wall_p5_mm": 0.48,
+      "min_wall_median_mm": 0.4831,
+      "triangles": 1319408,
       "center_of_mass": [
-        10.0002,
-        10.0036,
-        10.0024
+        9.9984,
+        10.0017,
+        10
       ]
     },
     "coupling_metrics": null,
@@ -4616,7 +3911,7 @@
         }
       }
     },
-    "timing_s": 99.3
+    "timing_s": 117.6
   },
   {
     "id": "fusion_schwarzp_to_gyroid",
@@ -4640,7 +3935,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 3770.8 vs MC 3775.7 mm3 (0.13 %)",
+        "value": "mesh at 320 2180.6 vs MC 2175.7 mm3 (0.22 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -4652,14 +3947,14 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 3772.0 vs 320 3770.8 mm3 (0.03 %)",
+        "value": "256 px-grid 2180.0 vs 320 2180.6 mm3 (0.03 %)",
         "rule": "<= 5 %"
       },
       {
-        "name": "skin_attached",
+        "name": "fusion_zoned_nonempty",
         "pass": true,
-        "value": "|result| 94392 >= |core| 45892 (samples); components 1",
-        "rule": "result ⊇ core and one solid"
+        "value": "|zoned|=54393 of 200000 samples",
+        "rule": "0 < |zoned| < box"
       },
       {
         "name": "design_ts_runs",
@@ -4675,22 +3970,22 @@
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 3772.03,
-      "volume_mc_mm3": 3775.68,
-      "surface_area_mm2": 10129.898,
-      "volume_fraction": 0.4715,
-      "porosity": 0.5285,
+      "volume_mm3": 2179.981,
+      "volume_mc_mm3": 2175.72,
+      "surface_area_mm2": 9236.805,
+      "volume_fraction": 0.2725,
+      "porosity": 0.7275,
       "components": 1,
-      "cavities": 31,
-      "genus_handles": 326,
-      "euler_characteristic": -294,
-      "min_wall_p5_mm": 0.48,
-      "min_wall_median_mm": 0.4949,
-      "triangles": 4578208,
+      "cavities": 0,
+      "genus_handles": 433,
+      "euler_characteristic": -432,
+      "min_wall_p5_mm": 0.4799,
+      "min_wall_median_mm": 0.4836,
+      "triangles": 4685272,
       "center_of_mass": [
-        10.0004,
-        9.9994,
-        10.1884
+        9.9946,
+        9.9947,
+        10.5843
       ]
     },
     "coupling_metrics": null,
@@ -4853,11 +4148,10 @@
           ],
           "notes": []
         },
-        "skin_mm": 1,
         "overlap_mm": 1
       }
     },
-    "timing_s": 109.2
+    "timing_s": 113.5
   },
   {
     "id": "fusion_kelvin_to_iwp",
@@ -4881,7 +4175,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 3774.4 vs MC 3790.3 mm3 (0.42 %)",
+        "value": "mesh at 320 2205.5 vs MC 2215.6 mm3 (0.45 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -4893,14 +4187,14 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 3770.7 vs 320 3774.4 mm3 (0.10 %)",
+        "value": "256 px-grid 2205.5 vs 320 2205.5 mm3 (0.00 %)",
         "rule": "<= 5 %"
       },
       {
-        "name": "skin_attached",
+        "name": "fusion_zoned_nonempty",
         "pass": true,
-        "value": "|result| 94757 >= |core| 39565 (samples); components 1",
-        "rule": "result ⊇ core and one solid"
+        "value": "|zoned|=55389 of 200000 samples",
+        "rule": "0 < |zoned| < box"
       },
       {
         "name": "design_ts_runs",
@@ -4916,22 +4210,22 @@
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 3770.729,
-      "volume_mc_mm3": 3790.28,
-      "surface_area_mm2": 10445.55,
-      "volume_fraction": 0.47134,
-      "porosity": 0.52866,
+      "volume_mm3": 2205.499,
+      "volume_mc_mm3": 2215.56,
+      "surface_area_mm2": 9625.882,
+      "volume_fraction": 0.27569,
+      "porosity": 0.72431,
       "components": 1,
-      "cavities": 33,
-      "genus_handles": 944,
-      "euler_characteristic": -910,
-      "min_wall_p5_mm": 0.4726,
-      "min_wall_median_mm": 0.8,
-      "triangles": 4471592,
+      "cavities": 18,
+      "genus_handles": 1137,
+      "euler_characteristic": -1118,
+      "min_wall_p5_mm": 0.4721,
+      "min_wall_median_mm": 0.4769,
+      "triangles": 4577944,
       "center_of_mass": [
-        10.0011,
-        10.0011,
-        10.4418
+        9.9355,
+        9.9355,
+        11.1859
       ]
     },
     "coupling_metrics": null,
@@ -4949,7 +4243,7 @@
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
-      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 8 sub-voxel chords discarded. Not a certified manufacturing check.",
+      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 3 sub-voxel chords discarded. Not a certified manufacturing check.",
       "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
       "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
     ],
@@ -5094,11 +4388,10 @@
           ],
           "notes": []
         },
-        "skin_mm": 1,
         "overlap_mm": 1
       }
     },
-    "timing_s": 298.2
+    "timing_s": 286.5
   },
   {
     "id": "fusion_bcc_plus_voronoi",
@@ -5122,7 +4415,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 6916.9 vs MC 6917.7 mm3 (0.01 %)",
+        "value": "mesh at 320 6174.1 vs MC 6165.6 mm3 (0.14 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -5134,14 +4427,14 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 6918.2 vs 320 6916.9 mm3 (0.02 %)",
+        "value": "256 px-grid 6174.2 vs 320 6174.1 mm3 (0.00 %)",
         "rule": "<= 5 %"
       },
       {
-        "name": "skin_attached",
+        "name": "fusion_union_identity",
         "pass": true,
-        "value": "|result| 172943 >= |core| 35863 (samples); components 1",
-        "rule": "result ⊇ core and one solid"
+        "value": "|A|=35863 |B|=143848 |A∪B|=154141 (samples)",
+        "rule": "max(|A|,|B|) <= |A∪B| <= |A|+|B|"
       },
       {
         "name": "design_ts_runs",
@@ -5157,22 +4450,22 @@
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 6918.161,
-      "volume_mc_mm3": 6917.72,
-      "surface_area_mm2": 5761.583,
-      "volume_fraction": 0.86477,
-      "porosity": 0.13523,
+      "volume_mm3": 6174.205,
+      "volume_mc_mm3": 6165.64,
+      "surface_area_mm2": 5413.361,
+      "volume_fraction": 0.77178,
+      "porosity": 0.22822,
       "components": 1,
-      "cavities": 237,
-      "genus_handles": 491,
-      "euler_characteristic": -253,
+      "cavities": 206,
+      "genus_handles": 544,
+      "euler_characteristic": -337,
       "min_wall_p5_mm": 0.8,
-      "min_wall_median_mm": 3.1176,
-      "triangles": 2417368,
+      "min_wall_median_mm": 2.4785,
+      "triangles": 2494916,
       "center_of_mass": [
-        9.945,
-        10.0332,
-        9.9338
+        9.9835,
+        10.1733,
+        9.934
       ]
     },
     "coupling_metrics": null,
@@ -5190,7 +4483,7 @@
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
-      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
+      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 1 sub-voxel chords discarded. Not a certified manufacturing check.",
       "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
       "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
     ],
@@ -5334,11 +4627,10 @@
             "Parameter smoothlevel not stated; default 3 used."
           ],
           "notes": []
-        },
-        "skin_mm": 1
+        }
       }
     },
-    "timing_s": 240.3
+    "timing_s": 235.3
   },
   {
     "id": "fusion_helical_cap_iwp",
@@ -5362,7 +4654,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 2376.3 vs MC 2409.0 mm3 (1.36 %)",
+        "value": "mesh at 320 2385.3 vs MC 2409.0 mm3 (0.98 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -5374,7 +4666,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 2379.3 vs 320 2376.3 mm3 (0.13 %)",
+        "value": "256 px-grid 2381.6 vs 320 2385.3 mm3 (0.16 %)",
         "rule": "<= 5 %"
       },
       {
@@ -5397,22 +4689,22 @@
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 2379.264,
+      "volume_mm3": 2381.578,
       "volume_mc_mm3": 2409.04,
-      "surface_area_mm2": 10366.394,
-      "volume_fraction": 0.29741,
-      "porosity": 0.70259,
+      "surface_area_mm2": 10257.007,
+      "volume_fraction": 0.2977,
+      "porosity": 0.7023,
       "components": 1,
       "cavities": 0,
-      "genus_handles": 693,
-      "euler_characteristic": -692,
-      "min_wall_p5_mm": 0.4711,
+      "genus_handles": 699,
+      "euler_characteristic": -698,
+      "min_wall_p5_mm": 0.4708,
       "min_wall_median_mm": 0.4743,
-      "triangles": 4807392,
+      "triangles": 4819608,
       "center_of_mass": [
-        10,
-        10,
-        10
+        9.9994,
+        9.9994,
+        9.9968
       ]
     },
     "coupling_metrics": null,
@@ -5430,7 +4722,7 @@
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
-      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 10 sub-voxel chords discarded. Not a certified manufacturing check.",
+      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 6 sub-voxel chords discarded. Not a certified manufacturing check.",
       "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
       "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
     ],
@@ -5575,7 +4867,7 @@
         }
       }
     },
-    "timing_s": 102.6
+    "timing_s": 112.9
   },
   {
     "id": "fusion_diamond_plus_lidinoid",
@@ -5599,7 +4891,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 5878.2 vs MC 5866.1 mm3 (0.21 %)",
+        "value": "mesh at 320 5127.6 vs MC 5094.4 mm3 (0.65 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -5611,14 +4903,14 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 5888.1 vs 320 5878.2 mm3 (0.17 %)",
+        "value": "256 px-grid 5138.0 vs 320 5127.6 mm3 (0.20 %)",
         "rule": "<= 5 %"
       },
       {
-        "name": "skin_attached",
+        "name": "fusion_union_identity",
         "pass": true,
-        "value": "|result| 146653 >= |core| 35624 (samples); components 1",
-        "rule": "result ⊇ core and one solid"
+        "value": "|A|=35624 |B|=111586 |A∪B|=127361 (samples)",
+        "rule": "max(|A|,|B|) <= |A∪B| <= |A|+|B|"
       },
       {
         "name": "design_ts_runs",
@@ -5634,22 +4926,22 @@
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 5888.089,
-      "volume_mc_mm3": 5866.12,
-      "surface_area_mm2": 14601.406,
-      "volume_fraction": 0.73601,
-      "porosity": 0.26399,
+      "volume_mm3": 5138.036,
+      "volume_mc_mm3": 5094.44,
+      "surface_area_mm2": 16995.506,
+      "volume_fraction": 0.64225,
+      "porosity": 0.35775,
       "components": 1,
-      "cavities": 2318,
-      "genus_handles": 1902,
-      "euler_characteristic": 417,
-      "min_wall_p5_mm": 0.4361,
-      "min_wall_median_mm": 0.5091,
-      "triangles": 6937524,
+      "cavities": 2428,
+      "genus_handles": 3655,
+      "euler_characteristic": -1226,
+      "min_wall_p5_mm": 0.4349,
+      "min_wall_median_mm": 0.4727,
+      "triangles": 8517480,
       "center_of_mass": [
-        9.9993,
-        9.9993,
-        9.9993
+        9.9937,
+        9.9937,
+        9.9937
       ]
     },
     "coupling_metrics": null,
@@ -5811,11 +5103,10 @@
             "TPMS wall thickness not given; 12% of the period assumed."
           ],
           "notes": []
-        },
-        "skin_mm": 1
+        }
       }
     },
-    "timing_s": 284.4
+    "timing_s": 284
   },
   {
     "id": "deep_R1_thickness",
@@ -5839,7 +5130,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 5194.2 vs MC 5195.9 mm3 (0.03 %)",
+        "value": "mesh at 320 4032.8 vs MC 4033.7 mm3 (0.02 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -5851,7 +5142,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 5195.3 vs 320 5194.2 mm3 (0.02 %)",
+        "value": "256 px-grid 4032.2 vs 320 4032.8 mm3 (0.01 %)",
         "rule": "<= 5 %"
       },
       {
@@ -5868,22 +5159,22 @@
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 5195.338,
-      "volume_mc_mm3": 5195.88,
-      "surface_area_mm2": 9693.159,
-      "volume_fraction": 0.64942,
-      "porosity": 0.35058,
+      "volume_mm3": 4032.182,
+      "volume_mc_mm3": 4033.72,
+      "surface_area_mm2": 9498.336,
+      "volume_fraction": 0.50402,
+      "porosity": 0.49598,
       "components": 1,
-      "cavities": 3,
-      "genus_handles": 324,
-      "euler_characteristic": -320,
-      "min_wall_p5_mm": 0.4894,
-      "min_wall_median_mm": 1,
-      "triangles": 4384940,
+      "cavities": 0,
+      "genus_handles": 490,
+      "euler_characteristic": -489,
+      "min_wall_p5_mm": 0.4819,
+      "min_wall_median_mm": 0.9758,
+      "triangles": 4742296,
       "center_of_mass": [
-        9.9722,
-        10.0209,
-        9.9706
+        9.9719,
+        10.0901,
+        9.96
       ]
     },
     "coupling_metrics": {
@@ -5951,10 +5242,12 @@
       "notes": [],
       "coupled": {
         "round": "R1",
-        "params": {}
+        "params": {
+          "skin_mm": 0
+        }
       }
     },
-    "timing_s": 110
+    "timing_s": 122.5
   },
   {
     "id": "deep_R2_nested",
@@ -5978,7 +5271,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 5985.0 vs MC 6003.1 mm3 (0.30 %)",
+        "value": "mesh at 320 5609.6 vs MC 5609.0 mm3 (0.01 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -5990,7 +5283,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 6004.5 vs 320 5985.0 mm3 (0.33 %)",
+        "value": "256 px-grid 5603.7 vs 320 5609.6 mm3 (0.10 %)",
         "rule": "<= 5 %"
       },
       {
@@ -6007,22 +5300,22 @@
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 6004.542,
-      "volume_mc_mm3": 6003.08,
-      "surface_area_mm2": 10961.406,
-      "volume_fraction": 0.75057,
-      "porosity": 0.24943,
+      "volume_mm3": 5603.703,
+      "volume_mc_mm3": 5608.96,
+      "surface_area_mm2": 12162.695,
+      "volume_fraction": 0.70046,
+      "porosity": 0.29954,
       "components": 1,
-      "cavities": 16,
-      "genus_handles": 4288,
-      "euler_characteristic": -4271,
-      "min_wall_p5_mm": 0.5992,
-      "min_wall_median_mm": 1,
-      "triangles": 4900300,
+      "cavities": 0,
+      "genus_handles": 5936,
+      "euler_characteristic": -5935,
+      "min_wall_p5_mm": 0.5892,
+      "min_wall_median_mm": 0.6094,
+      "triangles": 5531712,
       "center_of_mass": [
-        10,
-        10,
-        10.0001
+        9.999,
+        9.999,
+        9.9851
       ]
     },
     "coupling_metrics": {
@@ -6088,10 +5381,12 @@
       "notes": [],
       "coupled": {
         "round": "R2",
-        "params": {}
+        "params": {
+          "skin_mm": 0
+        }
       }
     },
-    "timing_s": 384
+    "timing_s": 374
   },
   {
     "id": "deep_R3_twist",
@@ -6115,7 +5410,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 3231.2 vs MC 3243.6 mm3 (0.38 %)",
+        "value": "mesh at 320 1425.5 vs MC 1442.0 mm3 (1.14 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -6127,7 +5422,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 3228.4 vs 320 3231.2 mm3 (0.09 %)",
+        "value": "256 px-grid 1419.6 vs 320 1425.5 mm3 (0.41 %)",
         "rule": "<= 5 %"
       },
       {
@@ -6144,22 +5439,22 @@
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 3228.384,
-      "volume_mc_mm3": 3243.6,
-      "surface_area_mm2": 8718.79,
-      "volume_fraction": 0.40355,
-      "porosity": 0.59645,
+      "volume_mm3": 1419.638,
+      "volume_mc_mm3": 1441.96,
+      "surface_area_mm2": 6833.079,
+      "volume_fraction": 0.17745,
+      "porosity": 0.82255,
       "components": 1,
-      "cavities": 5,
-      "genus_handles": 703,
-      "euler_characteristic": -697,
-      "min_wall_p5_mm": 0.5741,
-      "min_wall_median_mm": 0.8659,
-      "triangles": 3749892,
+      "cavities": 7,
+      "genus_handles": 627,
+      "euler_characteristic": -619,
+      "min_wall_p5_mm": 0.5451,
+      "min_wall_median_mm": 0.7124,
+      "triangles": 3438612,
       "center_of_mass": [
-        10.0001,
-        9.9999,
-        10
+        9.9993,
+        9.9978,
+        9.9993
       ]
     },
     "coupling_metrics": {
@@ -6226,10 +5521,12 @@
       "notes": [],
       "coupled": {
         "round": "R3",
-        "params": {}
+        "params": {
+          "skin_mm": 0
+        }
       }
     },
-    "timing_s": 226.9
+    "timing_s": 207.9
   },
   {
     "id": "deep_R4_blend",
@@ -6253,7 +5550,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 4838.0 vs MC 4842.6 mm3 (0.10 %)",
+        "value": "mesh at 320 3507.4 vs MC 3521.5 mm3 (0.40 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -6265,7 +5562,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 4836.6 vs 320 4838.0 mm3 (0.03 %)",
+        "value": "256 px-grid 3509.1 vs 320 3507.4 mm3 (0.05 %)",
         "rule": "<= 5 %"
       },
       {
@@ -6282,22 +5579,22 @@
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 4836.578,
-      "volume_mc_mm3": 4842.6,
-      "surface_area_mm2": 10157.68,
-      "volume_fraction": 0.60457,
-      "porosity": 0.39543,
+      "volume_mm3": 3509.109,
+      "volume_mc_mm3": 3521.52,
+      "surface_area_mm2": 9787.347,
+      "volume_fraction": 0.43864,
+      "porosity": 0.56136,
       "components": 1,
-      "cavities": 13,
-      "genus_handles": 560,
-      "euler_characteristic": -546,
-      "min_wall_p5_mm": 0.4741,
-      "min_wall_median_mm": 1,
-      "triangles": 4450740,
+      "cavities": 1,
+      "genus_handles": 782,
+      "euler_characteristic": -780,
+      "min_wall_p5_mm": 0.4734,
+      "min_wall_median_mm": 0.8,
+      "triangles": 4710676,
       "center_of_mass": [
-        10,
-        9.9982,
-        10.2721
+        9.9732,
+        9.9734,
+        10.6131
       ]
     },
     "coupling_metrics": {
@@ -6320,7 +5617,7 @@
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
-      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 1 sub-voxel chords discarded. Not a certified manufacturing check.",
+      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 2 sub-voxel chords discarded. Not a certified manufacturing check.",
       "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
       "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
     ],
@@ -6364,10 +5661,12 @@
       "notes": [],
       "coupled": {
         "round": "R4",
-        "params": {}
+        "params": {
+          "skin_mm": 0
+        }
       }
     },
-    "timing_s": 317.4
+    "timing_s": 302.4
   },
   {
     "id": "deep_R5_hierarchy",
@@ -6391,7 +5690,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 7141.8 vs MC 7136.7 mm3 (0.07 %)",
+        "value": "mesh at 320 6568.0 vs MC 6559.8 mm3 (0.12 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -6403,7 +5702,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 7144.1 vs 320 7141.8 mm3 (0.03 %)",
+        "value": "256 px-grid 6568.9 vs 320 6568.0 mm3 (0.01 %)",
         "rule": "<= 5 %"
       },
       {
@@ -6420,22 +5719,22 @@
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 7144.075,
-      "volume_mc_mm3": 7136.72,
-      "surface_area_mm2": 6052.544,
-      "volume_fraction": 0.89301,
-      "porosity": 0.10699,
+      "volume_mm3": 6568.931,
+      "volume_mc_mm3": 6559.84,
+      "surface_area_mm2": 6451.303,
+      "volume_fraction": 0.82112,
+      "porosity": 0.17888,
       "components": 1,
-      "cavities": 586,
-      "genus_handles": 341,
-      "euler_characteristic": 246,
-      "min_wall_p5_mm": 0.4705,
-      "min_wall_median_mm": 2.1095,
-      "triangles": 2592224,
+      "cavities": 547,
+      "genus_handles": 569,
+      "euler_characteristic": -21,
+      "min_wall_p5_mm": 0.4699,
+      "min_wall_median_mm": 0.476,
+      "triangles": 3022940,
       "center_of_mass": [
-        9.9591,
-        10.0311,
-        9.9486
+        9.9828,
+        10.1301,
+        9.9457
       ]
     },
     "coupling_metrics": {
@@ -6456,7 +5755,7 @@
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
-      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 2 sub-voxel chords discarded. Not a certified manufacturing check.",
+      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 1 sub-voxel chords discarded. Not a certified manufacturing check.",
       "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
       "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
     ],
@@ -6500,9 +5799,11 @@
       "notes": [],
       "coupled": {
         "round": "R5",
-        "params": {}
+        "params": {
+          "skin_mm": 0
+        }
       }
     },
-    "timing_s": 108.5
+    "timing_s": 129.3
   }
 ]

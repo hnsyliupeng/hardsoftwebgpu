@@ -19,7 +19,7 @@ const spec: DesignSpec = {
   topology: "deep",
   
   
-  deep: {"kind":"ply_tpms","plies":10,"twist_deg":18,"wall_mm":0.7} as NonNullable<DesignSpec["deep"]>,
+  deep: {"kind":"ply_tpms","skin_mm":0,"plies":10,"twist_deg":18,"wall_mm":1.1} as NonNullable<DesignSpec["deep"]>,
   bio_motif: "deep:ply_tpms",
   family: "deep",
   variant: "ply_tpms",

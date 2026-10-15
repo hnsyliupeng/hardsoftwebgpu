@@ -19,7 +19,7 @@ const spec: DesignSpec = {
   topology: "deep",
   
   
-  deep: {"kind":"foam_lattice","seeds":3,"wall_mm":0.8,"lattice_cell_mm":2.5,"lattice_radius_mm":0.25} as NonNullable<DesignSpec["deep"]>,
+  deep: {"kind":"foam_lattice","skin_mm":0,"seeds":3,"wall_mm":0.8,"lattice_cell_mm":2.5,"lattice_radius_mm":0.25} as NonNullable<DesignSpec["deep"]>,
   bio_motif: "deep:foam_lattice",
   family: "deep",
   variant: "foam_lattice",

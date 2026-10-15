@@ -133,16 +133,15 @@
         ],
         "notes": []
       },
-      "skin_mm": 1,
       "overlap_mm": 1
     }
   },
   "metrics": {
-    "volume": 3772.030341022292,
-    "surface_area": 10129.898261934002,
-    "min_wall_thickness": 0.4800208476741914,
+    "volume": 2179.9805726642426,
+    "surface_area": 9236.805252921773,
+    "min_wall_thickness": 0.47986951856597604,
     "connectivity": true,
-    "genus": 326
+    "genus": 433
   },
   "render_preview": null,
   "repair_history": [],
@@ -186,7 +185,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 3770.8 vs MC 3775.7 mm3 (0.13 %)",
+        "value": "mesh at 320 2180.6 vs MC 2175.7 mm3 (0.22 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -198,14 +197,14 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 3772.0 vs 320 3770.8 mm3 (0.03 %)",
+        "value": "256 px-grid 2180.0 vs 320 2180.6 mm3 (0.03 %)",
         "rule": "<= 5 %"
       },
       {
-        "name": "skin_attached",
+        "name": "fusion_zoned_nonempty",
         "pass": true,
-        "value": "|result| 94392 >= |core| 45892 (samples); components 1",
-        "rule": "result ⊇ core and one solid"
+        "value": "|zoned|=54393 of 200000 samples",
+        "rule": "0 < |zoned| < box"
       },
       {
         "name": "design_ts_runs",
@@ -221,22 +220,22 @@
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 3772.03,
-      "volume_mc_mm3": 3775.68,
-      "surface_area_mm2": 10129.898,
-      "volume_fraction": 0.4715,
-      "porosity": 0.5285,
+      "volume_mm3": 2179.981,
+      "volume_mc_mm3": 2175.72,
+      "surface_area_mm2": 9236.805,
+      "volume_fraction": 0.2725,
+      "porosity": 0.7275,
       "components": 1,
-      "cavities": 31,
-      "genus_handles": 326,
-      "euler_characteristic": -294,
-      "min_wall_p5_mm": 0.48,
-      "min_wall_median_mm": 0.4949,
-      "triangles": 4578208,
+      "cavities": 0,
+      "genus_handles": 433,
+      "euler_characteristic": -432,
+      "min_wall_p5_mm": 0.4799,
+      "min_wall_median_mm": 0.4836,
+      "triangles": 4685272,
       "center_of_mass": [
-        10.0004,
-        9.9994,
-        10.1884
+        9.9946,
+        9.9947,
+        10.5843
       ]
     },
     "coupling_metrics": null,
@@ -399,10 +398,9 @@
           ],
           "notes": []
         },
-        "skin_mm": 1,
         "overlap_mm": 1
       }
     },
-    "timing_s": 109.2
+    "timing_s": 113.5
   }
 }

@@ -21,7 +21,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 6726.1 vs MC 6731.0 mm3 (0.07 %)",
+        "value": "mesh at 320 6796.5 vs MC 6731.0 mm3 (0.97 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -39,7 +39,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 6723.9 vs 320 6726.1 mm3 (0.03 %)",
+        "value": "256 px-grid 6811.6 vs 320 6796.5 mm3 (0.22 %)",
         "rule": "<= 5 %"
       },
       {
@@ -56,22 +56,22 @@
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 6723.88,
+      "volume_mm3": 6811.622,
       "volume_mc_mm3": 6731.04,
-      "surface_area_mm2": 5407.92,
-      "volume_fraction": 0.84049,
-      "porosity": 0.15951,
+      "surface_area_mm2": 5418.234,
+      "volume_fraction": 0.85145,
+      "porosity": 0.14855,
       "components": 1,
-      "cavities": 0,
-      "genus_handles": 864,
-      "euler_characteristic": -863,
+      "cavities": 112,
+      "genus_handles": 1120,
+      "euler_characteristic": -1007,
       "min_wall_p5_mm": 0.5,
-      "min_wall_median_mm": 2.6065,
-      "triangles": 2276748,
+      "min_wall_median_mm": 0.5,
+      "triangles": 2251440,
       "center_of_mass": [
-        10,
-        10,
-        10
+        9.9884,
+        9.9884,
+        9.991
       ]
     },
     "coupling_metrics": null,
@@ -145,10 +145,11 @@
       ],
       "notes": [],
       "deep": {
-        "kind": "channel_lattice"
+        "kind": "channel_lattice",
+        "skin_mm": 0
       }
     },
-    "timing_s": 221.7
+    "timing_s": 210.4
   },
   {
     "id": "fieldfuse_r2_ply_tpms",
@@ -172,13 +173,13 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 4750.4 vs MC 4738.7 mm3 (0.25 %)",
+        "value": "mesh at 320 4836.2 vs MC 4801.0 mm3 (0.73 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
         "name": "coupling_effect",
         "pass": true,
-        "value": "44.89 % of solid points change when the coupling is removed",
+        "value": "55.22 % of solid points change when the coupling is removed",
         "rule": ">= 1 % (non-trivial coupling)"
       },
       {
@@ -190,7 +191,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 4747.5 vs 320 4750.4 mm3 (0.06 %)",
+        "value": "256 px-grid 4842.4 vs 320 4836.2 mm3 (0.13 %)",
         "rule": "<= 5 %"
       },
       {
@@ -207,22 +208,22 @@
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 4747.498,
-      "volume_mc_mm3": 4738.72,
-      "surface_area_mm2": 11553.367,
-      "volume_fraction": 0.59344,
-      "porosity": 0.40656,
+      "volume_mm3": 4842.371,
+      "volume_mc_mm3": 4801.04,
+      "surface_area_mm2": 10994.286,
+      "volume_fraction": 0.6053,
+      "porosity": 0.3947,
       "components": 1,
-      "cavities": 176,
-      "genus_handles": 864,
-      "euler_characteristic": -687,
-      "min_wall_p5_mm": 0.4002,
-      "min_wall_median_mm": 0.6564,
-      "triangles": 5072228,
+      "cavities": 157,
+      "genus_handles": 1008,
+      "euler_characteristic": -850,
+      "min_wall_p5_mm": 0.4381,
+      "min_wall_median_mm": 0.947,
+      "triangles": 5103208,
       "center_of_mass": [
-        9.9999,
-        10.0051,
-        9.9967
+        9.9974,
+        9.9955,
+        9.9916
       ]
     },
     "coupling_metrics": null,
@@ -240,7 +241,7 @@
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
-      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 25 sub-voxel chords discarded. Not a certified manufacturing check.",
+      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 18 sub-voxel chords discarded. Not a certified manufacturing check.",
       "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
       "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
     ],
@@ -297,12 +298,13 @@
       "notes": [],
       "deep": {
         "kind": "ply_tpms",
+        "skin_mm": 0,
         "plies": 10,
         "twist_deg": 18,
-        "wall_mm": 0.7
+        "wall_mm": 1.1
       }
     },
-    "timing_s": 137.1
+    "timing_s": 140.5
   },
   {
     "id": "fieldfuse_r3_graded_tpms",
@@ -326,13 +328,13 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 4408.7 vs MC 4418.2 mm3 (0.21 %)",
+        "value": "mesh at 320 3126.8 vs MC 3121.1 mm3 (0.18 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
         "name": "coupling_effect",
         "pass": true,
-        "value": "7.61 % of solid points change when the coupling is removed",
+        "value": "13.68 % of solid points change when the coupling is removed",
         "rule": ">= 1 % (non-trivial coupling)"
       },
       {
@@ -344,7 +346,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 4409.4 vs 320 4408.7 mm3 (0.02 %)",
+        "value": "256 px-grid 3128.0 vs 320 3126.8 mm3 (0.04 %)",
         "rule": "<= 5 %"
       },
       {
@@ -361,22 +363,22 @@
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 4409.438,
-      "volume_mc_mm3": 4418.24,
-      "surface_area_mm2": 10263.314,
-      "volume_fraction": 0.55118,
-      "porosity": 0.44882,
+      "volume_mm3": 3128.043,
+      "volume_mc_mm3": 3121.12,
+      "surface_area_mm2": 9966.565,
+      "volume_fraction": 0.39101,
+      "porosity": 0.60899,
       "components": 1,
-      "cavities": 3,
-      "genus_handles": 324,
-      "euler_characteristic": -320,
-      "min_wall_p5_mm": 0.5721,
-      "min_wall_median_mm": 0.6692,
-      "triangles": 4651320,
+      "cavities": 0,
+      "genus_handles": 490,
+      "euler_characteristic": -489,
+      "min_wall_p5_mm": 0.5715,
+      "min_wall_median_mm": 0.618,
+      "triangles": 4988956,
       "center_of_mass": [
-        9.9955,
-        9.9984,
-        10.0017
+        9.9859,
+        9.997,
+        9.9944
       ]
     },
     "coupling_metrics": null,
@@ -449,12 +451,13 @@
       "notes": [],
       "deep": {
         "kind": "graded_tpms",
+        "skin_mm": 0,
         "seeds": 4,
         "t_min_mm": 0.6,
         "t_max_mm": 1
       }
     },
-    "timing_s": 332.3
+    "timing_s": 288.2
   },
   {
     "id": "fieldfuse_r4_foam_lattice",
@@ -478,7 +481,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 3155.5 vs MC 3170.3 mm3 (0.47 %)",
+        "value": "mesh at 320 3176.0 vs MC 3170.3 mm3 (0.18 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -496,7 +499,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 3146.9 vs 320 3155.5 mm3 (0.27 %)",
+        "value": "256 px-grid 3173.7 vs 320 3176.0 mm3 (0.07 %)",
         "rule": "<= 5 %"
       },
       {
@@ -513,22 +516,22 @@
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 3146.903,
+      "volume_mm3": 3173.664,
       "volume_mc_mm3": 3170.32,
-      "surface_area_mm2": 10936.908,
-      "volume_fraction": 0.39336,
-      "porosity": 0.60664,
+      "surface_area_mm2": 10843.79,
+      "volume_fraction": 0.39671,
+      "porosity": 0.60329,
       "components": 1,
-      "cavities": 123,
-      "genus_handles": 2872,
-      "euler_characteristic": -2748,
+      "cavities": 90,
+      "genus_handles": 2774,
+      "euler_characteristic": -2683,
       "min_wall_p5_mm": 0.5,
       "min_wall_median_mm": 0.5,
-      "triangles": 5174296,
+      "triangles": 5066632,
       "center_of_mass": [
-        10.0123,
-        9.9848,
-        9.9927
+        10.0073,
+        9.9797,
+        9.9877
       ]
     },
     "coupling_metrics": null,
@@ -603,13 +606,14 @@
       "notes": [],
       "deep": {
         "kind": "foam_lattice",
+        "skin_mm": 0,
         "seeds": 3,
         "wall_mm": 0.8,
         "lattice_cell_mm": 2.5,
         "lattice_radius_mm": 0.25
       }
     },
-    "timing_s": 312
+    "timing_s": 277.3
   },
   {
     "id": "fieldfuse_r5_ply_graded_tpms",
@@ -633,13 +637,13 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 4924.0 vs MC 4911.5 mm3 (0.25 %)",
+        "value": "mesh at 320 5008.1 vs MC 4967.5 mm3 (0.82 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
         "name": "coupling_effect",
         "pass": true,
-        "value": "43.75 % of solid points change when the coupling is removed",
+        "value": "52.06 % of solid points change when the coupling is removed",
         "rule": ">= 1 % (non-trivial coupling)"
       },
       {
@@ -651,7 +655,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 4921.4 vs 320 4924.0 mm3 (0.05 %)",
+        "value": "256 px-grid 5014.8 vs 320 5008.1 mm3 (0.13 %)",
         "rule": "<= 5 %"
       },
       {
@@ -668,22 +672,22 @@
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 4921.382,
-      "volume_mc_mm3": 4911.48,
-      "surface_area_mm2": 11353.592,
-      "volume_fraction": 0.61517,
-      "porosity": 0.38483,
+      "volume_mm3": 5014.835,
+      "volume_mc_mm3": 4967.48,
+      "surface_area_mm2": 10841.408,
+      "volume_fraction": 0.62685,
+      "porosity": 0.37315,
       "components": 1,
-      "cavities": 193,
-      "genus_handles": 867,
-      "euler_characteristic": -673,
-      "min_wall_p5_mm": 0.4134,
-      "min_wall_median_mm": 0.7398,
-      "triangles": 4981648,
+      "cavities": 151,
+      "genus_handles": 949,
+      "euler_characteristic": -797,
+      "min_wall_p5_mm": 0.4238,
+      "min_wall_median_mm": 0.978,
+      "triangles": 5023060,
       "center_of_mass": [
-        9.9972,
-        10.0044,
-        9.9976
+        9.995,
+        9.9962,
+        9.9919
       ]
     },
     "coupling_metrics": null,
@@ -701,7 +705,7 @@
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
-      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 18 sub-voxel chords discarded. Not a certified manufacturing check.",
+      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 15 sub-voxel chords discarded. Not a certified manufacturing check.",
       "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
       "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
     ],
@@ -758,13 +762,14 @@
       "notes": [],
       "deep": {
         "kind": "ply_graded_tpms",
+        "skin_mm": 0,
         "plies": 10,
         "twist_deg": 18,
         "seeds": 4,
-        "t_min_mm": 0.7,
-        "t_max_mm": 1
+        "t_min_mm": 1.1,
+        "t_max_mm": 1.4
       }
     },
-    "timing_s": 369.2
+    "timing_s": 318.2
   }
 ]

@@ -44,17 +44,18 @@
     "notes": [],
     "deep": {
       "kind": "ply_tpms",
+      "skin_mm": 0,
       "plies": 10,
       "twist_deg": 18,
-      "wall_mm": 0.7
+      "wall_mm": 1.1
     }
   },
   "metrics": {
-    "volume": 4747.498204180956,
-    "surface_area": 11553.367094911817,
-    "min_wall_thickness": 0.40018422297702044,
+    "volume": 4842.371321792612,
+    "surface_area": 10994.286367167862,
+    "min_wall_thickness": 0.43806930068040156,
     "connectivity": true,
-    "genus": 864
+    "genus": 1008
   },
   "render_preview": null,
   "repair_history": [],
@@ -64,7 +65,7 @@
     "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
     "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
     "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
-    "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 25 sub-voxel chords discarded. Not a certified manufacturing check.",
+    "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 18 sub-voxel chords discarded. Not a certified manufacturing check.",
     "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
     "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
   ],
@@ -99,13 +100,13 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 4750.4 vs MC 4738.7 mm3 (0.25 %)",
+        "value": "mesh at 320 4836.2 vs MC 4801.0 mm3 (0.73 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
         "name": "coupling_effect",
         "pass": true,
-        "value": "44.89 % of solid points change when the coupling is removed",
+        "value": "55.22 % of solid points change when the coupling is removed",
         "rule": ">= 1 % (non-trivial coupling)"
       },
       {
@@ -117,7 +118,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 4747.5 vs 320 4750.4 mm3 (0.06 %)",
+        "value": "256 px-grid 4842.4 vs 320 4836.2 mm3 (0.13 %)",
         "rule": "<= 5 %"
       },
       {
@@ -134,22 +135,22 @@
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 4747.498,
-      "volume_mc_mm3": 4738.72,
-      "surface_area_mm2": 11553.367,
-      "volume_fraction": 0.59344,
-      "porosity": 0.40656,
+      "volume_mm3": 4842.371,
+      "volume_mc_mm3": 4801.04,
+      "surface_area_mm2": 10994.286,
+      "volume_fraction": 0.6053,
+      "porosity": 0.3947,
       "components": 1,
-      "cavities": 176,
-      "genus_handles": 864,
-      "euler_characteristic": -687,
-      "min_wall_p5_mm": 0.4002,
-      "min_wall_median_mm": 0.6564,
-      "triangles": 5072228,
+      "cavities": 157,
+      "genus_handles": 1008,
+      "euler_characteristic": -850,
+      "min_wall_p5_mm": 0.4381,
+      "min_wall_median_mm": 0.947,
+      "triangles": 5103208,
       "center_of_mass": [
-        9.9999,
-        10.0051,
-        9.9967
+        9.9974,
+        9.9955,
+        9.9916
       ]
     },
     "coupling_metrics": null,
@@ -167,7 +168,7 @@
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
-      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 25 sub-voxel chords discarded. Not a certified manufacturing check.",
+      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 18 sub-voxel chords discarded. Not a certified manufacturing check.",
       "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
       "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
     ],
@@ -224,11 +225,12 @@
       "notes": [],
       "deep": {
         "kind": "ply_tpms",
+        "skin_mm": 0,
         "plies": 10,
         "twist_deg": 18,
-        "wall_mm": 0.7
+        "wall_mm": 1.1
       }
     },
-    "timing_s": 137.1
+    "timing_s": 140.5
   }
 }

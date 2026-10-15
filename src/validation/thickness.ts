@@ -17,7 +17,18 @@ export interface WallThickness {
   unresolvedBelowVoxel: number;
 }
 
-export function rayWallThickness(field: Field, mesh: MeshData, h: number, maxSamples = 6000): WallThickness {
+/**
+ * Surface samples within `faceMarginMm` of the build-envelope faces are skipped. Where a design is cut by
+ * the envelope (open structures), the rim of the cut gives short inward chords that measure the cut, not a
+ * wall. Such samples are counted in `excludedNearFaces`.
+ */
+export function rayWallThickness(
+  field: Field,
+  mesh: MeshData,
+  h: number,
+  maxSamples = 6000,
+  faceMarginMm = 0,
+): WallThickness & { excludedNearFaces: number } {
   const P = mesh.positions;
   const nv = P.length / 3;
   const stride = Math.max(1, Math.ceil(nv / maxSamples));
@@ -25,9 +36,19 @@ export function rayWallThickness(field: Field, mesh: MeshData, h: number, maxSam
   const chords: number[] = [];
   let sampled = 0;
   let belowVoxel = 0;
+  let excludedNearFaces = 0;
+  const bmin = field.bounds.min;
+  const bmax = field.bounds.max;
   const maxT = 2 * Math.hypot(field.bounds.max[0] - field.bounds.min[0], field.bounds.max[1] - field.bounds.min[1], field.bounds.max[2] - field.bounds.min[2]);
   for (let vi = 0; vi < nv; vi += stride) {
     const px = P[vi * 3], py = P[vi * 3 + 1], pz = P[vi * 3 + 2];
+    if (faceMarginMm > 0) {
+      const dFace = Math.min(px - bmin[0], bmax[0] - px, py - bmin[1], bmax[1] - py, pz - bmin[2], bmax[2] - pz);
+      if (dFace < faceMarginMm) {
+        excludedNearFaces++;
+        continue;
+      }
+    }
     // SDF gradient (outward).
     const gx = field.eval(px + eps, py, pz) - field.eval(px - eps, py, pz);
     const gy = field.eval(px, py + eps, pz) - field.eval(px, py - eps, pz);
@@ -77,5 +98,6 @@ export function rayWallThickness(field: Field, mesh: MeshData, h: number, maxSam
     chords: chords.length,
     sampledVertices: sampled,
     unresolvedBelowVoxel: belowVoxel,
+    excludedNearFaces,
   };
 }

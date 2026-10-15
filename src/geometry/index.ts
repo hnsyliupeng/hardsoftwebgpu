@@ -5,7 +5,7 @@
 // is evaluated on the voxel grid for every design, including the B-Rep ones.
 
 import type { TopologyBuild } from "../topology/index.ts";
-import { blurGaussianMm, sampleField, surfaceNets, type Grid } from "./grid.ts";
+import { blurGaussianMm, removeFloatingComponents, sampleField, surfaceNets, type Grid } from "./grid.ts";
 
 /** Reference grid (cells per 20 mm envelope edge) that defines the smoothing scale in mm. */
 const SMOOTH_REF_CELLS = 256;
@@ -41,6 +41,10 @@ export async function buildGeometry(build: TopologyBuild, spec: DesignSpec): Pro
     grid = blurGaussianMm(grid, sigmaMm);
     observations.push(`Applied ${build.smoothPasses} smoothing pass(es) as a Gaussian of sigma ${sigmaMm.toFixed(4)} mm (grid-independent).`);
   }
+  const floating = removeFloatingComponents(grid);
+  grid = floating.grid;
+  if (floating.removedComponents > 0)
+    observations.push(`Removed ${floating.removedComponents} floating solid fragment(s) not connected to the main body (${floating.removedNodes} nodes, about ${floating.removedVolumeMm3.toFixed(3)} mm^3, clipped by the build envelope).`);
   const sdfMesh = surfaceNets(grid);
   observations.push(
     `SDF sampled on ${grid.nx}x${grid.ny}x${grid.nz} nodes (h = ${grid.h.toFixed(4)} mm); surface nets produced ${sdfMesh.indices.length / 3} triangles.`,

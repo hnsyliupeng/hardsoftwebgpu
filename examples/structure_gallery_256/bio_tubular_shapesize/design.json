@@ -50,7 +50,7 @@
   "metrics": {
     "volume": 6492.035526276915,
     "surface_area": 4787.673886914178,
-    "min_wall_thickness": 1.1499813437610997,
+    "min_wall_thickness": 1.3090839611220695,
     "connectivity": true,
     "genus": 16
   },
@@ -134,8 +134,8 @@
       "cavities": 0,
       "genus_handles": 16,
       "euler_characteristic": -15,
-      "min_wall_p5_mm": 1.15,
-      "min_wall_median_mm": 4.6184,
+      "min_wall_p5_mm": 1.3091,
+      "min_wall_median_mm": 3.3544,
       "triangles": 2380,
       "center_of_mass": [
         10,
@@ -217,6 +217,6 @@
       ],
       "notes": []
     },
-    "timing_s": 112.7
+    "timing_s": 128.3
   }
 }

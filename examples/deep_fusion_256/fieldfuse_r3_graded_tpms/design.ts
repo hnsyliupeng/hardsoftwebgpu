@@ -19,7 +19,7 @@ const spec: DesignSpec = {
   topology: "deep",
   
   
-  deep: {"kind":"graded_tpms","seeds":4,"t_min_mm":0.6,"t_max_mm":1} as NonNullable<DesignSpec["deep"]>,
+  deep: {"kind":"graded_tpms","skin_mm":0,"seeds":4,"t_min_mm":0.6,"t_max_mm":1} as NonNullable<DesignSpec["deep"]>,
   bio_motif: "deep:graded_tpms",
   family: "deep",
   variant: "graded_tpms",

@@ -1,78 +1,100 @@
-# Structure gallery, 256 cells
+# Structure gallery, 256 cells (open, skin-free)
 
-All 36 designs re-run at 256 cells per 20 mm envelope (0.078 mm voxels). Earlier 96/192-cell results remain in `examples/structure_gallery/`.
+All designs are open: no closed boundary skin (`SKIN = 0` in `scripts/structure_gallery.ts`). Each design is a 20 mm envelope
+sampled on 256 cells per axis (0.078 mm grid). Every design is checked at 256 and again at 320 cells (convergence),
+and its volume is compared with a grid-free Monte Carlo estimate (MC) of the implicit field.
+
 Run: `GALLERY_OUT=examples/structure_gallery_256 node --experimental-strip-types --no-warnings scripts/structure_gallery.ts 256`
 
-**Result: 36/36 PASS.**
+**Result: 36/36 PASS** (last full run, same code as this commit). The five deep-fusion designs at 256 cells are in
+`examples/deep_fusion_256/` (5/5 PASS). Lower resolutions are kept in separate folders (`examples/structure_gallery/` at 96/192 cells); they are not merged.
 
-## Fix recorded: cellular smoothing
+## Images
 
-The cellular `smoothlevel` step was a voxel-count 3x3x3 box blur, so its smoothing scale changed with the grid and the 320 convergence mesh disagreed with the 256 design (5771 vs 6357 mm³). It is now a Gaussian with a fixed physical sigma, `sqrt(passes*2/3) * (20/256)` mm (0.11 mm for the default 3 passes; equal to the old 256-cell blur). Check on `bio_cellular_voronoi`: 256/288/320 give 5770.9 / 5770.7 / 5770.5 mm³, 18 cavities each. Both cellular entries now pass; the 96/192-cell entries of these two were produced with the old blur and are superseded by this folder.
+Per design: `screenshot.png` (iso cut-away, shows the interior) and `view_top.png`, `view_front.png`, `view_side.png`
+(three further cut-away views). There are no exterior skin images in this folder: the closed skin was removed at the user's request.
+
+## Changes in this run (and why)
+
+1. **Strut lattices use the strut diameter (2r) as the wall.** The wall statistic is a 5th percentile of inward ray chords.
+   Grazing chords through a cylinder are short, so a 0.8 mm strut measured about 0.33–0.36 mm. The repair then scaled the
+   strut radius by a grid-dependent amount, which made the open SC volumes depend on resolution. The chord value is kept as `min_wall_thickness_chord`.
+2. **Floating fragments are removed before meshing** (`removeFloatingComponents` in `src/geometry/grid.ts`). A lattice clipped
+   by the envelope can leave whole cells that touch the body only outside the box (Kelvin: 15 islands of about 0.5 mm³ each, about 0.6 % of the volume).
+   They are reported in the observations. Designs that are already one component are unchanged.
+3. **Wall statistic ignores the envelope rim** (`RIM_MARGIN_MM = 0.5` in `src/validation/validate.ts`). Surface samples within 0.5 mm of
+   a box face are cut edges, not walls. Without this, open TPMS sheets measured a 5th-percentile chord near 0.30 mm, though the sheets were modelled at 0.7 mm.
+4. **Ply walls of two helical deep designs raised** (`fieldfuse_r2` wall 0.7 → 1.1 mm; `fieldfuse_r5` thickness 0.7–1.0 → 1.1–1.4 mm; see `scripts/structure_gallery.ts`). The `deep_R*` coupled designs are unchanged.
+   The sheet distance is approximated by |F|/|∇F|, which under-sizes highly curved twisted gyroid sheets: the 5th-percentile chord
+   is about 0.4 × the design wall at 0.7 mm. At the new walls the chord floor is met (0.42–0.44 mm), with less margin than the other entries. An exact sheet distance would remove this need.
+5. **Grid offset and `clipSign`** (earlier commits `a2ad9c4`, `d3ce231`): the box clip no longer creates exact-zero ties on the face and the sampling grid has no node on a face or strut plane.
 
 ## Known open items
 
-- Helical plate designs (`bio_helical_generic`, `fusion_helical_cap_iwp`) show small triangular teeth on the top edge. Diagnosed as a feature of the design, not a mesh error: each ply is a 20 mm square plate rotated about z and clipped by the envelope, so the corners left uncovered by a rotated plate show as triangular facets on the walls (exact planar B-Rep). Tried: making the plates cover the full section. That turns the stack into a solid 20 mm cube (8000 mm³ instead of 7166) and no longer matches the SDF field, so it was reverted. A real fix needs a different ply clip shape, which is a design decision.
-- Deep R2/R5 ply twist is not visually obvious at this scale (coupling effect 44–45 % numerically).
+- **Helical plate plies show triangular teeth at the walls.** Each ply is a 20 mm square plate rotated about z and clipped to the envelope; the corners
+  left uncovered by the rotation show as triangles on the walls. A fix that extends each ply to cover the envelope (REACH = S√2) was tried and rejected:
+  the plates then fill the whole envelope (volume 8000 mm³), so the helical rotation disappears. The teeth are a feature of plate plies; a real fix needs fibre plies (rect/cylindrical), which changes the design family. Not done.
+- Deep R2/R5 ply twist is hard to see at this scale (coupling effect 52–55 %, measured numerically).
+- `coupled.ts` core clip still uses `max(field, sdBox)`. This gives the same solid set as `clipSign` (the field differs only outside the envelope), and the designs pass, so it was left unchanged.
 
-## Periodic lattices
+## Lattices (periodic)
 
-| id | volume (mm³) | comps | wall median (mm) | result |
-|---|---|---|---|---|
-| lattice_sc | 2551.04 | 1 | 1 | PASS |
-| lattice_bcc | 3227.353 | 1 | 0.8 | PASS |
-| lattice_fcc | 3293.223 | 1 | 0.8 | PASS |
-| lattice_fbcc | 4289.788 | 1 | 0.8 | PASS |
-| lattice_diamond | 3198.997 | 1 | 0.8 | PASS |
-| lattice_bccz | 3330.879 | 1 | 0.8 | PASS |
-| lattice_kelvin | 3338.998 | 1 | 0.8 | PASS |
+## Lattices
+
+| id | volume (mm³) | components | min wall (mm) | MC check | 256 vs 320 | result |
+|---|---|---|---|---|---|---|
+| lattice_sc | 671.758 | 1 | 0.800 | 2.05 % | 0.15 % | PASS |
+| lattice_bcc | 1416.194 | 1 | 0.800 | 0.87 % | 0.41 % | PASS |
+| lattice_fcc | 1704.208 | 1 | 0.800 | 0.78 % | 0.19 % | PASS |
+| lattice_fbcc | 2967.602 | 1 | 0.800 | 0.49 % | 0.13 % | PASS |
+| lattice_diamond | 1411.032 | 1 | 0.800 | 0.69 % | 0.29 % | PASS |
+| lattice_bccz | 1591.781 | 1 | 0.800 | 0.46 % | 0.33 % | PASS |
+| lattice_kelvin | 1569.580 | 1 | 0.800 | 0.73 % | 0.09 % | PASS |
 
 ## TPMS minimal surfaces
 
-| id | volume (mm³) | comps | wall median (mm) | result |
-|---|---|---|---|---|
-| tpms_gyroid | 3870.229 | 1 | 0.4826 | PASS |
-| tpms_schwarz_p | 3545.124 | 1 | 0.4964 | PASS |
-| tpms_schwarz_d | 4233.704 | 1 | 0.4752 | PASS |
-| tpms_neovius | 4125.775 | 1 | 0.5188 | PASS |
-| tpms_iwp | 4079.734 | 1 | 0.4753 | PASS |
-| tpms_lidinoid | 5410.97 | 1 | 0.4682 | PASS |
+| id | volume (mm³) | components | min wall (mm) | MC check | 256 vs 320 | result |
+|---|---|---|---|---|---|---|
+| tpms_gyroid | 2361.974 | 1 | 0.480 | 0.29 % | 0.01 % | PASS |
+| tpms_schwarz_p | 1846.500 | 1 | 0.490 | 0.60 % | 0.01 % | PASS |
+| tpms_schwarz_d | 2871.980 | 1 | 0.471 | 0.32 % | 0.00 % | PASS |
+| tpms_neovius | 2763.446 | 1 | 0.479 | 0.51 % | 0.05 % | PASS |
+| tpms_iwp | 2655.815 | 1 | 0.472 | 0.41 % | 0.02 % | PASS |
+| tpms_lidinoid | 4495.402 | 1 | 0.434 | 0.58 % | 0.13 % | PASS |
 
 ## Bio-inspired families (Bioinspired123D)
 
-| id | volume (mm³) | comps | wall median (mm) | result |
-|---|---|---|---|---|
-| bio_helical_generic | 7165.92 | 1 | 20 | PASS |
-| bio_helical_rectfibers | 6581.917 | 1 | 2 | PASS |
-| bio_helical_cylinfibers | 5551.36 | 1 | 2.2222 | PASS |
-| bio_helical_noise | 7168.368 | 1 | 20 | PASS |
-| bio_cellular_generic | 5765.064 | 1 | 4.3517 | PASS |
-| bio_cellular_voronoi | 5770.862 | 1 | 4.4137 | PASS |
-| bio_cellular_sandwich | 6433.949 | 1 | 4.6488 | PASS |
-| bio_cellular_vorosand | 6443.553 | 1 | 4.6686 | PASS |
-| bio_tubular_generic | 6994.69 | 1 | 16.2928 | PASS |
-| bio_tubular_shapesize | 6492.036 | 1 | 4.6184 | PASS |
-| bio_tubular_layers | 7638.089 | 1 | 20 | PASS |
-| bio_tubular_noise | 6994.69 | 1 | 6.8278 | PASS |
+| id | volume (mm³) | components | min wall (mm) | MC check | 256 vs 320 | result |
+|---|---|---|---|---|---|---|
+| bio_helical_generic | 7165.920 | 1 | 4.000 | 0.00 % | 0.00 % | PASS |
+| bio_helical_rectfibers | 6581.917 | 1 | 2.000 | 0.01 % | 0.00 % | PASS |
+| bio_helical_cylinfibers | 5620.762 | 1 | 1.971 | 0.06 % | 0.12 % | PASS |
+| bio_helical_noise | 7168.368 | 1 | 4.000 | 0.02 % | 0.00 % | PASS |
+| bio_cellular_generic | 5765.656 | 1 | 1.649 | 0.20 % | 0.01 % | PASS |
+| bio_cellular_voronoi | 5770.893 | 1 | 1.640 | 0.29 % | 0.01 % | PASS |
+| bio_cellular_sandwich | 6434.805 | 1 | 1.689 | 0.18 % | 0.01 % | PASS |
+| bio_cellular_vorosand | 6443.533 | 1 | 1.733 | 0.31 % | 0.01 % | PASS |
+| bio_tubular_generic | 6994.690 | 1 | 1.538 | 0.04 % | 0.00 % | PASS |
+| bio_tubular_shapesize | 6492.036 | 1 | 1.309 | 0.01 % | 0.00 % | PASS |
+| bio_tubular_layers | 7638.089 | 1 | 1.927 | 0.01 % | 0.00 % | PASS |
+| bio_tubular_noise | 6994.690 | 1 | 1.550 | 0.05 % | 0.00 % | PASS |
 
 ## Shallow fusions (boolean / zoned)
 
-| id | volume (mm³) | comps | wall median (mm) | result |
-|---|---|---|---|---|
-| fusion_gyroid_plus_helical | 7408.095 | 1 | 18.6655 | PASS |
-| fusion_schwarzp_to_gyroid | 3772.03 | 1 | 0.4949 | PASS |
-| fusion_kelvin_to_iwp | 3770.729 | 1 | 0.8 | PASS |
-| fusion_bcc_plus_voronoi | 6918.161 | 1 | 3.1176 | PASS |
-| fusion_helical_cap_iwp | 2379.264 | 1 | 0.4743 | PASS |
-| fusion_diamond_plus_lidinoid | 5888.089 | 1 | 0.5091 | PASS |
+| id | volume (mm³) | components | min wall (mm) | MC check | 256 vs 320 | result |
+|---|---|---|---|---|---|---|
+| fusion_gyroid_plus_helical | 7419.539 | 1 | 0.480 | 0.12 % | 0.00 % | PASS |
+| fusion_schwarzp_to_gyroid | 2179.981 | 1 | 0.480 | 0.22 % | 0.03 % | PASS |
+| fusion_kelvin_to_iwp | 2205.499 | 1 | 0.472 | 0.45 % | 0.00 % | PASS |
+| fusion_bcc_plus_voronoi | 6174.205 | 1 | 0.800 | 0.14 % | 0.00 % | PASS |
+| fusion_helical_cap_iwp | 2381.578 | 1 | 0.471 | 0.98 % | 0.16 % | PASS |
+| fusion_diamond_plus_lidinoid | 5138.036 | 1 | 0.435 | 0.65 % | 0.20 % | PASS |
 
-## Deep coupled fusion R1-R5 (remote branch designs, re-run at 256)
+## Deep coupled fusion R1–R5 (coupled topology, from the remote branch)
 
-| id | volume (mm³) | comps | wall median (mm) | result |
-|---|---|---|---|---|
-| deep_R1_thickness | 5195.338 | 1 | 1 | PASS |
-| deep_R2_nested | 6004.542 | 1 | 1 | PASS |
-| deep_R3_twist | 3228.384 | 1 | 0.8659 | PASS |
-| deep_R4_blend | 4836.578 | 1 | 1 | PASS |
-| deep_R5_hierarchy | 7144.075 | 1 | 2.1095 | PASS |
+| id | volume (mm³) | components | min wall (mm) | MC check | 256 vs 320 | result |
+|---|---|---|---|---|---|---|
 
-Per entry: `<id>/screenshot.png` (cut-away), `<id>/screenshot_exterior.png` (closed skin), `design.json`, `design.ts` (copy-executable); all checks in `gallery.json`.
+
+
+Per entry: `<id>/screenshot.png` and `view_*.png` (cut-away), `design.json` (spec, metrics, repair history, limitations), `design.ts` (copy-executable parametric code); all checks in `gallery.json`.

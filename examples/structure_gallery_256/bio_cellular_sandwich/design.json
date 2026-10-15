@@ -46,11 +46,11 @@
     "notes": []
   },
   "metrics": {
-    "volume": 6433.948541980428,
-    "surface_area": 4463.653620298935,
-    "min_wall_thickness": 1.5461631549105712,
+    "volume": 6434.8046342263115,
+    "surface_area": 4475.153803280267,
+    "min_wall_thickness": 1.6888323433724513,
     "connectivity": true,
-    "genus": 11
+    "genus": 13
   },
   "render_preview": null,
   "repair_history": [],
@@ -60,7 +60,7 @@
     "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
     "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
     "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
-    "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 2 sub-voxel chords discarded. Not a certified manufacturing check.",
+    "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 1 sub-voxel chords discarded. Not a certified manufacturing check.",
     "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
     "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
   ],
@@ -93,7 +93,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 6433.5 vs MC 6423.0 mm3 (0.16 %)",
+        "value": "mesh at 320 6434.5 vs MC 6423.0 mm3 (0.18 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -105,7 +105,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 6433.9 vs 320 6433.5 mm3 (0.01 %)",
+        "value": "256 px-grid 6434.8 vs 320 6434.5 mm3 (0.01 %)",
         "rule": "<= 5 %"
       },
       {
@@ -122,22 +122,22 @@
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 6433.949,
+      "volume_mm3": 6434.805,
       "volume_mc_mm3": 6422.96,
-      "surface_area_mm2": 4463.654,
-      "volume_fraction": 0.80424,
-      "porosity": 0.19576,
+      "surface_area_mm2": 4475.154,
+      "volume_fraction": 0.80435,
+      "porosity": 0.19565,
       "components": 1,
-      "cavities": 24,
-      "genus_handles": 11,
-      "euler_characteristic": 14,
-      "min_wall_p5_mm": 1.5462,
-      "min_wall_median_mm": 4.6488,
-      "triangles": 1842476,
+      "cavities": 23,
+      "genus_handles": 13,
+      "euler_characteristic": 11,
+      "min_wall_p5_mm": 1.6888,
+      "min_wall_median_mm": 3.9701,
+      "triangles": 1857520,
       "center_of_mass": [
-        9.8915,
-        10.0613,
-        9.9337
+        9.8909,
+        10.0609,
+        9.933
       ]
     },
     "coupling_metrics": null,
@@ -155,7 +155,7 @@
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
-      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 2 sub-voxel chords discarded. Not a certified manufacturing check.",
+      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 1 sub-voxel chords discarded. Not a certified manufacturing check.",
       "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
       "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
     ],
@@ -211,6 +211,6 @@
       ],
       "notes": []
     },
-    "timing_s": 115
+    "timing_s": 141.3
   }
 }

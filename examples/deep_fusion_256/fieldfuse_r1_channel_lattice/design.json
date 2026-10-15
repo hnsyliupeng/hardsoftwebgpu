@@ -43,15 +43,16 @@
     ],
     "notes": [],
     "deep": {
-      "kind": "channel_lattice"
+      "kind": "channel_lattice",
+      "skin_mm": 0
     }
   },
   "metrics": {
-    "volume": 6723.880403478856,
-    "surface_area": 5407.91997101788,
-    "min_wall_thickness": 0.5000000183888615,
+    "volume": 6811.622472189161,
+    "surface_area": 5418.234201133018,
+    "min_wall_thickness": 0.5000000015549897,
     "connectivity": true,
-    "genus": 864
+    "genus": 1120
   },
   "render_preview": null,
   "repair_history": [],
@@ -96,7 +97,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 6726.1 vs MC 6731.0 mm3 (0.07 %)",
+        "value": "mesh at 320 6796.5 vs MC 6731.0 mm3 (0.97 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -114,7 +115,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 6723.9 vs 320 6726.1 mm3 (0.03 %)",
+        "value": "256 px-grid 6811.6 vs 320 6796.5 mm3 (0.22 %)",
         "rule": "<= 5 %"
       },
       {
@@ -131,22 +132,22 @@
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 6723.88,
+      "volume_mm3": 6811.622,
       "volume_mc_mm3": 6731.04,
-      "surface_area_mm2": 5407.92,
-      "volume_fraction": 0.84049,
-      "porosity": 0.15951,
+      "surface_area_mm2": 5418.234,
+      "volume_fraction": 0.85145,
+      "porosity": 0.14855,
       "components": 1,
-      "cavities": 0,
-      "genus_handles": 864,
-      "euler_characteristic": -863,
+      "cavities": 112,
+      "genus_handles": 1120,
+      "euler_characteristic": -1007,
       "min_wall_p5_mm": 0.5,
-      "min_wall_median_mm": 2.6065,
-      "triangles": 2276748,
+      "min_wall_median_mm": 0.5,
+      "triangles": 2251440,
       "center_of_mass": [
-        10,
-        10,
-        10
+        9.9884,
+        9.9884,
+        9.991
       ]
     },
     "coupling_metrics": null,
@@ -220,9 +221,10 @@
       ],
       "notes": [],
       "deep": {
-        "kind": "channel_lattice"
+        "kind": "channel_lattice",
+        "skin_mm": 0
       }
     },
-    "timing_s": 221.7
+    "timing_s": 210.4
   }
 }
