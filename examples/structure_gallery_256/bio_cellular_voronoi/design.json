@@ -46,9 +46,9 @@
     "notes": []
   },
   "metrics": {
-    "volume": 5770.899526569539,
-    "surface_area": 3940.728616649535,
-    "min_wall_thickness": 1.2267807305099205,
+    "volume": 5770.861619464473,
+    "surface_area": 3942.4650307909624,
+    "min_wall_thickness": 1.2164858822501676,
     "connectivity": true,
     "genus": 8
   },
@@ -77,7 +77,7 @@
     "group": "bio",
     "title": "Cellular Voronoi, smoothed",
     "prompt": "cellular voronoi smooth rounded",
-    "pass": false,
+    "pass": true,
     "checks": [
       {
         "name": "harnesses_ok",
@@ -93,8 +93,8 @@
       },
       {
         "name": "volume_mc_agreement",
-        "pass": false,
-        "value": "mesh at 320 6357.0 vs MC 5753.9 mm3 (10.48 %)",
+        "pass": true,
+        "value": "mesh at 320 5770.5 vs MC 5753.9 mm3 (0.29 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -105,8 +105,8 @@
       },
       {
         "name": "resolution_convergence",
-        "pass": false,
-        "value": "256 px-grid 5770.9 vs 320 6357.0 mm3 (9.22 %)",
+        "pass": true,
+        "value": "256 px-grid 5770.9 vs 320 5770.5 mm3 (0.01 %)",
         "rule": "<= 5 %"
       },
       {
@@ -123,18 +123,18 @@
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 5770.9,
+      "volume_mm3": 5770.862,
       "volume_mc_mm3": 5753.92,
-      "surface_area_mm2": 3940.729,
+      "surface_area_mm2": 3942.465,
       "volume_fraction": 0.72136,
       "porosity": 0.27864,
       "components": 1,
       "cavities": 18,
       "genus_handles": 8,
       "euler_characteristic": 11,
-      "min_wall_p5_mm": 1.2268,
-      "min_wall_median_mm": 4.3555,
-      "triangles": 1732864,
+      "min_wall_p5_mm": 1.2165,
+      "min_wall_median_mm": 4.4137,
+      "triangles": 1733332,
       "center_of_mass": [
         9.9724,
         10.2276,
@@ -213,6 +213,6 @@
       ],
       "notes": []
     },
-    "timing_s": 193.8
+    "timing_s": 119.5
   }
 }

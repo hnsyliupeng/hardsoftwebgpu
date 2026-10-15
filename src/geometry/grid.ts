@@ -50,6 +50,42 @@ export function sampleField(field: Field, resolution: number, pad = 2): Grid {
  * Box-blur passes on the sampled field (3x3x3 mean, clamped at the border). Rounds convex edges
  * and corners; used for the cellular "smoothlevel" parameter.
  */
+/**
+ * Gaussian blur with a physical standard deviation (mm), separable, clamped at the border.
+ * Unlike blurField (a voxel-count kernel), the smoothing scale is the same at every resolution,
+ * so the result converges as the grid is refined.
+ */
+export function blurGaussianMm(g: Grid, sigmaMm: number): Grid {
+  const sig = sigmaMm / g.h;
+  const r = Math.max(1, Math.ceil(3 * sig));
+  const ker = new Float32Array(2 * r + 1);
+  let norm = 0;
+  for (let d = -r; d <= r; d++) {
+    ker[d + r] = Math.exp(-0.5 * (d / sig) * (d / sig));
+    norm += ker[d + r];
+  }
+  for (let q = 0; q < ker.length; q++) ker[q] /= norm;
+  let src = g.values;
+  for (let axis = 0; axis < 3; axis++) {
+    const dst = new Float32Array(src.length);
+    for (let k = 0; k < g.nz; k++)
+      for (let j = 0; j < g.ny; j++)
+        for (let i = 0; i < g.nx; i++) {
+          let acc = 0;
+          for (let d = -r; d <= r; d++) {
+            let ii = i, jj = j, kk = k;
+            if (axis === 0) ii = Math.min(g.nx - 1, Math.max(0, i + d));
+            else if (axis === 1) jj = Math.min(g.ny - 1, Math.max(0, j + d));
+            else kk = Math.min(g.nz - 1, Math.max(0, k + d));
+            acc += ker[d + r] * src[nodeIndex(g, ii, jj, kk)];
+          }
+          dst[nodeIndex(g, i, j, k)] = acc;
+        }
+    src = dst;
+  }
+  return { ...g, values: src };
+}
+
 export function blurField(g: Grid, passes: number): Grid {
   let src = g.values;
   for (let p = 0; p < passes; p++) {

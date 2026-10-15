@@ -5,7 +5,10 @@
 // is evaluated on the voxel grid for every design, including the B-Rep ones.
 
 import type { TopologyBuild } from "../topology/index.ts";
-import { blurField, sampleField, surfaceNets, type Grid } from "./grid.ts";
+import { blurGaussianMm, sampleField, surfaceNets, type Grid } from "./grid.ts";
+
+/** Reference grid (cells per 20 mm envelope edge) that defines the smoothing scale in mm. */
+const SMOOTH_REF_CELLS = 256;
 import type { Field } from "../topology/fields.ts";
 import { buildBrep, type BrepSolid } from "./brep.ts";
 import type { DesignSpec, HarnessResult, MeshData } from "../types.ts";
@@ -32,8 +35,11 @@ export async function buildGeometry(build: TopologyBuild, spec: DesignSpec): Pro
   const unknowns: string[] = [];
   let grid = sampleField(build.field, res);
   if (build.smoothPasses > 0) {
-    grid = blurField(grid, build.smoothPasses);
-    observations.push(`Applied ${build.smoothPasses} smoothing pass(es) to the sampled field.`);
+    // Smoothing scale in mm: the variance of `passes` 3x3x3 box blurs on a 256-cell grid of a 20 mm
+    // envelope. Fixed in mm, so the result does not change with the grid (see blurGaussianMm).
+    const sigmaMm = Math.sqrt((build.smoothPasses * 2) / 3) * (spec.constraints.size_mm / SMOOTH_REF_CELLS);
+    grid = blurGaussianMm(grid, sigmaMm);
+    observations.push(`Applied ${build.smoothPasses} smoothing pass(es) as a Gaussian of sigma ${sigmaMm.toFixed(4)} mm (grid-independent).`);
   }
   const sdfMesh = surfaceNets(grid);
   observations.push(
