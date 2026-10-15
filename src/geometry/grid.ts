@@ -28,7 +28,10 @@ export function sampleField(field: Field, resolution: number, pad = 2): Grid {
   // box (strut caps, sheet edges) are closed inside the grid. A narrower border truncates them and
   // leaves open surface-net edges at fine resolutions.
   const padCells = Math.max(pad, Math.ceil(1.0 / h));
-  const origin: [number, number, number] = [min[0] - padCells * h, min[1] - padCells * h, min[2] - padCells * h];
+  // Sample nodes are offset by an irrational-looking fraction of h, so that no node lies exactly on a box face
+  // or a strut / sheet plane of a periodic design (those planes gave resolution-dependent surface nets).
+  const shift = 0.3719 * h;
+  const origin: [number, number, number] = [min[0] - padCells * h + shift, min[1] - padCells * h + shift, min[2] - padCells * h + shift];
   const nx = Math.ceil((max[0] - min[0]) / h) + 2 * padCells + 1;
   const ny = Math.ceil((max[1] - min[1]) / h) + 2 * padCells + 1;
   const nz = Math.ceil((max[2] - min[2]) / h) + 2 * padCells + 1;
