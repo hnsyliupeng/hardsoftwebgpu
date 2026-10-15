@@ -6,7 +6,7 @@ and its volume is compared with a grid-free Monte Carlo estimate (MC) of the imp
 
 Run: `GALLERY_OUT=examples/structure_gallery_256 node --experimental-strip-types --no-warnings scripts/structure_gallery.ts 256`
 
-**Result: 36/36 PASS** (last full run, same code as this commit). The five deep-fusion designs at 256 cells are in
+**Result: 36/36 PASS.** Full run before the fibre fix; the two fibre entries (`bio_helical_rectfibers`, `bio_helical_cylinfibers`) were re-run after it. The fibre change touches only those two designs. The five deep-fusion designs at 256 cells are in
 `examples/deep_fusion_256/` (5/5 PASS). Lower resolutions are kept in separate folders (`examples/structure_gallery/` at 96/192 cells); they are not merged.
 
 ## Images
@@ -27,13 +27,12 @@ Per design: `screenshot.png` (iso cut-away, shows the interior) and `view_top.pn
 4. **Ply walls of two helical deep designs raised** (`fieldfuse_r2` wall 0.7 → 1.1 mm; `fieldfuse_r5` thickness 0.7–1.0 → 1.1–1.4 mm; see `scripts/structure_gallery.ts`). The `deep_R*` coupled designs are unchanged.
    The sheet distance is approximated by |F|/|∇F|, which under-sizes highly curved twisted gyroid sheets: the 5th-percentile chord
    is about 0.4 × the design wall at 0.7 mm. At the new walls the chord floor is met (0.42–0.44 mm), with less margin than the other entries. An exact sheet distance would remove this need.
-5. **Grid offset and `clipSign`** (earlier commits `a2ad9c4`, `d3ce231`): the box clip no longer creates exact-zero ties on the face and the sampling grid has no node on a face or strut plane.
+5. **Helical fibre plies (rectfibers, cylinfibers) reach the envelope corners.** Fibres were half-length 1 (envelope half-width) and their centre grid stopped at the envelope edge, so rotated fibres left notches at the walls. Fibres now have half-length sqrt(2) and the centre grid extends beyond the envelope (fibres outside it are clipped). Unlike plates, a fibre set does not fill the box, so the helix stays visible. Volumes rose (rectfibers 6581.9 → 7616.4 mm³, cylinfibers 5620.8 → 6273.0 mm³) because the corners are now filled; both MC checks pass (< 0.1 %).
+6. **Grid offset and `clipSign`** (earlier commits `a2ad9c4`, `d3ce231`): the box clip no longer creates exact-zero ties on the face and the sampling grid has no node on a face or strut plane.
 
 ## Known open items
 
-- **Helical plate plies show triangular teeth at the walls.** Each ply is a 20 mm square plate rotated about z and clipped to the envelope; the corners
-  left uncovered by the rotation show as triangles on the walls. A fix that extends each ply to cover the envelope (REACH = S√2) was tried and rejected:
-  the plates then fill the whole envelope (volume 8000 mm³), so the helical rotation disappears. The teeth are a feature of plate plies; a real fix needs fibre plies (rect/cylindrical), which changes the design family. Not done.
+- **Helical plate plies show triangular teeth at the walls** (`bio_helical_generic`, `bio_helical_noise`, `fusion_helical_cap_iwp`, `fusion_gyroid_plus_helical`). Each plate is 2S square and rotates about z, so the corners it leaves uncovered show as notches on the walls. Extending the plate to cover the envelope fills the box (8000 mm³) and removes the helix, so the plate variant was left as is. Open: a decision is needed (accept the notches, or change the plate to fibres).
 - Deep R2/R5 ply twist is hard to see at this scale (coupling effect 52–55 %, measured numerically).
 - `coupled.ts` core clip still uses `max(field, sdBox)`. This gives the same solid set as `clipSign` (the field differs only outside the envelope), and the designs pass, so it was left unchanged.
 
@@ -67,8 +66,8 @@ Per design: `screenshot.png` (iso cut-away, shows the interior) and `view_top.pn
 | id | volume (mm³) | components | min wall (mm) | MC check | 256 vs 320 | result |
 |---|---|---|---|---|---|---|
 | bio_helical_generic | 7165.920 | 1 | 4.000 | 0.00 % | 0.00 % | PASS |
-| bio_helical_rectfibers | 6581.917 | 1 | 2.000 | 0.01 % | 0.00 % | PASS |
-| bio_helical_cylinfibers | 5620.762 | 1 | 1.971 | 0.06 % | 0.12 % | PASS |
+| bio_helical_rectfibers | 7616.441 | 1 | 1.205 | 0.07 % | 0.00 % | PASS |
+| bio_helical_cylinfibers | 6272.996 | 1 | 1.869 | 0.05 % | 0.11 % | PASS |
 | bio_helical_noise | 7168.368 | 1 | 4.000 | 0.02 % | 0.00 % | PASS |
 | bio_cellular_generic | 5765.656 | 1 | 1.649 | 0.20 % | 0.01 % | PASS |
 | bio_cellular_voronoi | 5770.893 | 1 | 1.640 | 0.29 % | 0.01 % | PASS |

@@ -96,21 +96,27 @@ function buildHelical(
   }
   // Fiber layout inside a ply (replicates the upstream start/pitch arithmetic).
   const gap = 0.01;
+  // Fibre centres on the upstream grid (same start and pitch), extended beyond the envelope to sqrt(2) plus one
+  // pitch, so that rotated fibres at the envelope edges are not missing. Fibres outside the envelope are clipped.
+  const gridCentres = (start: number, pitch: number): number[] => {
+    const lim = Math.SQRT2 + pitch;
+    const kLo = Math.floor((-lim - start) / pitch);
+    const kHi = Math.ceil((lim - start) / pitch);
+    const out: number[] = [];
+    for (let k = kLo; k <= kHi; k++) out.push(start + k * pitch);
+    return out;
+  };
   const fiberCenters: number[][] = [];
   const pitches: number[] = [];
   for (let i = 0; i < N; i++) {
     if (fiber === "rect") {
       const pitch = t + gap;
-      const M = Math.max(1, Math.floor(2 / pitch));
-      const total = M * pitch;
-      const start = -1 + pitch / 2 + (2 - total) / 2;
-      fiberCenters.push(Array.from({ length: M }, (_, k) => start + k * pitch));
+      const start = -1 + pitch / 2 + (2 - pitch * Math.max(1, Math.floor(2 / pitch))) / 2;
+      fiberCenters.push(gridCentres(start, pitch));
       pitches.push(pitch);
     } else if (fiber === "cyl") {
-      const M = Math.max(1, Math.floor(2 / t));
-      const total = M * t;
-      const start = -1 + t / 2 + (2 - total) / 2;
-      fiberCenters.push(Array.from({ length: M }, (_, k) => start + k * t));
+      const start = -1 + t / 2 + (2 - t * Math.max(1, Math.floor(2 / t))) / 2;
+      fiberCenters.push(gridCentres(start, t));
       pitches.push(t);
     } else {
       fiberCenters.push([]);
@@ -128,6 +134,9 @@ function buildHelical(
   const cosS = angles.map((a) => Math.cos((a * Math.PI) / 180));
   const sinS = angles.map((a) => Math.sin((a * Math.PI) / 180));
   const radius = t / 2;
+  // Fibres are longer than the envelope width (half-length sqrt(2) in envelope units): a fibre of half-length 1
+  // leaves the corners of the envelope uncovered once rotated, which produced notches on the walls.
+  const FIBRE_HALF_LENGTH = Math.SQRT2;
 
   const field = (x: number, y: number, z: number): number => {
     const i = Math.min(N - 1, Math.max(0, Math.floor(z / t)));
@@ -147,7 +156,7 @@ function buildHelical(
       let best = Infinity;
       for (let k = k0 - 1; k <= k0 + 1; k++) {
         if (k < 0 || k >= centers.length) continue;
-        best = Math.min(best, sdBox(xr, yr - centers[k], dz, 1, radius, radius));
+        best = Math.min(best, sdBox(xr, yr - centers[k], dz, FIBRE_HALF_LENGTH, radius, radius));
       }
       return best;
     }
@@ -158,7 +167,7 @@ function buildHelical(
       let best = Infinity;
       for (let k = k0 - 1; k <= k0 + 1; k++) {
         if (k < 0 || k >= centers.length) continue;
-        best = Math.min(best, sdCylinderX(xr, yr - centers[k], dz, radius, 1));
+        best = Math.min(best, sdCylinderX(xr, yr - centers[k], dz, radius, FIBRE_HALF_LENGTH));
       }
       return best;
     }
@@ -169,7 +178,7 @@ function buildHelical(
     fiber === "plate"
       ? `plies i=0..${N - 1}: sdBox(R(-theta_i)(x,y), z-(i+1/2)t; 1,1,t/2), t=2/${N}, theta_i=${rot}*i${noiseDeg ? ` + U(-${noiseDeg},${noiseDeg})` : ""}`
       : fiber === "rect"
-        ? `plies with rectangular fibres (t x t bars along x, pitch t+${gap}); theta_i=${rot}*i${noiseDeg ? ` + U(-${noiseDeg},${noiseDeg})` : ""}`
+        ? `plies with rectangular fibres (t x t bars along x, half-length sqrt(2), pitch t+${gap}); theta_i=${rot}*i${noiseDeg ? ` + U(-${noiseDeg},${noiseDeg})` : ""}`
         : `plies with cylindrical fibres (r=t/2 along x, pitch t); theta_i=${rot}*i${noiseDeg ? ` + U(-${noiseDeg},${noiseDeg})` : ""}`;
 
   if (fiber === "plate") notes.push("Plies are plates clipped to the build cube (square corners retained).");

@@ -1,6 +1,6 @@
 # Open (skin-free) gallery at 256 cells: status
 
-Status: **41/41 designs PASS** (36 in this folder, 5 in `examples/deep_fusion_256/`), all open, all with cut-away and three further
+Status: **41/41 designs PASS** (the fibre fix re-ran the two helical fibre entries) (36 in this folder, 5 in `examples/deep_fusion_256/`), all open, all with cut-away and three further
 cut-away views, no exterior skin images. The validated numbers are in `README.md` in each folder and in `gallery.json`.
 
 ## What was wrong and what was fixed
@@ -20,9 +20,10 @@ cut-away views, no exterior skin images. The validated numbers are in `README.md
 
 ## Open items
 
-- **Helical plate plies show triangular teeth on the walls** (`bio_helical_generic`, `fusion_helical_cap_iwp`). The cause is the rotated 20 mm plate
-  clipped to the envelope. A REACH fix (extend the plate to S√2) was tried and rejected: the plate then fills the whole envelope (8000 mm³) and the helix disappears.
-  A proper fix needs fibre plies (rect or cylindrical), which changes the design family. Not done; a decision for the user.
+- **Helical plate plies show triangular teeth on the walls** (`bio_helical_generic`, `bio_helical_noise`, `fusion_helical_cap_iwp`, `fusion_gyroid_plus_helical`).
+  The cause is the rotated 2S plate clipped to the envelope. Extending the plate to cover the envelope fills the box (8000 mm³) and removes the helix, so it was rejected.
+  Open: accept the notches, or change the plate variant to fibres. Decision for the user.
+- Fibre plies (rectfibers, cylinfibers) had the same notches; they are fixed (longer fibres, centre grid extended past the envelope). Their volumes rose by 6–16 %.
 - The sheet SDF `|F|/|∇F|` is approximate. An exact or Newton-projected sheet distance would allow the thinner deep walls back.
 - `coupled.ts` core clip stays as `max(field, sdBox)`. It defines the same solid as `clipSign`, and the designs pass.
 - Helical wall statistic reports p5 = 4 mm and 2 mm for the B-Rep plate designs: the chord statistic is not meaningful for those plates (they are planar slabs).

@@ -70,16 +70,19 @@ export async function buildBrep(plan: BrepPlan, sizeMm: number): Promise<BrepSol
     const plies: any[] = [];
     for (const ply of plan.plies) {
       const tp = ply.thickness * S;
+      // Fibres span sqrt(2) of the envelope half-width (matches the field in families.ts), so rotated fibres reach
+      // the envelope corners. Plates keep the 2S size: a longer plate would fill the envelope and remove the helix.
+      const FIBRE = S * Math.SQRT2;
       let piece: any;
       if (plan.fiber === "plate") {
         piece = Box(2 * S, 2 * S, tp);
       } else if (plan.fiber === "rect") {
         piece = fuseAll(
-          ply.fiberCentersY.map((yk) => Pos(0, yk * S, 0).mul(Box(2 * S, tp, tp))),
+          ply.fiberCentersY.map((yk) => Pos(0, yk * S, 0).mul(Box(2 * FIBRE, tp, tp))),
         );
       } else {
         piece = fuseAll(
-          ply.fiberCentersY.map((yk) => Pos(0, yk * S, 0).mul(Rot(0, 90, 0).mul(Cylinder(tp / 2, 2 * S)))),
+          ply.fiberCentersY.map((yk) => Pos(0, yk * S, 0).mul(Rot(0, 90, 0).mul(Cylinder(tp / 2, 2 * FIBRE)))),
         );
       }
       const zc = (ply.zCenter - 1) * S; // centred z
