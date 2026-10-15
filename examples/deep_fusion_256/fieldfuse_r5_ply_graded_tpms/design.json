@@ -1,0 +1,238 @@
+{
+  "prompt": "deep fusion triple: twisted helical plies of gyroid with Voronoi-graded thickness",
+  "design_spec": {
+    "topology": "deep",
+    "bio_motif": "deep:ply_graded_tpms",
+    "family": "deep",
+    "variant": "ply_graded_tpms",
+    "parameters": {},
+    "heterogeneity_field": null,
+    "target_metrics": {
+      "connectivity": true
+    },
+    "constraints": {
+      "size_mm": 20,
+      "min_printable_wall_mm": 0.4,
+      "resolution": 256
+    },
+    "retrieval": {
+      "base_id": "helical_generic",
+      "top_k": [
+        {
+          "id": "helical_generic",
+          "score": 2.421
+        },
+        {
+          "id": "helical_cylinfibers",
+          "score": 0
+        },
+        {
+          "id": "helical_noise",
+          "score": 0
+        }
+      ]
+    },
+    "confidence": 0.25,
+    "unknowns": [
+      "No topology keyword recognised; the closest base structure was chosen by retrieval.",
+      "Build edge length not given; 20 mm cube assumed.",
+      "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
+      "Parameter num_plies not stated; default 10 used.",
+      "Parameter rotation not stated; default 10 used.",
+      "Low intent confidence: please confirm the topology."
+    ],
+    "notes": [],
+    "deep": {
+      "kind": "ply_graded_tpms",
+      "plies": 10,
+      "twist_deg": 18,
+      "seeds": 4,
+      "t_min_mm": 0.7,
+      "t_max_mm": 1
+    }
+  },
+  "metrics": {
+    "volume": 4921.382220073814,
+    "surface_area": 11353.592205973313,
+    "min_wall_thickness": 0.4133706548406776,
+    "connectivity": true,
+    "genus": 867
+  },
+  "render_preview": null,
+  "repair_history": [],
+  "limitations": [
+    "Sheet SDF is approximate; thickness varies per sample.",
+    "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+    "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
+    "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
+    "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
+    "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 18 sub-voxel chords discarded. Not a certified manufacturing check.",
+    "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
+    "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
+  ],
+  "unknowns": [
+    "No topology keyword recognised; the closest base structure was chosen by retrieval.",
+    "Build edge length not given; 20 mm cube assumed.",
+    "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
+    "Parameter num_plies not stated; default 10 used.",
+    "Parameter rotation not stated; default 10 used.",
+    "Low intent confidence: please confirm the topology.",
+    "Resolution above 160 per axis may exceed browser memory budgets."
+  ],
+  "validation": {
+    "id": "fieldfuse_r5_ply_graded_tpms",
+    "group": "deep",
+    "title": "R5 triple coupling: ply twist and Voronoi-graded thickness",
+    "prompt": "deep fusion triple: twisted helical plies of gyroid with Voronoi-graded thickness",
+    "pass": true,
+    "checks": [
+      {
+        "name": "harnesses_ok",
+        "pass": true,
+        "value": "all",
+        "rule": "all harnesses ok"
+      },
+      {
+        "name": "single_solid",
+        "pass": true,
+        "value": "1 component(s)",
+        "rule": "one connected solid"
+      },
+      {
+        "name": "volume_mc_agreement",
+        "pass": true,
+        "value": "mesh at 320 4924.0 vs MC 4911.5 mm3 (0.25 %)",
+        "rule": "<= 5 % (finer mesh)"
+      },
+      {
+        "name": "coupling_effect",
+        "pass": true,
+        "value": "43.75 % of solid points change when the coupling is removed",
+        "rule": ">= 1 % (non-trivial coupling)"
+      },
+      {
+        "name": "watertight",
+        "pass": true,
+        "value": "0 open edges",
+        "rule": "0 open edges"
+      },
+      {
+        "name": "resolution_convergence",
+        "pass": true,
+        "value": "256 px-grid 4921.4 vs 320 4924.0 mm3 (0.05 %)",
+        "rule": "<= 5 %"
+      },
+      {
+        "name": "design_ts_runs",
+        "pass": true,
+        "value": "exit 0",
+        "rule": "node design.ts exits 0"
+      }
+    ],
+    "topology": "deep",
+    "variant": "ply_graded_tpms",
+    "grid": {
+      "resolution": 256,
+      "resolution_convergence": 320
+    },
+    "metrics": {
+      "volume_mm3": 4921.382,
+      "volume_mc_mm3": 4911.48,
+      "surface_area_mm2": 11353.592,
+      "volume_fraction": 0.61517,
+      "porosity": 0.38483,
+      "components": 1,
+      "cavities": 193,
+      "genus_handles": 867,
+      "euler_characteristic": -673,
+      "min_wall_p5_mm": 0.4134,
+      "min_wall_median_mm": 0.7398,
+      "triangles": 4981648,
+      "center_of_mass": [
+        9.9972,
+        10.0044,
+        9.9976
+      ]
+    },
+    "coupling_metrics": null,
+    "harness_ok": {
+      "IntentHarness": true,
+      "TopologyHarness": true,
+      "GeometryHarness": true,
+      "ValidationHarness": true,
+      "RepairHarness": true
+    },
+    "repair_history": [],
+    "limitations": [
+      "Sheet SDF is approximate; thickness varies per sample.",
+      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
+      "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
+      "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
+      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 18 sub-voxel chords discarded. Not a certified manufacturing check.",
+      "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
+      "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
+    ],
+    "unknowns": [
+      "No topology keyword recognised; the closest base structure was chosen by retrieval.",
+      "Build edge length not given; 20 mm cube assumed.",
+      "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
+      "Parameter num_plies not stated; default 10 used.",
+      "Parameter rotation not stated; default 10 used.",
+      "Low intent confidence: please confirm the topology.",
+      "Resolution above 160 per axis may exceed browser memory budgets."
+    ],
+    "design_spec": {
+      "topology": "deep",
+      "bio_motif": "deep:ply_graded_tpms",
+      "family": "deep",
+      "variant": "ply_graded_tpms",
+      "parameters": {},
+      "heterogeneity_field": null,
+      "target_metrics": {
+        "connectivity": true
+      },
+      "constraints": {
+        "size_mm": 20,
+        "min_printable_wall_mm": 0.4,
+        "resolution": 256
+      },
+      "retrieval": {
+        "base_id": "helical_generic",
+        "top_k": [
+          {
+            "id": "helical_generic",
+            "score": 2.421
+          },
+          {
+            "id": "helical_cylinfibers",
+            "score": 0
+          },
+          {
+            "id": "helical_noise",
+            "score": 0
+          }
+        ]
+      },
+      "confidence": 0.25,
+      "unknowns": [
+        "No topology keyword recognised; the closest base structure was chosen by retrieval.",
+        "Build edge length not given; 20 mm cube assumed.",
+        "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
+        "Parameter num_plies not stated; default 10 used.",
+        "Parameter rotation not stated; default 10 used.",
+        "Low intent confidence: please confirm the topology."
+      ],
+      "notes": [],
+      "deep": {
+        "kind": "ply_graded_tpms",
+        "plies": 10,
+        "twist_deg": 18,
+        "seeds": 4,
+        "t_min_mm": 0.7,
+        "t_max_mm": 1
+      }
+    },
+    "timing_s": 369.2
+  }
+}
