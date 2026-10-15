@@ -89,6 +89,15 @@ export function boxBounds(size: number): Bounds {
   return { min: [0, 0, 0], max: [size, size, size] };
 }
 
+/**
+ * Clip a field to a box, sign-safe. Plain max(v, d) gives exactly 0 on the box faces, and grid nodes lie on
+ * the faces at every resolution, so struts or sheets cut by a face flip sign with the resolution. Inside the
+ * box the field is kept; outside it is positive.
+ */
+export function clipSign(v: number, d: number): number {
+  return d <= 0 ? v : Math.max(v, d);
+}
+
 /** Wrap a field so it is clipped to the build volume [0,size]^3. */
 export function clipToBox(inner: Field, size: number): Field {
   const h = size / 2;
@@ -96,7 +105,7 @@ export function clipToBox(inner: Field, size: number): Field {
     bounds: boxBounds(size),
     expr: `max(${inner.expr}, sdBox(p - ${h}, ${h}))`,
     eval(x, y, z) {
-      return sdIntersect(inner.eval(x, y, z), sdBox(x - h, y - h, z - h, h, h, h));
+      return clipSign(inner.eval(x, y, z), sdBox(x - h, y - h, z - h, h, h, h));
     },
   };
 }

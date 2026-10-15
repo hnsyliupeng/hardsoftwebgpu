@@ -2,7 +2,7 @@
 // (Gyroid, Schwarz P, Schwarz D). Topology families follow the set requested for LatticeQuery
 // porting; implementations are independent re-derivations (see limitations in the pipeline).
 
-import { distSegment, sdBox, type Bounds, type Field } from "./fields.ts";
+import { clipSign, distSegment, sdBox, type Bounds, type Field } from "./fields.ts";
 import { heteroValue, maxValue } from "./heterogeneous.ts";
 import type { Axis, HeterogeneityField, LatticeType, TpmsType } from "../types.ts";
 
@@ -227,7 +227,7 @@ export function strutLattice(opts: StrutLatticeOptions): Field {
         }
       }
       if (best === Infinity) best = rMax; // far outside every strut: positive, sign-correct
-      return Math.max(best, sdBox(x - bounds.max[0] / 2, y - bounds.max[1] / 2, z - bounds.max[2] / 2, bounds.max[0] / 2, bounds.max[1] / 2, bounds.max[2] / 2));
+      return clipSign(best, sdBox(x - bounds.max[0] / 2, y - bounds.max[1] / 2, z - bounds.max[2] / 2, bounds.max[0] / 2, bounds.max[1] / 2, bounds.max[2] / 2));
     },
   };
   return field;
@@ -337,7 +337,7 @@ export function tpmsShell(opts: TpmsOptions): Field {
       const u = Math.min(1, Math.max(0, p[dirIdx] / L[dirIdx]));
       const t = wallAt(u);
       const g = (Math.abs(F) / gn) - t / 2;
-      return Math.max(
+      return clipSign(
         g,
         sdBox(x - L[0] / 2, y - L[1] / 2, z - L[2] / 2, L[0] / 2, L[1] / 2, L[2] / 2),
       );

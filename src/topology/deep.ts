@@ -5,7 +5,7 @@
 // All coordinates are millimetres in the box [0, S]^3. Convention: f < 0 inside the solid.
 
 import type { Bounds, Field } from "./fields.ts";
-import { sdBox } from "./fields.ts";
+import { clipSign, sdBox } from "./fields.ts";
 import { strutLattice, tpmsValueGrad } from "./lattice.ts";
 import { makeRng } from "../util/rng.ts";
 import type { DeepSpec } from "../types.ts";
@@ -79,7 +79,7 @@ function boxField(S: number, inner: (x: number, y: number, z: number) => number,
     expr: skin > 0 ? `min( max(${expr}, box), |box + ${skin / 2}| - ${skin / 2} )` : `max(${expr}, box)`,
     eval(x, y, z) {
       const d = sdBox(x - S / 2, y - S / 2, z - S / 2, S / 2, S / 2, S / 2);
-      const core = Math.max(inner(x, y, z), d);
+      const core = clipSign(inner(x, y, z), d);
       if (skin <= 0) return core;
       return Math.min(core, Math.abs(d + skin / 2) - skin / 2);
     },
