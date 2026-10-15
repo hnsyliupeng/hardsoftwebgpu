@@ -104,7 +104,8 @@ export function toBase64(bytes: Uint8Array): string {
  * Orthographic isometric rasterisation with a z-buffer and Lambert shading.
  * Background is white; solid pixels are grey-blue shaded by the face normal.
  */
-export function rasterisePreview(mesh: MeshData, size = 128): Preview {
+/** Camera: rotate about z by view[0] (rad), then about x by view[1]. Default is the isometric-like view. */
+export function rasterisePreview(mesh: MeshData, size = 128, view: [number, number] = [0.61, 0.44]): Preview {
   const { positions: p, indices: idx } = mesh;
   const rgba = new Uint8Array(size * size * 4).fill(255);
   const depth = new Float32Array(size * size).fill(Infinity);
@@ -120,7 +121,7 @@ export function rasterisePreview(mesh: MeshData, size = 128): Preview {
     }
   const c = [0, 1, 2].map((a) => (min[a] + max[a]) / 2);
   // View: rotate 35 deg about z, then 25 deg about x (isometric-like).
-  const cz = Math.cos(0.61), sz = Math.sin(0.61), cx = Math.cos(0.44), sx = Math.sin(0.44);
+  const cz = Math.cos(view[0]), sz = Math.sin(view[0]), cx = Math.cos(view[1]), sx = Math.sin(view[1]);
   const rawProj = (x: number, y: number, z: number): [number, number, number] => {
     const X = x - c[0], Y = y - c[1], Z = z - c[2];
     const X1 = X * cz - Y * sz, Y1 = X * sz + Y * cz;

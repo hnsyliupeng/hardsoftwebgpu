@@ -2,7 +2,7 @@
 // pass/fail checks, a high-resolution CPU render and a copy-executable design.ts per design.
 //   node --experimental-strip-types --no-warnings scripts/structure_gallery.ts [resolution=96] [id ...]
 // Output: examples/structure_gallery/<id>/{design.json, design.ts, screenshot.png} and an index README.md.
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { runPipeline } from "../src/pipeline.ts";
@@ -53,11 +53,13 @@ function deepSpec(kind: DeepKind, extra: Partial<DeepSpec> = {}): DesignSpec {
   s.bio_motif = `deep:${kind}`;
   s.parameters = {};
   s.fusion = undefined;
-  s.deep = { kind, ...extra };
+  s.deep = { kind, skin_mm: 0, ...extra };
   return s;
 }
 
-const SKIN = 1.0; // mm, envelope skin on every periodic design (strut and sheet ends attach to it)
+// No closed envelope skin: periodic structures stay open at the box faces (user request). The clipped
+// core is checked as one connected solid (single_solid) at the resolutions in the gallery.
+const SKIN = 0; // mm; set > 0 only to reproduce the earlier closed-skin designs
 
 /** Raw periodic core, cut by the envelope; the skin is added by the fusion step in latticeSpec / tpmsSpec. */
 function rawLattice(type: string, cell: number, r: number): DesignSpec {
@@ -67,6 +69,7 @@ function rawLattice(type: string, cell: number, r: number): DesignSpec {
 }
 
 function latticeSpec(type: string, cell: number, r: number): DesignSpec {
+  if (!SKIN) return rawLattice(type, cell, r);
   return fusionSpec("union", rawLattice(type, cell, r), undefined, SKIN);
 }
 
@@ -77,6 +80,7 @@ function rawTpms(type: string, cell: number, t: number): DesignSpec {
 }
 
 function tpmsSpec(type: string, cell: number, t: number): DesignSpec {
+  if (!SKIN) return rawTpms(type, cell, t);
   return fusionSpec("union", rawTpms(type, cell, t), undefined, SKIN);
 }
 
@@ -173,7 +177,7 @@ function coupledSpec(round: "R1" | "R2" | "R3" | "R4" | "R5", params: Record<str
   s.variant = round;
   s.bio_motif = `coupled:${round}`;
   s.parameters = {};
-  s.coupled = { round, params };
+  s.coupled = { round, params: { skin_mm: 0, ...params } };
   s.fusion = undefined;
   s.unknowns = [];
   return s;
@@ -406,8 +410,8 @@ async function runEntry(e: Entry) {
   checks.push({ name: "design_ts_runs", pass: run.status === 0, value: run.status === 0 ? "exit 0" : `exit ${run.status}: ${(run.stderr || "").split("\n").slice(0, 2).join(" ")}`, rule: "node design.ts exits 0" });
 
   // High-resolution screenshot of the generated mesh (CPU rasteriser, Lambert shading).
-  const shoot = (mesh: never, file: string) => {
-    const big = rasterisePreview(mesh, SHOT * SS);
+  const shoot = (mesh: never, file: string, view: [number, number] = [0.61, 0.44]) => {
+    const big = rasterisePreview(mesh, SHOT * SS, view);
     const out = new Uint8Array(SHOT * SHOT * 4);
     for (let y = 0; y < SHOT; y++)
       for (let x = 0; x < SHOT; x++)
@@ -419,9 +423,13 @@ async function runEntry(e: Entry) {
         }
     writeFileSync(join(dir, file), encodePngCompressed(SHOT, SHOT, out));
   };
-  // screenshot.png: cut-away (shows the internal structure); screenshot_exterior.png: the closed exterior.
-  shoot(cutAway(res.meshForViewer as never) as never, "screenshot.png");
-  shoot(res.meshForViewer as never, "screenshot_exterior.png");
+  // Cut-away views (near half removed, so the internal structure is visible): screenshot.png is the
+  // isometric view; view_top / view_front / view_side are axis-aligned. No closed exterior image.
+  for (const [name, view] of Object.entries(VIEWS)) {
+    const file = name === "iso" ? "screenshot.png" : `view_${name}.png`;
+    shoot(cutAway(res.meshForViewer as never, view) as never, file, view);
+  }
+  rmSync(join(dir, "screenshot_exterior.png"), { force: true });
 
   const passed = checks.every((c) => c.pass);
   const record = {
@@ -464,12 +472,12 @@ async function runEntry(e: Entry) {
 
 /** Cut-away view: keep the far half (by view depth through the bounding-box centre), clipping straddling triangles
  *  exactly, so the internal structure is visible. Same method as scripts/render_coupled.ts (cut mode). */
-function cutAway(mesh: { positions: Float32Array; indices: Uint32Array | number[] }) {
+function cutAway(mesh: { positions: Float32Array; indices: Uint32Array | number[] }, view: [number, number] = [0.61, 0.44]) {
   const P = mesh.positions, I = mesh.indices;
   const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
   for (let v = 0; v < P.length; v += 3) for (let k = 0; k < 3; k++) { lo[k] = Math.min(lo[k], P[v + k]); hi[k] = Math.max(hi[k], P[v + k]); }
   const c = [0, 1, 2].map((k) => (lo[k] + hi[k]) / 2);
-  const cosZ = Math.cos(0.61), sinZ = Math.sin(0.61), cosX = Math.cos(0.44), sinX = Math.sin(0.44);
+  const cosZ = Math.cos(view[0]), sinZ = Math.sin(view[0]), cosX = Math.cos(view[1]), sinX = Math.sin(view[1]);
   const depth = (x: number, y: number, z: number) => (x * sinZ + y * cosZ) * sinX + z * cosX;
   const d0 = depth(c[0], c[1], c[2]);
   const outP: number[] = [], outI: number[] = [];
@@ -499,6 +507,14 @@ function cutAway(mesh: { positions: Float32Array; indices: Uint32Array | number[
   }
   return { positions: Float32Array.from(outP), normals: new Float32Array(outP.length), indices: Uint32Array.from(outI) };
 }
+
+// Camera directions (rotation about z, then about x), same convention as src/render/preview.ts.
+const VIEWS: Record<string, [number, number]> = {
+  iso: [0.61, 0.44],
+  top: [0, 0],
+  front: [0, Math.PI / 2],
+  side: [Math.PI / 2, Math.PI / 2],
+};
 
 // ---- main ---------------------------------------------------------------------------------------
 
