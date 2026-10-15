@@ -19,3 +19,20 @@ Open results so far (256 cells, 20 mm):
 Options: (a) keep the skin for periodic designs and remove only the exterior image (current validated state);
 (b) open designs with per-design connectivity repair, accepting multi-component results where they occur;
 (c) keep working on the 320-mesh/field disagreement first.
+
+## Root cause of the open-lattice mismatch (found)
+
+The SC mismatch was not a meshing or field bug. The surface-nets mesh of the field matches Monte Carlo
+(256 cells: field 656 mm³ from the grid, 664 mm³ by MC, mesh 673 mm³ signed volume).
+
+The RepairHarness changes the design. The wall check uses the 5th percentile of inward ray chords. Chords
+through a cylinder include grazing rays, so for a 0.8 mm strut the p5 chord is about 0.33–0.36 mm, below the
+0.4 mm floor. The repair then scales the strut radius, and the target depends on the grid:
+- 128 cells: radius 0.4 -> 0.463 mm
+- 256 cells: radius 0.4 -> 0.508 mm
+So the volume jump (1046 vs 1121 mm³) comes from a different repaired design at each resolution.
+
+The closed-skin gallery was not affected: none of its lattices were repaired (only bio_helical_cylinfibers).
+
+Fix needed (not done): the wall metric for strut lattices should measure strut diameter (2r) or a local
+medial-axis thickness, not the p5 ray chord. Then re-run the open designs.
