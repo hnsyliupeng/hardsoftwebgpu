@@ -1,7 +1,27 @@
 // Shared contracts for the Bioinspired123D-WASM multi-harness pipeline.
 // Units: millimetres (mm), mm^3 for volume, mm^2 for area, unless a field says otherwise.
 
-export type Topology = "tubular" | "helical" | "cellular" | "lattice" | "tpms" | "hybrid" | "program" | "fusion" | "coupled";
+export type Topology = "tubular" | "helical" | "cellular" | "lattice" | "tpms" | "hybrid" | "program" | "fusion" | "coupled" | "deep";
+
+/** Deep fusion: structures coupled at the field level (see src/topology/deep.ts). */
+export type DeepKind = "channel_lattice" | "ply_tpms" | "graded_tpms" | "foam_lattice" | "ply_graded_tpms";
+export interface DeepSpec {
+  kind: DeepKind;
+  /** Build the uncoupled variant (coupling removed), used to measure the coupling effect. */
+  naive?: boolean;
+  channel_radius_mm?: number;
+  lattice_cell_mm?: number;
+  lattice_radius_mm?: number;
+  plies?: number;
+  twist_deg?: number;
+  wall_mm?: number;
+  t_min_mm?: number;
+  t_max_mm?: number;
+  seeds?: number;
+  seed?: number;
+  /** Closed envelope skin (mm) for TPMS-sheet kinds. */
+  skin_mm?: number;
+}
 
 export type LatticeType = "sc" | "bcc" | "fcc" | "fbcc" | "diamond" | "kelvin" | "bccz";
 export type TpmsType = "gyroid" | "schwarz_p" | "schwarz_d" | "neovius" | "iwp" | "lidinoid";
@@ -94,6 +114,8 @@ export interface DesignSpec {
   /** Fusion of two designs (topology "fusion" only). */
   fusion?: FusionSpec;
   /** Deep coupling between structures (topology "coupled" only). See src/topology/coupled.ts. */
+  /** Deep fusion parameters (topology "deep" only; see src/topology/deep.ts). */
+  deep?: DeepSpec;
   coupled?: { round: "R1" | "R2" | "R3" | "R4" | "R5"; params?: Record<string, number | string> };
   bio_motif: string;
   family: string;

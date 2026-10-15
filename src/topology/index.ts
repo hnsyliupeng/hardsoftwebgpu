@@ -3,6 +3,7 @@
 // (SC, BCC, FCC, FBCC, Diamond), TPMS (Gyroid, Schwarz P, Schwarz D), and hybrid unions.
 
 import { buildCoupled } from "./coupled.ts";
+import { buildDeepField } from "./deep.ts";
 import type { BrepPlan } from "../bio/families.ts";
 import { buildBio, toMillimetres, type BioBuild } from "../bio/families.ts";
 import { clipToBox, sdBox, sdUnion, type Field } from "./fields.ts";
@@ -179,6 +180,25 @@ export function buildTopology(spec: DesignSpec): HarnessResult<TopologyBuild> {
     observations.push(`Coupling metrics: ${JSON.stringify(c.coupling_metrics)}.`);
     observations.push(`Resolved coupled parameters: ${JSON.stringify(c.resolved_params)}.`);
     limitations.push(...c.limitations);
+  } else if (spec.topology === "deep") {
+    // Deep fusion (src/topology/deep.ts): the parts are coupled inside one field.
+    if (!spec.deep) throw new Error('topology "deep" requires spec.deep');
+    const d = buildDeepField(spec.deep, L);
+    build = {
+      field: d.field,
+      parts: {},
+      smoothPasses: 0,
+      brep: null,
+      bio: null,
+      cells: null,
+      cellSize: null,
+      program: null,
+      programNotes: {},
+      programApproximate: [],
+      description: d.description,
+    };
+    observations.push(...d.observations);
+    limitations.push(...d.limitations);
   } else if (spec.topology === "fusion") {
     // Fusion of two complete designs. Each part is built by the same TopologyHarness with the
     // parent's size and constraints, so the parts stay in one coordinate frame (mm, box [0, L]^3).

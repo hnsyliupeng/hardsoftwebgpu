@@ -31,6 +31,7 @@ const spec: DesignSpec = {
   topology: ${JSON.stringify(spec.topology)},${spec.program ? "\n  program: program as unknown as NonNullable<DesignSpec[\"program\"]>," : ""}
   ${spec.coupled ? `coupled: ${JSON.stringify(spec.coupled)} as unknown as NonNullable<DesignSpec["coupled"]>,` : ""}
   ${spec.fusion ? `fusion: ${JSON.stringify(spec.fusion)} as unknown as NonNullable<DesignSpec["fusion"]>,` : ""}
+  ${spec.deep ? `deep: ${JSON.stringify(spec.deep)} as NonNullable<DesignSpec["deep"]>,` : ""}
   bio_motif: ${JSON.stringify(spec.bio_motif)},
   family: ${JSON.stringify(spec.family)},
   variant: ${JSON.stringify(spec.variant)},
@@ -65,6 +66,8 @@ function describeSdf(spec: DesignSpec): string {
   switch (spec.topology) {
     case "program":
       return "feature timeline: per-op SDF (sdRoundedBox / capped cylinder / min-max booleans / inset shells / ruled loft / capped sweep); see src/program/sdf.ts";
+    case "deep":
+      return `deep fusion (${spec.deep?.kind}${spec.deep?.naive ? ", naive" : ""}): coupled field, see src/topology/deep.ts`;
     case "tpms":
       return `|F(x,y,z)| - t/2 with F = ${spec.variant} implicit (see TPMS_EXPR in src/topology/lattice.ts)`;
     case "lattice":

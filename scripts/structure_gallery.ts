@@ -11,7 +11,7 @@ import { buildTopology } from "../src/topology/index.ts";
 import { rasterisePreview } from "../src/render/preview.ts";
 import { encodePngCompressed } from "../src/render/png.ts";
 import { emitParametricCode } from "../src/codegen/emit.ts";
-import type { DesignSpec, FusionSpec } from "../src/types.ts";
+import type { DesignSpec, DeepKind, DeepSpec, FusionSpec } from "../src/types.ts";
 import type { Field } from "../src/topology/fields.ts";
 
 const L = 20; // envelope edge (mm), every design
@@ -20,10 +20,10 @@ const RES_CONV = Math.round(RES * 1.25);           // convergence grid
 const SHOT = 1600; // screenshot edge (px), as in render_coupled.ts
 const SS = 2;      // supersampling factor, box-filtered down to SHOT
 const MC_SAMPLES = 200000;
-const OUT = "examples/structure_gallery";
+const OUT = process.env.GALLERY_OUT ?? "examples/structure_gallery";
 const ONLY = process.argv.slice(3);
 
-type Group = "lattice" | "tpms" | "bio" | "fusion" | "coupled";
+type Group = "lattice" | "tpms" | "bio" | "fusion" | "coupled" | "deep";
 interface Entry {
   id: string;
   group: Group;
@@ -41,6 +41,19 @@ function mk(prompt: string, resolution = RES): DesignSpec {
   const s = structuredClone(parseIntent(prompt).data);
   s.constraints.size_mm = L;
   s.constraints.resolution = resolution;
+  return s;
+}
+
+/** Deep fusion: one field with the structures coupled inside it (see src/topology/deep.ts). */
+function deepSpec(kind: DeepKind, extra: Partial<DeepSpec> = {}): DesignSpec {
+  const s = mk(`deep fusion ${kind}`);
+  s.topology = "deep";
+  s.family = "deep";
+  s.variant = kind;
+  s.bio_motif = `deep:${kind}`;
+  s.parameters = {};
+  s.fusion = undefined;
+  s.deep = { kind, ...extra };
   return s;
 }
 
@@ -174,7 +187,36 @@ const COUPLED_ENTRIES: Entry[] = [
   { id: "deep_R5_hierarchy", group: "coupled", title: "R5 hierarchy: gyroid infill in every foam pocket", prompt: "coupled R5: gyroid infill in cellular foam pockets", make: () => coupledSpec("R5") },
 ];
 
-const ENTRIES: Entry[] = [...BASE_ENTRIES, ...COUPLED_ENTRIES];
+const DEEP_ENTRIES: Entry[] = [
+  // ---- deep fusion (src/topology/deep.ts): structures coupled inside one field, one coupling per round ----
+  {
+    id: "fieldfuse_r1_channel_lattice", group: "deep", title: "R1 BCC lattice nested inside four macro channels",
+    prompt: "deep fusion channel lattice: BCC lattice inside four tubular channels",
+    make: () => deepSpec("channel_lattice"),
+  },
+  {
+    id: "fieldfuse_r2_ply_tpms", group: "deep", title: "R2 helical plies: gyroid orientation follows the ply angle",
+    prompt: "deep fusion ply tpms: gyroid sheets twisted 18 deg per ply",
+    make: () => deepSpec("ply_tpms", { plies: 10, twist_deg: 18, wall_mm: 0.7 }),
+  },
+  {
+    id: "fieldfuse_r3_graded_tpms", group: "deep", title: "R3 gyroid whose wall thickness is driven by Voronoi cells",
+    prompt: "deep fusion graded tpms: gyroid thickness from Voronoi cell geometry",
+    make: () => deepSpec("graded_tpms", { seeds: 4, t_min_mm: 0.6, t_max_mm: 1.0 }),
+  },
+  {
+    id: "fieldfuse_r4_foam_lattice", group: "deep", title: "R4 hierarchical foam: Voronoi walls with a BCC lattice in every cell",
+    prompt: "deep fusion hierarchical foam: Voronoi walls with BCC lattice inside each cell",
+    make: () => deepSpec("foam_lattice", { seeds: 3, wall_mm: 0.8, lattice_cell_mm: 2.5, lattice_radius_mm: 0.25 }),
+  },
+  {
+    id: "fieldfuse_r5_ply_graded_tpms", group: "deep", title: "R5 triple coupling: ply twist and Voronoi-graded thickness",
+    prompt: "deep fusion triple: twisted helical plies of gyroid with Voronoi-graded thickness",
+    make: () => deepSpec("ply_graded_tpms", { plies: 10, twist_deg: 18, seeds: 4, t_min_mm: 0.7, t_max_mm: 1.0 }),
+  },
+];
+
+const ENTRIES: Entry[] = [...BASE_ENTRIES, ...COUPLED_ENTRIES, ...DEEP_ENTRIES];
 
 // ---- numerics -----------------------------------------------------------------------------------
 
@@ -275,6 +317,21 @@ async function runEntry(e: Entry) {
   const volMc = (count(occ) / MC_SAMPLES) * boxVol;
   const mcErr = Math.abs(mc.volume - volMc) / Math.max(volMc, 1e-9);
   checks.push({ name: "volume_mc_agreement", pass: mcErr <= 0.05, value: `mesh at ${RES_CONV} ${mc.volume.toFixed(1)} vs MC ${volMc.toFixed(1)} mm3 (${(mcErr * 100).toFixed(2)} %)`, rule: "<= 5 % (finer mesh)" });
+
+  // Deep fusion: coupling effect = fraction of solid sample points that change when the coupling is removed.
+  let couplingPct: number | null = null;
+  if (res.finalSpec.topology === "deep" && res.finalSpec.deep) {
+    const naiveField = buildTopology({ ...res.finalSpec, deep: { ...res.finalSpec.deep, naive: true } }).data.field;
+    const occN = occupancy(naiveField, pts);
+    let diff = 0;
+    let union = 0;
+    for (let i = 0; i < occ.length; i++) {
+      if (occ[i] | occN[i]) union++;
+      if (occ[i] !== occN[i]) diff++;
+    }
+    couplingPct = (100 * diff) / Math.max(union, 1);
+    checks.push({ name: "coupling_effect", pass: couplingPct >= 1, value: `${couplingPct.toFixed(2)} % of solid points change when the coupling is removed`, rule: ">= 1 % (non-trivial coupling)" });
+  }
 
   // Resolution convergence: the same design at 1.5x resolution.
   const convErr = Math.abs(m.volume - mc.volume) / Math.max(mc.volume, 1e-9);
