@@ -107,6 +107,19 @@
     <ul id="unknowns"></ul>
   </section>
   <section class="wide">
+    <h2>Structure graph (editable, undo / redo)</h2>
+    <textarea id="graphJson" spellcheck="false" rows="14"></textarea>
+    <div class="row">
+      <button id="graphApply">Apply</button>
+      <button id="graphUndo" disabled>Undo</button>
+      <button id="graphRedo" disabled>Redo</button>
+      <button id="graphReset">Starter graph</button>
+      <span id="graphStatus"></span>
+    </div>
+    <h2 style="margin-top:12px">Compiled expression</h2>
+    <pre id="graphExpr"></pre>
+  </section>
+  <section class="wide">
     <h2>Parametric code</h2>
     <pre id="code"></pre>
   </section>

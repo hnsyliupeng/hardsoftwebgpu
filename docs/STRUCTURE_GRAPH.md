@@ -96,3 +96,9 @@ The +9 % in gyroid_noise_radial comes from the radial term (slope 0.01 mm⁻¹ t
 - Render: `examples/graph_presets/graded_infill_sphere_{iso,top}.png`. The iso view shows the struts ending open on the sphere, with small sliver fragments where the cut meets thin strut ends.
 - Not done: a true closed-shell infill (not wanted per the no-skin rule), and a non-sphere clip used together with a lattice tiling.
 - Tests: `tests/clip.test.ts` (4 tests): exact max(f, sd) inside and outside; exact box distance in the face and corner regions; 1-Lipschitz; validation, bounds and the no-overlap error.
+
+## Editor and web panel (B2)
+- `src/graph/editor.ts`: `GraphEditor` (DOM-free). `apply(text)` parses, validates, compiles and commits a graph as one undo step; invalid input returns `{ok:false, error}` and leaves the state unchanged. `undo()` and `redo()` return to exact earlier texts. `STARTER_GRAPH` is the graded infill (C3).
+- `web/graphPanel.ts` and the "Structure graph" section in `web/index.html`: textarea, Apply, Undo, Redo, Starter graph, status line and the compiled expression. The panel only displays `GraphEditor` state.
+- Tests: `tests/editor.test.ts` (3 tests): starter load and text round trip; one undo step per valid edit with exact restore; rejection of bad JSON, a missing structure node, a bad radius and a non-overlapping clip.
+- Checks run: `tsc` clean, `scripts/build-web.mjs` builds, and the served page (`scripts/serve.mjs`, port 5173) contains the panel markup and script. Not checked: a real browser click-through, since the sandbox has no browser.

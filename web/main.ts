@@ -5,6 +5,7 @@
 import { createViewer, type Backend, type Viewer } from "./viewer.ts";
 import { EXAMPLE_PROGRAMS } from "../src/program/index.ts";
 import { loadCoupled, timelineRows, type CoupledBundle } from "./coupled.ts";
+import { initGraphPanel } from "./graphPanel.ts";
 
 const COUPLED_DIR = "examples/coupled_bio_lattice/";
 
@@ -299,6 +300,8 @@ document.querySelectorAll<HTMLButtonElement>("button.program").forEach((b) =>
     programEl.value = JSON.stringify(EXAMPLE_PROGRAMS[key], null, 2);
   }),
 );
+
+initGraphPanel();
 
 backendEl.textContent = "detecting…";
 
