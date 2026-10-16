@@ -52,3 +52,14 @@ Results (BCC, cell 4, r 0.4, EPS 0.01 unless noted):
 - Default restored; SC L=20 re-verified: 663.433 mm³, 108 pieces.
 
 Conclusion for now: the BCC L=20 failure is in the global merge of large sub-solids. The three switches above move or change it but do not remove it. Next candidate (not tried): spatially ordered slab fusion with per-slab intermediate clip, so the failing merge is local and can be located.
+
+## Round 3 (slab-ordered fusion, `EXACT_SLABS=n`, opt-in)
+The z-range is cut into n slabs (interior planes at j·L/n + 0.37 mm, off the node heights). Each slab fuses its members, cuts once with the slab box, and the slab solids are chained in z order.
+Findings (BCC, cell 4, r 0.4):
+- Slab membership by the piece's conservative z range does not reduce the work: each line is long, so every line lands in every slab (76 pieces per slab at L=8).
+- Cutting each piece to its slab before fusing fails: overlapping cap faces on the slab plane (fuse fails at depth 4). Fuse uncut, then cut the slab once.
+- Overlapping slab margins fail when chaining: the same strut surface appears in two slabs (coincident faces). Exact touching planes avoid this.
+- Slab planes through lattice node heights fail in the trim step (kernel cannot cut through a node plane cleanly). Offset by 0.37 mm.
+- Slab box with a large xy extent: both slabs build at L=8, then the final intersect with the exact box fails.
+- Slab box with exact xy faces: slab 0 builds, slab 1 fails (SLAB_FAIL k=1), in 1 min 17 s.
+Status: BCC L=8 with EXACT_SLABS=2 does not pass in any variant tried. Default path unchanged: SC L=8 = 42.515 mm³ re-verified after these edits.

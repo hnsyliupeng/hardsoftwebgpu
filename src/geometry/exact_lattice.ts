@@ -201,6 +201,46 @@ function balancedFuse(parts: any[], tags?: string[], clip?: any): any {
   return level[0];
 }
 
+/**
+ * Slab-ordered fusion (experiment, EXACT_SLABS=n). The box is cut into n z-slabs. Each slab fuses the
+ * pieces whose conservative z range reaches it (slab +/- margin), is intersected with its own
+ * expanded slab box, and the slab solids are then chained in z order. A failing merge is therefore
+ * local to one z-plane, and the failing plane is reported with EXACT_DEBUG.
+ */
+function slabFuse(K: any, pieces: any[], tags: string[], zc: number[], zh: number[], L: number, n: number, margin: number): any {
+  let acc: any = null;
+  const xy = L + 2 * margin;
+  for (let k = 0; k < n; k++) {
+    // Exact slab planes: adjacent slabs touch on a plane and do not overlap. (An overlapping margin put
+    // the same strut surface into two slabs, and the chained fuse then failed on coincident faces.)
+    // Interior planes are shifted off the lattice node heights (multiples of cell/2): a plane through a
+    // node meets the struts there in a degenerate way. The outer faces stay at the box faces.
+    const bound = (j: number) => (j <= 0 ? 0 : j >= n ? L : (j * L) / n + 0.37);
+    const z0 = bound(k), z1 = bound(k + 1);
+    const members: number[] = [];
+    for (let i = 0; i < pieces.length; i++) if (zc[i] + zh[i] >= z0 - margin && zc[i] - zh[i] <= z1 + margin) members.push(i);
+    if (members.length === 0) continue;
+    if (process.env.EXACT_DEBUG) console.error(`SLAB ${k}/${n} z=[${z0.toFixed(2)},${z1.toFixed(2)}] pieces=${members.length}`);
+    let part: any;
+    try {
+      // Fuse the members UNcut, then cut the slab once. Cutting each piece first puts overlapping
+      // cap faces on the slab plane, which the kernel rejects (tried: fails at depth 4).
+      // xy extent is huge: only the two z planes cut, so no extra faces meet the outside struts.
+      // Exact xy faces this time (EXACT_SLABS_XY=big keeps the huge box): each slab is then already inside
+      // the lattice box, so no final intersect is needed.
+      const big = process.env.EXACT_SLABS_XY === "big" ? 4 * L + 40 : L;
+      const box = K.Box(big, big, z1 - z0).translate(L / 2, L / 2, (z0 + z1) / 2);
+      part = balancedFuse(members.map((i) => pieces[i]), members.map((i) => tags[i]));
+      part = part.intersect(box);
+      acc = acc ? acc.fuse(part) : part;
+    } catch (e) {
+      if (process.env.EXACT_DEBUG) console.error(`SLAB_FAIL k=${k} z=[${z0.toFixed(2)},${z1.toFixed(2)}]`);
+      throw e;
+    }
+  }
+  return acc;
+}
+
 /** Build the exact lattice solid for the given type, cell size, cell count and radius. */
 export async function buildExactLattice(K: any, opts: ExactLatticeOptions): Promise<ExactLatticeResult> {
   const { type, cellSize: a, cells: n, radius: r } = opts;
@@ -210,6 +250,9 @@ export async function buildExactLattice(K: any, opts: ExactLatticeOptions): Prom
   const mode: ExactMode = forced === "lines" || forced === "bonds" ? forced : modeOf(type);
   const pieces: any[] = [];
   const tags: string[] = [];
+  const zCentres: number[] = []; // z centre of each piece (for slab grouping)
+  // Conservative z half-extent of each piece (for slab grouping): |axis_z| * half length + radius + margin.
+  const zh: number[] = [];
   const t0 = Date.now();
 
   if (mode === "lines") {
@@ -229,6 +272,8 @@ export async function buildExactLattice(K: any, opts: ExactLatticeOptions): Prom
         if (!lineHitsBox(onLine, dn, L, r)) continue;
         const off = lineOffset(dn, idx++, Number(process.env.EXACT_EPS ?? EPS_LINE)); // EXACT_EPS: experiments only
         pieces.push(cylinderAlong(K, r, lineLen, onLine, dn, off));
+        zh.push(Math.abs(dn[2]) * lineLen / 2 + r + 0.1);
+        zCentres.push(onLine[2]);
         tags.push(`line p=${onLine.map((c) => c.toFixed(2)).join(",")} d=${dn.map((c) => c.toFixed(2)).join(",")}`);
       }
     }
@@ -278,12 +323,16 @@ export async function buildExactLattice(K: any, opts: ExactLatticeOptions): Prom
       // so the cap rim lies inside the node sphere.
       const dl = DELTA_BOND * (0.6 + 1.2 * ((bi * 0.7548776662) % 1));
       pieces.push(cylinderAlong(K, rc, len - 2 * dl, c, unit(d)));
+      zh.push(Math.abs(unit(d)[2]) * len / 2 + rc + 0.1);
+      zCentres.push(c[2]);
       tags.push(`bond c=${c.map((x) => x.toFixed(2)).join(",")}`);
       nodes.set(A.map((x) => x.toFixed(6)).join(","), A);
       nodes.set(B.map((x) => x.toFixed(6)).join(","), B);
     }
     for (const P of nodes.values()) {
       pieces.push(K.Rot(...SPHERE_ROT).mul(K.Sphere(RS)).translate(P[0], P[1], P[2]));
+      zh.push(RS + 0.1);
+      zCentres.push(P[2]);
       tags.push(`node p=${P.map((x) => x.toFixed(2)).join(",")}`);
     }
   }
@@ -296,8 +345,9 @@ export async function buildExactLattice(K: any, opts: ExactLatticeOptions): Prom
   // faces with it; the final intersect uses the exact box.
   const margin = 0.5;
   const clipBox = K.Box(L + 2 * margin, L + 2 * margin, L + 2 * margin).translate(L / 2, L / 2, L / 2);
-  const union = balancedFuse(pieces, tags, clipBox);
-  const solid = union.intersect(clip);
+  const slabs = Number(process.env.EXACT_SLABS ?? 0);
+  const union = slabs > 0 ? slabFuse(K, pieces, tags, zCentres, zh, L, slabs, margin) : balancedFuse(pieces, tags, clipBox);
+  const solid = slabs > 0 && process.env.EXACT_SLABS_XY !== "big" ? union : union.intersect(clip);
   const tBool = Date.now() - t1;
   return { shape: solid, volume: solid.volume, area: solid.area, pieces: pieces.length, mode, timeMs: { build: tBuild, boolean: tBool } };
 }
