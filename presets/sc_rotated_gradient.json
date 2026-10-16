@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "nodes": [
+    { "id": "lat", "kind": "field", "source": { "type": "sc", "cellSize": 4, "cells": 5, "radius": 0.4 } },
+    { "id": "rot", "kind": "transform", "transform": { "op": "rotate", "axis": [1, 1, 1], "angle": 0.3 } },
+    { "id": "grad", "kind": "transform", "transform": { "op": "gradient", "axis": "z", "slope": 0.02, "centre": 10 } },
+    { "id": "out", "kind": "structure", "name": "sc_rotated_gradient" }
+  ],
+  "edges": [
+    { "from": "lat", "to": "rot" },
+    { "from": "rot", "to": "grad" },
+    { "from": "grad", "to": "out" }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "nodes": [
+    { "id": "tpms", "kind": "field", "source": { "type": "gyroid", "cellSize": 4, "cells": 5, "thickness": 0.8 } },
+    { "id": "bend", "kind": "transform", "transform": { "op": "bend", "k": 0.04 } },
+    { "id": "shear", "kind": "transform", "transform": { "op": "shear", "a": 0.1, "b": 0, "c": 0 } },
+    { "id": "out", "kind": "structure", "name": "gyroid_bent_sheared" }
+  ],
+  "edges": [
+    { "from": "tpms", "to": "bend" },
+    { "from": "bend", "to": "shear" },
+    { "from": "shear", "to": "out" }
+  ]
+}
