@@ -25,6 +25,10 @@ Defaults: `lines` for sc, bcc, fcc, fbcc, bccz; `bonds` for diamond and kelvin.
 - Trimming each line to the box plus a margin (instead of the full 2√3·L+4 cylinder): BCC L=8 fails for pad margins of 0.5 mm and for golden-ratio-spread margins; EPS 0.03/0.05/0.1 also fail. The untrimmed construction is kept.
 - Larger line offsets (EXACT_EPS 0.03–0.1) at BCC L=8 in trimmed form: still fail.
 
+## Offset sweep (untrimmed lines, the kept construction)
+- bcc L=8: EXACT_EPS 0.005 FAIL; 0.01 PASS (91.375); 0.02 PASS (B-Rep 91.38, mesh 91.045); 0.03 PASS (B-Rep 91.388, mesh 91.053).
+- bcc L=20: EXACT_EPS 0.03 FAIL (4.4 min). So the L=20 failure is not fixed by a larger offset.
+
 ## Diagnosis so far
 - Every BCC and FCC node is shared by several lines (4 or more in one point), so `lines` mode needs the golden-angle offsets; the failure appears only at larger L (BCC) or already at L=8 (FCC).
 - `bonds` mode fails at larger L with SM_ERR, which points to touching/tangent node-sphere joins that the current jitter does not remove.
