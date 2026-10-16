@@ -45,7 +45,12 @@ export type TransformSpec =
   | { op: "polynomial"; axis: "x" | "y" | "z"; coeffs: number[] }
   | { op: "noise"; amplitude: number; frequency: number; seed: number }
   // Safe arithmetic expression of x, y, z (see expr.ts). g(x) = expression; the offset is f - g.
-  | { op: "expr"; text: string };
+  | { op: "expr"; text: string }
+  // Open infill clip (C3): f' = max(f, sd_shape). Intersection only, so the result has no closed outer skin
+  // (struts end open on the shape surface). max of 1-Lipschitz fields is 1-Lipschitz.
+  | { op: "clip"; shape: ClipShape };
+
+export type ClipShape = { type: "sphere"; centre: Vec3; radius: number } | { type: "box"; min: Vec3; max: Vec3 };
 
 export type GraphNode =
   | { id: string; kind: "field"; source: SourceSpec }
@@ -153,6 +158,18 @@ function checkTransform(n: GraphNode & { kind: "transform" }, issues: GraphIssue
     case "expr": {
       const err = checkExpr(t.text);
       need(err === null, `expr: ${err}`);
+      break;
+    }
+    case "clip": {
+      const sh = t.shape as ClipShape | undefined;
+      if (sh?.type === "sphere") {
+        need(isVec3(sh.centre), "clip: sphere centre must be a 3-vector");
+        need(isNum(sh.radius) && sh.radius > 0, "clip: sphere radius must be > 0");
+      } else if (sh?.type === "box") {
+        need(isVec3(sh.min) && isVec3(sh.max) && sh.min.every((v, i) => v < sh.max[i]), "clip: box min must be < max on every axis");
+      } else {
+        need(false, "clip: shape must be a sphere or a box");
+      }
       break;
     }
     default:
@@ -304,7 +321,8 @@ function inverseMap(t: TransformSpec): ((p: Vec3) => Vec3) | null {
     case "polynomial":
     case "noise":
     case "expr":
-      return null; // offset-type: handled as f - g(x), not a coordinate map
+    case "clip":
+      return null; // offset-type or field op: handled in compileGraph, not a coordinate map
   }
 }
 
@@ -381,6 +399,13 @@ function offsetExpr(t: TransformSpec): string {
  */
 function transformBounds(b: Bounds, t: TransformSpec): Bounds {
   if (isOffset(t)) return b;
+  if (t.op === "clip") {
+    const sb = clipBounds(t.shape);
+    const min = [0, 1, 2].map((a) => Math.max(b.min[a], sb.min[a])) as Vec3;
+    const max = [0, 1, 2].map((a) => Math.min(b.max[a], sb.max[a])) as Vec3;
+    if (min.some((v, a) => v >= max[a])) throw new Error("clip: the shape does not overlap the field bounds");
+    return { min, max } as Bounds;
+  }
   if (t.op === "wrap") {
     const rOut = t.radius + Math.max(Math.abs(b.min[1]), Math.abs(b.max[1]));
     return { min: [-rOut, -rOut, b.min[2]], max: [rOut, rOut, b.max[2]] } as Bounds;
@@ -440,7 +465,8 @@ function forwardMap(t: TransformSpec, p: Vec3): Vec3 {
     case "polynomial":
     case "noise":
     case "expr":
-      return p; // offset-type: no coordinate change
+    case "clip":
+      return p; // offset-type or field op: no coordinate change
   }
 }
 
@@ -475,6 +501,25 @@ function sigmaMaxOfInverse(inv: (p: Vec3) => Vec3, p: Vec3): number {
   return Math.sqrt(lambda);
 }
 
+/** Axis-aligned bounds of a clip shape. */
+export function clipBounds(sh: ClipShape): Bounds {
+  if (sh.type === "sphere") {
+    const c = sh.centre, R = sh.radius;
+    return { min: [c[0] - R, c[1] - R, c[2] - R], max: [c[0] + R, c[1] + R, c[2] + R] } as Bounds;
+  }
+  return { min: [...sh.min], max: [...sh.max] } as Bounds;
+}
+
+/** Signed distance to a clip shape (negative inside): exact for the sphere and the box. */
+export function clipDistance(sh: ClipShape, p: Vec3): number {
+  if (sh.type === "sphere") return Math.hypot(p[0] - sh.centre[0], p[1] - sh.centre[1], p[2] - sh.centre[2]) - sh.radius;
+  const q = [0, 1, 2].map((a) => {
+    const c = (sh.min[a] + sh.max[a]) / 2, h = (sh.max[a] - sh.min[a]) / 2;
+    return Math.abs(p[a] - c) - h;
+  });
+  return Math.hypot(Math.max(q[0], 0), Math.max(q[1], 0), Math.max(q[2], 0)) + Math.min(Math.max(q[0], q[1], q[2]), 0);
+}
+
 /** Build the Field of a structure node. Throws if the graph is invalid. */
 export function compileGraph(g: StructureGraph, structureId: string): Field {
   const issues = validateGraph(g);
@@ -487,6 +532,15 @@ export function compileGraph(g: StructureGraph, structureId: string): Field {
     if (n.kind !== "transform") continue;
     const t = n.transform;
     const inner = field;
+    if (t.op === "clip") {
+      const sh = t.shape;
+      field = {
+        bounds: transformBounds(inner.bounds, t),
+        eval: (x, y, z) => Math.max(inner.eval(x, y, z), clipDistance(sh, [x, y, z])),
+        expr: `max(${inner.expr}, sd_${sh.type})`,
+      };
+      continue;
+    }
     if (isOffset(t)) {
       const g = offsetFunction(t);
       field = {

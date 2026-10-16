@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "nodes": [
+    { "id": "lat", "kind": "field", "source": { "type": "hierarchical_sc", "cellSize": 8, "cells": 3, "radius": 0.5, "levels": 2, "divisor": 2 } },
+    { "id": "grad", "kind": "transform", "transform": { "op": "radial", "slope": 0.01, "centre": [12, 12, 12], "radius0": 10 } },
+    { "id": "clip", "kind": "transform", "transform": { "op": "clip", "shape": { "type": "sphere", "centre": [12, 12, 12], "radius": 10 } } },
+    { "id": "out", "kind": "structure", "name": "graded_infill_sphere" }
+  ],
+  "edges": [
+    { "from": "lat", "to": "grad" },
+    { "from": "grad", "to": "clip" },
+    { "from": "clip", "to": "out" }
+  ]
+}

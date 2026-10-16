@@ -88,3 +88,11 @@ The +9 % in gyroid_noise_radial comes from the radial term (slope 0.01 mm⁻¹ t
 - Tests (`tests/fractal.test.ts`, 4 tests): strut counts and radius ratios; bucket field equals brute force on 400 random points; exact on level-0 edge and cube-centre values; Lipschitz; graph validation.
 - Preset `presets/fractal_cube_d3.json`. graph_check: 753.6 mm³ at res 160, 774.2 mm³ at res 240 (+2.7 %, 0 components). The finest struts are about 0.4 mm across, so res 240 is used for the render. The union volume is not independently verified (same status as C2 hierarchical).
 - Not done: tiling the fractal over a lattice of cubes, and a generator other than the corner-subcube rule. Those belong to a later C2 step.
+
+## Open graded infill in a shell-like region (C3, partial)
+- New transform `{ "op": "clip", "shape": { "type": "sphere", "centre": [...], "radius": R } }` or `{ "type": "box", "min": [...], "max": [...] }`. The field becomes f' = max(f, sd_shape): an intersection, so the struts end open on the shape surface and there is no closed outer skin (per the user's rule against closed boundary skins). max of 1-Lipschitz fields stays 1-Lipschitz. Sphere and box distances are exact; validation rejects bad shapes and a shape that does not overlap the field bounds raises at compile.
+- Preset `presets/graded_infill_sphere.json`: two-level hierarchical SC (cell 8 mm, 3 cells, radius 0.5, levels 2, divisor 2), radial grading (slope 0.01 about (12, 12, 12), radius0 10 mm: core struts thinner, rim thicker), then clip to a sphere of radius 10 mm.
+- graph_check: 201.9 mm³ at the coarse grid and 210.5 mm³ at the finer one (+4 %), 0 floating components. The fine struts are about 0.5 mm across, so the finer grid is the reference.
+- Render: `examples/graph_presets/graded_infill_sphere_{iso,top}.png`. The iso view shows the struts ending open on the sphere, with small sliver fragments where the cut meets thin strut ends.
+- Not done: a true closed-shell infill (not wanted per the no-skin rule), and a non-sphere clip used together with a lattice tiling.
+- Tests: `tests/clip.test.ts` (4 tests): exact max(f, sd) inside and outside; exact box distance in the face and corner regions; 1-Lipschitz; validation, bounds and the no-overlap error.
