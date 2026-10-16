@@ -60,6 +60,8 @@ Per design: `screenshot.png` (iso cut-away, shows the interior) and `view_top.pn
 | tpms_neovius | 2763.446 | 1 | 0.479 | 0.51 % | 0.05 % | PASS |
 | tpms_iwp | 2655.815 | 1 | 0.472 | 0.41 % | 0.02 % | PASS |
 | tpms_lidinoid | 4495.402 | 1 | 0.434 | 0.58 % | 0.13 % | PASS |
+| tpms_fischer_koch_s | 3824.714 | 1 | 0.433 | 0.36 % | 0.03 % | PASS |
+| tpms_split_p | 3667.497 | 1 | 0.446 | 0.46 % | 0.03 % | PASS |
 
 ## Bio-inspired families (Bioinspired123D)
 

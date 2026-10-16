@@ -24,7 +24,7 @@ export interface DeepSpec {
 }
 
 export type LatticeType = "sc" | "bcc" | "fcc" | "fbcc" | "diamond" | "kelvin" | "bccz";
-export type TpmsType = "gyroid" | "schwarz_p" | "schwarz_d" | "neovius" | "iwp" | "lidinoid";
+export type TpmsType = "gyroid" | "schwarz_p" | "schwarz_d" | "neovius" | "iwp" | "lidinoid" | "fischer_koch_s" | "split_p";
 
 /** Fusion of two complete designs (see FusionSpec.mode). */
 export interface FusionSpec {

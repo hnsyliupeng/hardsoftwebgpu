@@ -233,6 +233,16 @@ export function strutLattice(opts: StrutLatticeOptions): Field {
   return field;
 }
 
+/** Central-difference gradient of a scalar function of (X, Y, Z). */
+function centralGrad(f: (a: number, b: number, c: number) => number, X: number, Y: number, Z: number): [number, number, number] {
+  const h = 1e-5;
+  return [
+    (f(X + h, Y, Z) - f(X - h, Y, Z)) / (2 * h),
+    (f(X, Y + h, Z) - f(X, Y - h, Z)) / (2 * h),
+    (f(X, Y, Z + h) - f(X, Y, Z - h)) / (2 * h),
+  ];
+}
+
 /** Periodic-surface function F(X,Y,Z) and its analytic gradient, for X = 2*pi*x/a. */
 export function tpmsValueGrad(type: TpmsType, X: number, Y: number, Z: number): [number, number, number, number] {
   const sX = Math.sin(X);
@@ -285,6 +295,20 @@ export function tpmsValueGrad(type: TpmsType, X: number, Y: number, Z: number): 
       const gz = 2 * c2Z * cX * sY + cZ * s2X * cY - sZ * s2Y * sX + 2 * s2Z * (c2X + c2Y);
       return [F, gx, gy, gz];
     }
+    case "fischer_koch_s": {
+      // F = cos2X sinY cosZ + cos2Y sinZ cosX + cos2Z sinX cosY  (Fischer-Koch S, standard form)
+      const f = (a: number, b: number, c: number) =>
+        Math.cos(2 * a) * Math.sin(b) * Math.cos(c) + Math.cos(2 * b) * Math.sin(c) * Math.cos(a) + Math.cos(2 * c) * Math.sin(a) * Math.cos(b);
+      return [f(X, Y, Z), ...centralGrad(f, X, Y, Z)];
+    }
+    case "split_p": {
+      // Split P (Schoen): F = 1.1(sin2X sinZ cosY + sin2Y sinX cosZ + sin2Z sinY cosX) - 0.2(cos2X cos2Y + cos2Y cos2Z + cos2Z cos2X) - 0.4(cos2X + cos2Y + cos2Z)
+      const f = (a: number, b: number, c: number) =>
+        1.1 * (Math.sin(2 * a) * Math.sin(c) * Math.cos(b) + Math.sin(2 * b) * Math.sin(a) * Math.cos(c) + Math.sin(2 * c) * Math.sin(b) * Math.cos(a)) -
+        0.2 * (Math.cos(2 * a) * Math.cos(2 * b) + Math.cos(2 * b) * Math.cos(2 * c) + Math.cos(2 * c) * Math.cos(2 * a)) -
+        0.4 * (Math.cos(2 * a) + Math.cos(2 * b) + Math.cos(2 * c));
+      return [f(X, Y, Z), ...centralGrad(f, X, Y, Z)];
+    }
     default: {
       const never: never = type;
       throw new Error(`unknown tpms ${String(never)}`);
@@ -299,6 +323,8 @@ export const TPMS_EXPR: Record<TpmsType, string> = {
   neovius: "3 (cos X + cos Y + cos Z) + 4 cos X cos Y cos Z",
   iwp: "2 (cos X cos Y + cos Y cos Z + cos Z cos X) - (cos 2X + cos 2Y + cos 2Z)",
   lidinoid: "sin 2X cos Y sin Z + sin 2Y cos Z sin X + sin 2Z cos X sin Y - cos 2X cos 2Y - cos 2Y cos 2Z - cos 2Z cos 2X + 0.15",
+  fischer_koch_s: "cos 2X sin Y cos Z + cos 2Y sin Z cos X + cos 2Z sin X cos Y",
+  split_p: "1.1 (sin 2X sin Z cos Y + sin 2Y sin X cos Z + sin 2Z sin Y cos X) - 0.2 (cos 2X cos 2Y + cos 2Y cos 2Z + cos 2Z cos 2X) - 0.4 (cos 2X + cos 2Y + cos 2Z)",
 };
 
 export interface TpmsOptions {

@@ -121,6 +121,8 @@ const BASE_ENTRIES: Entry[] = [
   { id: "tpms_neovius", group: "tpms", title: "Neovius", prompt: "neovius TPMS, 5 mm cell, wall 0.5 mm", make: () => tpmsSpec("neovius", TPMS_CELL, TPMS_T), nominalWall: TPMS_T, period: TPMS_CELL },
   { id: "tpms_iwp", group: "tpms", title: "I-WP (wrapped package)", prompt: "iwp TPMS, 5 mm cell, wall 0.5 mm", make: () => tpmsSpec("iwp", TPMS_CELL, TPMS_T), nominalWall: TPMS_T, period: TPMS_CELL },
   { id: "tpms_lidinoid", group: "tpms", title: "Lidinoid", prompt: "lidinoid TPMS, 5 mm cell, wall 0.5 mm", make: () => tpmsSpec("lidinoid", TPMS_CELL, TPMS_T), nominalWall: TPMS_T, period: TPMS_CELL },
+  { id: "tpms_fischer_koch_s", group: "tpms", title: "Fischer-Koch S", prompt: "fischer_koch_s TPMS, 5 mm cell, wall 0.5 mm", make: () => tpmsSpec("fischer_koch_s", TPMS_CELL, TPMS_T), nominalWall: TPMS_T, period: TPMS_CELL },
+  { id: "tpms_split_p", group: "tpms", title: "Split P (Schoen)", prompt: "split_p TPMS, 5 mm cell, wall 0.5 mm", make: () => tpmsSpec("split_p", TPMS_CELL, TPMS_T), nominalWall: TPMS_T, period: TPMS_CELL },
 
   // ---- bioinspired base structures (Bioinspired123D families, all 12) ---------------------
   { id: "bio_helical_generic", group: "bio", title: "Helical plies (Bouligand)", prompt: "stacked helical plate structure with 10 plies, 10 degrees", make: () => bioSpec("stacked helical plate structure with 10 plies, 10 degrees") },

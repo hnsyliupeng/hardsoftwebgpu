@@ -37,7 +37,7 @@ function firstIndex(text: string, re: RegExp): number {
 }
 
 const RE = {
-  tpms: /\btpms\b|triply[- ]periodic|periodic minimal|gyroid|schwarz|neovius|\biwp\b|lidinoid|minimal surface|螺旋曲面|三周期|极小曲面/,
+  tpms: /\btpms\b|triply[- ]periodic|periodic minimal|gyroid|schwarz|neovius|\biwp\b|lidinoid|fischer[ _-]?koch|split[ _-]?p\b|schoen|minimal surface|螺旋曲面|三周期|极小曲面/,
   lattice: /lattice|点阵|晶格|\bbcc\b|\bfcc\b|\bfbcc\b|\bbccz\b|kelvin|tetrakaidecahedr|simple[- ]cubic|\bsc\b|金刚石/,  // 'strut' alone is not a lattice cue: bio prompts say 'struts' (rectangular / thick struts)
   helical: /helic|bouligand|螺旋|twist|\bply\b|\bplies\b/,
   cellular: /cellular|foam|voronoi|honeycomb|蜂窝|泡沫|sandwich|夹层|三明治/,
@@ -86,6 +86,8 @@ function tpmsVariant(text: string): TpmsType | null {
   if (/neovius/.test(text)) return "neovius";
   if (/\biwp\b|i-?wp|wrapped surface/.test(text)) return "iwp";
   if (/lidinoid/.test(text)) return "lidinoid";
+  if (/fischer[ _-]?koch/.test(text)) return "fischer_koch_s";
+  if (/split[ _-]?p\b|schoen/.test(text)) return "split_p";
   return null;
 }
 

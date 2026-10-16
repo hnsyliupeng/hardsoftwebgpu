@@ -32,7 +32,7 @@ export interface TopologyBuild {
 }
 
 export const LATTICE_TYPES: LatticeType[] = ["sc", "bcc", "fcc", "fbcc", "diamond", "kelvin", "bccz"];
-export const TPMS_TYPES: TpmsType[] = ["gyroid", "schwarz_p", "schwarz_d", "neovius", "iwp", "lidinoid"];
+export const TPMS_TYPES: TpmsType[] = ["gyroid", "schwarz_p", "schwarz_d", "neovius", "iwp", "lidinoid", "fischer_koch_s", "split_p"];
 
 const DEFAULTS = {
   cell_size_mm: 4,
