@@ -1,0 +1,52 @@
+{
+  "module": "src/geometry/exact_lattice.ts",
+  "script": "scripts/exact_lattice.ts",
+  "kernel": "@classcad/smlibwasm 0.2.3 (SMLib)",
+  "parameters": {"size_mm": 20, "cell_mm": 4, "strut_radius_mm": 0.4, "tessellation_tol_mm": 0.02},
+  "types": {
+    "sc": {
+      "status": "exact at L=20",
+      "mode": "lines",
+      "brep_volume_mm3": 663.433,
+      "mesh_volume_mm3": 661.157,
+      "mesh_triangles": "see script output",
+      "pieces": 108,
+      "bool_time_ms": 34806,
+      "reference": {"marching_cubes_mm3": 664, "field_256_mm3": 671.758, "field_320_mm3": 672.765},
+      "note": "Within 0.1% of the MC reference. The field at 256 is about 1.2% high."
+    },
+    "diamond": {
+      "status": "exact at L=8 only; L=20 not yet run",
+      "mode": "bonds",
+      "brep_volume_mm3_L8": 89.985,
+      "field_256_reference_L20_mm3": 1411.032
+    },
+    "bcc": {
+      "status": "exact at L=8 only; FAILS at L=20 (kernel non-manifold fuse)",
+      "mode": "lines",
+      "brep_volume_mm3_L8": 91.375,
+      "tried": ["eps 0.01", "eps 0.02"],
+      "field_256_reference_L20_mm3": 1416.194
+    },
+    "bccz": {
+      "status": "exact at L=8 only; L=20 not run",
+      "mode": "lines",
+      "brep_volume_mm3_L8": 102.295,
+      "field_256_reference_L20_mm3": 1591.781
+    },
+    "fcc": {"status": "FAILS at L=8 (kernel fuse). Not exact.", "mode": "lines", "field_256_reference_L20_mm3": 1704.208, "tried": ["eps 0.01", "eps 0.03", "eps 0.06 (intersect fails)", "radius jitter"]},
+    "fbcc": {"status": "FAILS at L=8 (kernel fuse). Not exact.", "mode": "lines", "field_256_reference_L20_mm3": 2967.602},
+    "kelvin": {"status": "FAILS at L=8 (kernel fuse; single cell works). Not exact.", "mode": "bonds", "field_256_reference_L20_mm3": 1569.58, "tried": ["sphere radius 1.002/1.01/1.05 r", "sphere rotations", "radius jitter", "end-cap jitter", "node jitter 0.002 mm", "fuse-order shuffles"]}
+  },
+  "failure_causes_found": [
+    "Collinear struts that meet end to end: coaxial end faces coincide, kernel rejects. Fixed by one long cylinder per line (lines mode).",
+    "Three or more struts through one point: triple-point degeneracy. Fixed by a per-line offset of 0.01 mm in the normal plane.",
+    "Sphere radius equal to strut radius: tangent contact. Fixed with 1.002 r.",
+    "Sphere pole aligned with a strut axis: the fuse returned an empty solid. Fixed by rotating the sphere."
+  ],
+  "open_issues": [
+    "BCC/FCC/FBCC/BCCZ at 20 mm fail or are unverified; the kernel boolean is not robust at this strut count.",
+    "Kelvin and FCC fail at 8 mm.",
+    "Exact renders are not yet produced for the gallery; all gallery images still come from the SDF path."
+  ]
+}
