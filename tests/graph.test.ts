@@ -193,3 +193,43 @@ test("bend, stretch and shear keep a sphere SDF 1-Lipschitz", () => {
     }
   }
 });
+
+test("radial, polynomial and gradient offsets are exact: f' = f - g", () => {
+  const b = baseField();
+  const rad = compileGraph(chain([{ op: "radial", slope: 0.03, centre: [1, -2, 0.5], radius0: 4 }]), "out");
+  const poly = compileGraph(chain([{ op: "polynomial", axis: "y", coeffs: [0.5, -0.1, 0.02] }]), "out");
+  for (const [x, y, z] of pts) {
+    const r = Math.hypot(x - 1, y + 2, z - 0.5);
+    assert.ok(Math.abs(rad.eval(x, y, z) - (b.eval(x, y, z) - 0.03 * (r - 4))) < 1e-12);
+    assert.ok(Math.abs(poly.eval(x, y, z) - (b.eval(x, y, z) - (0.5 - 0.1 * y + 0.02 * y * y))) < 1e-12);
+  }
+});
+
+test("noise: deterministic for a seed, bounded by the amplitude, Lipschitz, seed-dependent", () => {
+  const A = 0.2, F = 0.3;
+  const n1 = compileGraph(chain([{ op: "noise", amplitude: A, frequency: F, seed: 7 }]), "out");
+  const n2 = compileGraph(chain([{ op: "noise", amplitude: A, frequency: F, seed: 7 }]), "out");
+  const n3 = compileGraph(chain([{ op: "noise", amplitude: A, frequency: F, seed: 8 }]), "out");
+  const b = baseField();
+  let differs = false;
+  let seed = 99;
+  const rnd = () => ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff) * 40 - 20;
+  for (let i = 0; i < 300; i++) {
+    const p = [rnd(), rnd(), rnd()];
+    const g1 = b.eval(p[0], p[1], p[2]) - n1.eval(p[0], p[1], p[2]);
+    assert.ok(Math.abs(g1) <= A + 1e-12, `offset ${g1} exceeds amplitude ${A}`);
+    assert.equal(n1.eval(p[0], p[1], p[2]), n2.eval(p[0], p[1], p[2]));
+    if (Math.abs(n1.eval(p[0], p[1], p[2]) - n3.eval(p[0], p[1], p[2])) > 1e-9) differs = true;
+    const q = [p[0] + 1e-3, p[1] - 1e-3, p[2] + 1e-3];
+    const dg = Math.abs((b.eval(p[0], p[1], p[2]) - n1.eval(p[0], p[1], p[2])) - (b.eval(q[0], q[1], q[2]) - n1.eval(q[0], q[1], q[2])));
+    assert.ok(dg <= 7 * A * F * Math.hypot(1e-3, 1e-3, 1e-3) + 1e-9, `noise not Lipschitz: ${dg}`);
+  }
+  assert.ok(differs, "different seeds should give different noise");
+});
+
+test("validation: radial centre, polynomial axis, noise frequency", () => {
+  assert.ok(validateGraph(chain([{ op: "radial", slope: 1, centre: [0, 0] as never, radius0: 1 }])).some((i) => i.code === "bad_param"));
+  assert.ok(validateGraph(chain([{ op: "polynomial", axis: "w" as never, coeffs: [1] }])).some((i) => i.code === "bad_param"));
+  assert.ok(validateGraph(chain([{ op: "noise", amplitude: 0.1, frequency: 0, seed: 1 }])).some((i) => i.code === "bad_param"));
+  assert.deepEqual(validateGraph(chain([{ op: "noise", amplitude: 0.1, frequency: 0.5, seed: 1 }])), []);
+});

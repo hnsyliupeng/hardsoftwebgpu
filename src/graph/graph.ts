@@ -28,7 +28,11 @@ export type TransformSpec =
   | { op: "bend"; k: number }
   | { op: "stretch"; factors: Vec3 }
   | { op: "shear"; a: number; b: number; c: number }
-  | { op: "gradient"; axis: "x" | "y" | "z"; slope: number; centre: number };
+  | { op: "gradient"; axis: "x" | "y" | "z"; slope: number; centre: number }
+  // Offset-type density functions (B3): f' = f - g(x). g is a scalar field of the point.
+  | { op: "radial"; slope: number; centre: Vec3; radius0: number }
+  | { op: "polynomial"; axis: "x" | "y" | "z"; coeffs: number[] }
+  | { op: "noise"; amplitude: number; frequency: number; seed: number };
 
 export type GraphNode =
   | { id: string; kind: "field"; source: SourceSpec }
@@ -98,6 +102,20 @@ function checkTransform(n: GraphNode & { kind: "transform" }, issues: GraphIssue
       need(t.axis === "x" || t.axis === "y" || t.axis === "z", "gradient: axis must be x, y or z");
       need(isNum(t.slope), "gradient: slope must be a number");
       need(isNum(t.centre), "gradient: centre must be a number");
+      break;
+    case "radial":
+      need(isNum(t.slope), "radial: slope must be a number");
+      need(isVec3(t.centre), "radial: centre must be a 3-vector");
+      need(isNum(t.radius0) && (t.radius0 as number) >= 0, "radial: radius0 must be >= 0");
+      break;
+    case "polynomial":
+      need(t.axis === "x" || t.axis === "y" || t.axis === "z", "polynomial: axis must be x, y or z");
+      need(Array.isArray(t.coeffs) && t.coeffs.length >= 1 && t.coeffs.length <= 5 && (t.coeffs as unknown[]).every(isNum), "polynomial: coeffs must be 1 to 5 numbers");
+      break;
+    case "noise":
+      need(isNum(t.amplitude) && (t.amplitude as number) >= 0, "noise: amplitude must be >= 0");
+      need(isNum(t.frequency) && (t.frequency as number) > 0, "noise: frequency must be > 0 (cycles per mm)");
+      need(isNum(t.seed) && Number.isInteger(t.seed), "noise: seed must be an integer");
       break;
     default:
       issues.push({ code: "unknown_transform", message: `unknown transform ${String(t?.op)}`, node: n.id });
@@ -219,7 +237,71 @@ function inverseMap(t: TransformSpec): ((p: Vec3) => Vec3) | null {
         return [x, y, z];
       };
     case "gradient":
-      return null; // handled as an offset, not a coordinate map
+    case "radial":
+    case "polynomial":
+    case "noise":
+      return null; // offset-type: handled as f - g(x), not a coordinate map
+  }
+}
+
+/** Offset-type density functions: f' = f - g(x). */
+export function isOffset(t: TransformSpec): boolean {
+  return t.op === "gradient" || t.op === "radial" || t.op === "polynomial" || t.op === "noise";
+}
+
+// Deterministic value noise in [0, 1): hash of integer lattice corners, trilinear with smoothstep.
+function hash3(i: number, j: number, k: number, seed: number): number {
+  let h = Math.imul(i, 374761393) ^ Math.imul(j, 668265263) ^ Math.imul(k, 2147483647) ^ Math.imul(seed, 1442695041);
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  h ^= h >>> 16;
+  return (h >>> 0) / 4294967296;
+}
+
+export function valueNoise(x: number, y: number, z: number, seed: number): number {
+  const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+  const fx = x - xi, fy = y - yi, fz = z - zi;
+  const sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy), sz = fz * fz * (3 - 2 * fz);
+  const v = (di: number, dj: number, dk: number) => hash3(xi + di, yi + dj, zi + dk, seed);
+  const x00 = v(0, 0, 0) + (v(1, 0, 0) - v(0, 0, 0)) * sx;
+  const x10 = v(0, 1, 0) + (v(1, 1, 0) - v(0, 1, 0)) * sx;
+  const x01 = v(0, 0, 1) + (v(1, 0, 1) - v(0, 0, 1)) * sx;
+  const x11 = v(0, 1, 1) + (v(1, 1, 1) - v(0, 1, 1)) * sx;
+  const y0 = x00 + (x10 - x00) * sy, y1 = x01 + (x11 - x01) * sy;
+  return y0 + (y1 - y0) * sz;
+}
+
+/** The scalar g(x) of an offset-type transform. */
+export function offsetFunction(t: TransformSpec): (p: Vec3) => number {
+  switch (t.op) {
+    case "gradient": {
+      const a = { x: 0, y: 1, z: 2 }[t.axis];
+      return (p) => t.slope * (p[a] - t.centre);
+    }
+    case "radial":
+      return (p) => t.slope * (Math.hypot(p[0] - t.centre[0], p[1] - t.centre[1], p[2] - t.centre[2]) - t.radius0);
+    case "polynomial": {
+      const a = { x: 0, y: 1, z: 2 }[t.axis];
+      return (p) => {
+        let acc = 0, pw = 1;
+        for (const c of t.coeffs) { acc += c * pw; pw *= p[a]; }
+        return acc;
+      };
+    }
+    case "noise":
+      // amplitude * (2 n - 1), n in [0, 1): the offset is in (-amplitude, amplitude).
+      return (p) => t.amplitude * (2 * valueNoise(p[0] * t.frequency, p[1] * t.frequency, p[2] * t.frequency, t.seed) - 1);
+    default:
+      throw new Error(`offsetFunction: ${t.op} is not an offset transform`);
+  }
+}
+
+function offsetExpr(t: TransformSpec): string {
+  switch (t.op) {
+    case "gradient": return `${t.slope}*(${t.axis}-${t.centre})`;
+    case "radial": return `${t.slope}*(|x-${t.centre.join(",")}|-${t.radius0})`;
+    case "polynomial": return `poly_${t.axis}[${t.coeffs.join(",")}]`;
+    case "noise": return `${t.amplitude}*(2*valueNoise(${t.frequency}*x,seed=${t.seed})-1)`;
+    default: return t.op;
   }
 }
 
@@ -229,7 +311,7 @@ function inverseMap(t: TransformSpec): ((p: Vec3) => Vec3) | null {
  * a 4x4x4 sample grid is used and the caller should check the sampled field (see tests).
  */
 function transformBounds(b: Bounds, t: TransformSpec): Bounds {
-  if (t.op === "gradient") return b;
+  if (isOffset(t)) return b;
   if (t.op === "bend") {
     // Rotation about z keeps |xy| and z, so the xy extent is a disc of the largest input radius.
     const R = Math.hypot(Math.max(Math.abs(b.min[0]), Math.abs(b.max[0])), Math.max(Math.abs(b.min[1]), Math.abs(b.max[1])));
@@ -269,7 +351,10 @@ function forwardMap(t: TransformSpec, p: Vec3): Vec3 {
     case "shear":
       return [p[0] + t.a * p[1] + t.b * p[2], p[1] + t.c * p[2], p[2]];
     case "gradient":
-      return p;
+    case "radial":
+    case "polynomial":
+    case "noise":
+      return p; // offset-type: no coordinate change
   }
 }
 
@@ -316,15 +401,12 @@ export function compileGraph(g: StructureGraph, structureId: string): Field {
     if (n.kind !== "transform") continue;
     const t = n.transform;
     const inner = field;
-    if (t.op === "gradient") {
-      const axisIndex = { x: 0, y: 1, z: 2 }[t.axis];
+    if (isOffset(t)) {
+      const g = offsetFunction(t);
       field = {
         bounds: inner.bounds,
-        eval: (x, y, z) => {
-          const p = [x, y, z];
-          return inner.eval(x, y, z) - t.slope * (p[axisIndex] - t.centre);
-        },
-        expr: `(${inner.expr}) - ${t.slope}*(${t.axis}-${t.centre})`,
+        eval: (x, y, z) => inner.eval(x, y, z) - g([x, y, z]),
+        expr: `(${inner.expr}) - ${offsetExpr(t)}`,
       };
       continue;
     }

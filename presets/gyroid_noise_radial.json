@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "nodes": [
+    { "id": "tpms", "kind": "field", "source": { "type": "gyroid", "cellSize": 4, "cells": 5, "thickness": 0.8 } },
+    { "id": "noise", "kind": "transform", "transform": { "op": "noise", "amplitude": 0.15, "frequency": 0.2, "seed": 7 } },
+    { "id": "radial", "kind": "transform", "transform": { "op": "radial", "slope": 0.01, "centre": [10, 10, 10], "radius0": 5 } },
+    { "id": "out", "kind": "structure", "name": "gyroid_noise_radial" }
+  ],
+  "edges": [
+    { "from": "tpms", "to": "noise" },
+    { "from": "noise", "to": "radial" },
+    { "from": "radial", "to": "out" }
+  ]
+}
