@@ -42,7 +42,7 @@ Each step has an acceptance check. A step is done only when its check passes and
 |---|---|
 | B1 | done: structure graph schema, validation, compile (src/graph/graph.ts, tests/graph.test.ts). See docs/STRUCTURE_GRAPH.md |
 | B2 | partial: undo/redo over snapshots (src/graph/history.ts) and preset save/load (presets/). UI not yet wired |
-| B3 | partial: rotate, bend, stretch, shear (Lipschitz-normalised); linear, radial, polynomial and noise offsets. Expression node not yet done (needs a safe parser) |
+| B3 | done: rotate, bend, stretch, shear (Lipschitz-normalised); linear, radial, polynomial, noise and safe expression offsets (src/graph/expr.ts, no eval; tests/expr.test.ts) |
 | C2 | partial: hierarchical (multi-scale) SC source, union of levels with divisor 2 or 3 (src/graph/graph.ts, presets/hierarchical_sc.json). Recursive substitution not done. See docs/STRUCTURE_GRAPH.md |
 | C1 | partial: cylinder projection (wrap transform, constant Lipschitz normalisation, zero-set and Lipschitz tests, render). Conformal harmonic mapping not done. See docs/STRUCTURE_GRAPH.md |
 | A1 | done: sparse sampler matches dense volume (SC, gyroid at 256). Saving 39% for SC, ~0% for TPMS. See docs/SPARSE_SAMPLING.md |
