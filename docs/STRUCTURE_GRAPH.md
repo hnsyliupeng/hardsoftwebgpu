@@ -102,3 +102,9 @@ The +9 % in gyroid_noise_radial comes from the radial term (slope 0.01 mm⁻¹ t
 - `web/graphPanel.ts` and the "Structure graph" section in `web/index.html`: textarea, Apply, Undo, Redo, Starter graph, status line and the compiled expression. The panel only displays `GraphEditor` state.
 - Tests: `tests/editor.test.ts` (3 tests): starter load and text round trip; one undo step per valid edit with exact restore; rejection of bad JSON, a missing structure node, a bad radius and a non-overlapping clip.
 - Checks run: `tsc` clean, `scripts/build-web.mjs` builds, and the served page (`scripts/serve.mjs`, port 5173) contains the panel markup and script. Not checked: a real browser click-through, since the sandbox has no browser.
+
+## Parameter sliders (D1, partial)
+- `src/graph/params.ts`: `paramSlots(g)` lists editable scalars with ranges (source sizes, radii, counts, levels, divisors, fractal depth and ratio; transform angles, slopes, offsets, noise amplitude and frequency, wrap radius, clip radius). `setParam(g, node, field, value)` clamps to the range, rounds integers, applies the value to a copy of the graph and validates it. The input graph is never mutated.
+- Web panel: one slider per slot. The slider commits on release (`change`), so a drag is one undo step, and a rejected value is reverted.
+- Tests (`tests/params.test.ts`, 5 tests): starter-graph slots and ranges, copy and clamp behaviour, rule violations reported by validation, unknown slots and non-finite values, and every preset in `presets/` round-tripping through each slot to a valid graph.
+- Not done: a separate expression input box (the expr node text is edited in the JSON), and slider ranges tied to the bounds of a specific model.
