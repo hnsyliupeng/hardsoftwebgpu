@@ -1,0 +1,118 @@
+# Developer guide
+
+For the user-facing guide see `docs/USER_GUIDE.md`. For the architecture diagrams see `docs/ARCHITECTURE.md`.
+
+## 1. Layout
+
+| Path | Role |
+|---|---|
+| `src/pipeline.ts` | `runPipeline`: IntentHarness → TopologyHarness → GeometryHarness → ValidationHarness → RepairHarness → ExportHarness |
+| `src/api.ts` | `runDesign(req)`: programmatic entry point (used by the CLI and the web worker) |
+| `src/intent/` | Rule-based prompt parsing (EN and ZH), retrieval of bio families |
+| `src/bio/` | Twelve base structures and their parameter ranges (`catalog.ts`, `families.ts`) |
+| `src/topology/` | Lattices and TPMS (`lattice.ts`), deep and coupled fusion (`deep.ts`, `coupled.ts`), heterogeneity (`heterogeneous.ts`), field interface (`fields.ts`) |
+| `src/geometry/` | SDF sampling, surface nets, mesh integrals and floating-component removal (`grid.ts`); exact B-Rep via smlibwasm (`brep.ts`) |
+| `src/program/` | Feature timeline (box, cylinder, boolean, fillet, shell, offset, loft, sweep, graded shell) |
+| `src/validation/` | Wall thickness by inward rays (`thickness.ts`), validation rules (`validate.ts`) |
+| `src/repair/` | Repair loop (at most 5 rounds, full history); cannot change deep-fusion parameters |
+| `src/export/` | JSON, STL, GLB, STEP, USD (partial) |
+| `src/codegen/` | Copy-executable parametric TypeScript for each design |
+| `src/graph/` | Structure graph: `graph.ts` (schema, validation, compile), `expr.ts` (safe expression parser), `fractal.ts` (fractal skeleton), `editor.ts` (edit controller), `params.ts` (parameter slots), `history.ts` (undo and redo), `presets.ts` (load and save) |
+| `web/` | Browser app: `main.ts` (UI), `worker.ts` (runs the pipeline off the main thread), `viewer.ts`, `graphPanel.ts` (graph editor panel) |
+| `scripts/` | CLI tools (see section 4) and the build and serve scripts |
+| `tests/` | `node:test` suites (100 cases) |
+| `presets/` | Structure-graph JSON files |
+| `examples/` | Committed renders and records, with a README per set |
+| `docs/` | Specifications, status, and guides |
+
+## 2. Two geometry paths
+
+- **Field path (default).** A `Field` is an object with `bounds`, `eval(x, y, z)` (signed distance or
+  level set, negative inside) and a text `expr`. `grid.ts` samples it, `surfaceNets` meshes it, and
+  `meshIntegrals` gives volume and area. Fast, and it works at any resolution up to memory limits.
+  Accuracy depends on the grid: check with spacing-matched resolution.
+- **Exact path.** `brep.ts` loads smlibwasm and builds B-Rep shapes (`buildBrep`, `measure`, `meshOf`).
+  Tessellation tolerance goes through `K.tessellate(shape, tol)`. Exact strut lattices: SC at L = 20 is complete
+  (`scripts/exact_lattice.ts`, `docs/exact_lattice_status.json`). BCC and diamond are exact at L = 8 only; a single Kelvin cell is exact but multi-cell builds fail; FCC, FBCC, BCCZ and TPMS are field-based. See `docs/EXACT_LATTICES.md`.
+
+## 3. Structure graph
+
+A graph is `{version, nodes, edges}`. Nodes have `kind`: `field` (a source), `transform`, or `structure`
+(the output). Edges go from one node to the next, and each chain ends at a structure node.
+
+- **Sources** (`SourceSpec`): `sc`, `gyroid`, `sphere`, `hierarchical_sc`, `fractal_cube`.
+- **Offset transforms** (f' = f − g(x)): `gradient`, `radial`, `polynomial`, `noise`, `expr`. Listed by `isOffset`.
+- **Coordinate maps**: `rotate`, `bend`, `stretch`, `shear`, `wrap`. Each has `inverseMap` and `forwardMap`.
+  Non-isometric maps are normalised by σ_max (`sigmaMaxOfInverse`); `wrap` uses a constant Λ so the
+  product term stays Lipschitz.
+- **Field ops**: `clip` (f' = max(f, sd_shape)). An intersection, so no closed skin.
+
+Compile with `compileGraph(g, structureId)`. It validates first and throws on invalid input.
+
+### Adding a source
+
+1. Add a variant to `SourceSpec` in `src/graph/graph.ts`.
+2. Add its checks to the `switch` in `validateGraph`.
+3. Add a branch to `sourceField`.
+4. Add its editable ranges to `SOURCE_RANGES` in `src/graph/params.ts`.
+5. Add a test in `tests/` and, if useful, a preset in `presets/`. The preset round-trip test covers every preset.
+
+### Adding a transform
+
+1. Add a variant to `TransformSpec`.
+2. Add its checks to `validateGraph`.
+3. Pick the category:
+   - Offset: list it in `isOffset`, `offsetFunction` and `offsetExpr`, and in the `forwardMap` and `inverseMap` no-op lists.
+   - Coordinate map: add cases to `inverseMap` and `forwardMap`, and to `transformBounds` if the bounds change.
+   - Field op: add a branch in `compileGraph` before the offset branch (see `clip`).
+4. Add ranges to `TRANSFORM_RANGES` in `src/graph/params.ts`.
+5. Add tests: the exact identity (f' = f − g, or the map identity), Lipschitz on the valid domain, and validation.
+
+## 4. Scripts (CLI)
+
+| Script | Purpose |
+|---|---|
+| `scripts/run.ts` | Full pipeline from a prompt or program; writes `artifacts/<name>/` |
+| `scripts/selftest.ts` | CPU self-test of the chain; writes `artifacts/selftest/report.json` |
+| `scripts/pipeline_bench.ts` | Prompts through the full chain |
+| `scripts/benchmark.ts` | Intent routing over `eval/benchmark.csv` |
+| `scripts/structure_gallery.ts` | Every structure family through the pipeline, with checks and renders |
+| `scripts/render_fine.ts` | High-resolution cut-away renders (1600 px, 2× supersampling) |
+| `scripts/graph_check.ts` | Volume and floating components of a graph preset, with spacing-matched resolution |
+| `scripts/render_graph.ts` | Iso and top renders of a graph preset |
+| `scripts/exact_lattice.ts` | Exact SC lattice and tessellation check |
+| `scripts/export_glb.ts` | One structure to GLB |
+| `scripts/build-web.mjs`, `scripts/serve.mjs` | Web build and static server |
+
+## 5. Conventions
+
+- **Run TypeScript directly.** Scripts use `node --experimental-strip-types`. Strip-only mode rejects
+  constructor parameter properties; use explicit fields.
+- **Own-property lookups for name tables.** Use `Object.prototype.hasOwnProperty.call`, not `in`
+  (`in` matches `constructor` and other prototype keys).
+- **Spacing-matched resolution.** A transform that enlarges the bounds (bend, shear, wrap, clip) needs a
+  higher grid resolution to keep the source spacing. `graph_check` does this; a render script should too.
+- **Tests before claims.** Run `npm test` and `node_modules/.bin/tsc --noEmit`. Check renders visually before
+  calling a fix done. A structural pass is not proof of quality.
+- **Git policy.** Do not commit large generated binaries (STEP, mesh.bin); `artifacts/` and `dist/` are
+  ignored. Never force push; if the local branch falls behind, reset to the remote branch after backing up
+  untracked files.
+- **Licences.** Do not copy microgen (GPL-3.0) code. See `docs/SOURCE_REPORTS.md`.
+
+## 6. Build and serve
+
+```bash
+npm ci
+npm test
+npm run build:web      # esbuild bundle in dist/web, copies smlibwasm assets
+npm run serve          # http://0.0.0.0:5173
+```
+
+The build copies smlibwasm's `dist`, `wasm` and `fonts` into `dist/web/vendor/smlibwasm`; the worker loads the kernel from there.
+
+## 7. Known gaps (see `docs/TASK_PLAN.md`)
+
+- C1 conformal mapping; C2 lattice tiling of fractals; C3 closed-shell infill (not planned, by the no-skin rule).
+- D2 WebGPU compute path, instancing, LOD; D3 sections, measurement, large-mesh benchmark.
+- E1 is this guide set; the architecture diagram is in `docs/ARCHITECTURE.md`.
+- `excludedNearFaces` is not yet in the reported metrics.

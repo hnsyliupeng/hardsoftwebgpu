@@ -11,7 +11,7 @@ Every harness returns `observations`, `limitations`, `unknowns` and `evidence`.
 
 ```bash
 npm install            # Node >= 22.18 (type stripping is used for .ts scripts)
-npm test               # 53 node:test cases (topology, geometry, intent, repair, expr, program, viewer, pipeline)
+npm test               # 100 node:test cases (topology, geometry, intent, repair, expr, program, viewer, pipeline)
 npm run typecheck
 npm run run -- "gyroid TPMS wall thickness 0.2 mm, 4 mm cell" gyroid_repair 96
 npm run run -- --program rounded_hollow_box rounded_hollow_box 96   # feature timeline example
@@ -93,3 +93,12 @@ Deep coupled fusion (`src/topology/coupled.ts`, five rounds, `docs/DEEP_FUSION_R
 bash scripts/python_env.sh
 LD_LIBRARY_PATH=.venv/stubs .venv/bin/python -m unittest discover -s python/tests -p "test_*.py"
 ```
+
+## Guides
+
+- [User guide](docs/USER_GUIDE.md): install, generate, web app, metrics, renders, limitations.
+- [Developer guide](docs/DEVELOPER_GUIDE.md): layout, the two geometry paths, structure graph, conventions.
+- [Architecture](docs/ARCHITECTURE.md): Mermaid diagrams of the pipeline, geometry paths, graph and web app.
+- [Structure graph examples](docs/GRAPH_EXAMPLES.md): eight field-based examples with commands and numbers.
+- [Source reports and licences](docs/SOURCE_REPORTS.md): upstream projects and their licence status.
+- [Task plan](docs/TASK_PLAN.md): status of each phase step.
