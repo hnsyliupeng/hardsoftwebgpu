@@ -1,0 +1,9 @@
+{"family":"sc","res":128,"nodes":2924207,"triangles":385200,"vertices":191952,"volume_mm3":643.331,"sample_ms":3336,"surface_ms":766,"integrals_ms":23,"rss_mb":157,"heap_mb":29}
+{"family":"sc","res":192,"nodes":9663597,"triangles":888048,"vertices":443376,"volume_mm3":665.948,"sample_ms":9995,"surface_ms":1787,"integrals_ms":42,"rss_mb":262,"heap_mb":49}
+{"family":"sc","res":256,"nodes":22665187,"triangles":1569312,"vertices":784008,"volume_mm3":671.758,"sample_ms":22940,"surface_ms":3629,"integrals_ms":61,"rss_mb":423,"heap_mb":78}
+{"family":"gyroid","res":128,"nodes":2924207,"triangles":1468920,"vertices":732522,"volume_mm3":4196.754,"sample_ms":558,"surface_ms":1042,"integrals_ms":76,"rss_mb":224,"heap_mb":88}
+{"family":"gyroid","res":192,"nodes":9663597,"triangles":3316656,"vertices":1656234,"volume_mm3":4193.775,"sample_ms":1167,"surface_ms":2830,"integrals_ms":169,"rss_mb":364,"heap_mb":110}
+{"family":"gyroid","res":256,"nodes":22665187,"triangles":5905764,"vertices":2950779,"volume_mm3":4190.356,"sample_ms":2877,"surface_ms":5068,"integrals_ms":228,"rss_mb":575,"heap_mb":161}
+{"family":"schwarz_p","res":128,"nodes":2924207,"triangles":1147068,"vertices":572534,"volume_mm3":3495.47,"sample_ms":499,"surface_ms":967,"integrals_ms":53,"rss_mb":204,"heap_mb":69}
+{"family":"schwarz_p","res":192,"nodes":9663597,"triangles":2583720,"vertices":1290860,"volume_mm3":3493.219,"sample_ms":1369,"surface_ms":2194,"integrals_ms":112,"rss_mb":381,"heap_mb":119}
+{"family":"schwarz_p","res":256,"nodes":22665187,"triangles":4596600,"vertices":2297300,"volume_mm3":3490.899,"sample_ms":2975,"surface_ms":4733,"integrals_ms":207,"rss_mb":528,"heap_mb":167}
