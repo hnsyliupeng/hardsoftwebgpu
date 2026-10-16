@@ -1,0 +1,79 @@
+# Structure-graph examples (guide)
+
+All eight examples are **field-based (non-exact)**: each is an implicit field compiled from a JSON
+graph in `presets/`, sampled on a grid, meshed with surface nets, and rendered cut-away. None is an exact
+B-Rep. Volumes are grid-convergence estimates. Renders are in `examples/graph_presets/` (see its README).
+
+Graph format and transform rules: `docs/STRUCTURE_GRAPH.md`. Chains read left to right: source → transforms → structure.
+
+## Regenerate any example
+
+```
+node --experimental-strip-types scripts/graph_check.ts presets/<name>.json <res>     # volume, components
+node --experimental-strip-types scripts/render_graph.ts presets/<name>.json <res> examples/graph_presets
+```
+
+`graph_check` raises the resolution for transforms that enlarge the bounds (bend, shear, wrap, clip),
+so the source spacing is kept; `res` is the source resolution.
+
+## 1. `sc_rotated_gradient` — rotation and linear gradient
+
+- Chain: SC lattice (cell 4 mm, 5 cells, r 0.4) → rotate about (1,1,1) by 0.3 rad → gradient along z (slope 0.02, centre z = 10).
+- Shows: a rigid rotation keeps volume (641.0 vs 642.7 mm³ source at res 126, 0 components), and a linear gradient thickens the struts towards the top.
+- Result: 740.6 mm³ at res 165, 15 floating components removed (0.27 mm³). The +15 % is the gradient: strut radius goes from 0.2 to 0.6 mm over the height (see STRUCTURE_GRAPH.md).
+- Render: `sc_rotated_gradient_{iso,top}.png`.
+
+## 2. `gyroid_bent_sheared` — bend and shear of a TPMS sheet
+
+- Chain: gyroid (cell 4 mm, 5 cells, t 0.8) → bend (k 0.04) → shear (a 0.1).
+- Shows: non-isometric maps with Lipschitz normalisation (σ_max); the sheet keeps its topology.
+- Result: 4188.1 mm³ at res 299 vs flat source 4196.2 mm³ at res 96 (−0.19 %), 2 components removed.
+- Render: `gyroid_bent_sheared_{iso,top}.png`.
+
+## 3. `gyroid_noise_radial` — seeded noise and radial grading
+
+- Chain: gyroid (cell 4 mm, 5 cells, t 0.8) → value noise (amplitude 0.15, frequency 0.2 cycles/mm, seed 7) → radial offset (slope 0.01, centre (10,10,10), radius0 5 mm).
+- Shows: two offset-type densities (noise is zero-mean; radial grading is not), with a fixed seed so the result is reproducible.
+- Result: 4581.7 mm³ at res 128 vs 4196.7 mm³ source (+9.2 %, from radial thickening); 2 components removed.
+- Render: `gyroid_noise_radial_{iso,top}.png`.
+
+## 4. `hierarchical_sc` — two-level self-similar lattice
+
+- Chain: hierarchical SC (cell 4 mm, 5 cells, r 0.4, levels 2, divisor 2) — the union of level 0 (cell 4 mm, r 0.4) and level 1 (cell 2 mm, r 0.2) lattices.
+- Shows: multi-scale structure inside a coarse frame (C2).
+- Result: 1054.4 mm³ at res 160 vs 643.3 mm³ for one level at res 128. The union volume is not independently verified.
+- Render: `hierarchical_sc_{iso,top}.png`.
+
+## 5. `sc_cylinder_wrap` — lattice wrapped onto a cylinder
+
+- Chain: SC lattice (cell 4 mm, 5 cells, r 0.4) → wrap onto a cylinder of radius R = 6 mm.
+- Shows: cylinder projection (C1, partial). Tangential stretch makes outer struts thicker (non-isometric).
+- Result: 1547.3 mm³ at res 250 vs 609.0 mm³ flat source at res 96; ratio 2.54 is close to the mean Jacobian 2.67 over t ∈ [0, 20].
+- Render: `sc_cylinder_wrap_{iso,top}.png`.
+
+## 6. `fractal_cube_d3` — recursive corner substitution
+
+- Chain: fractal cube skeleton (size 24 mm, divisor 2, depth 3, r0 0.6, radius ratio 0.7). Each level draws its cube's 12 edges and recurses into the 8 corner subcubes.
+- Shows: recursive substitution (C2), with strut radius shrinking per level.
+- Result: 774.2 mm³ at res 240 (753.6 at res 160). A skeleton, not a solid lattice; the union volume is not independently verified.
+- Render: `fractal_cube_d3_{iso,top}.png`.
+
+## 7. `graded_infill_sphere` — open graded infill
+
+- Chain: hierarchical SC (cell 8 mm, 3 cells, r 0.5, levels 2) → radial grading (slope 0.01 about (12,12,12), radius0 10 mm; core thinner, rim thicker) → clip to a sphere of radius 10 mm.
+- Shows: open infill (C3). The clip is an intersection (max(f, sd)), so struts end open on the sphere; no closed skin.
+- Result: 210.5 mm³ at res 240 (201.9 at the coarse grid); 0 components.
+- Render: `graded_infill_sphere_{iso,top}.png`. The iso view has small slivers where the cut meets thin strut ends.
+
+## 8. `gyroid_wrap_box` — wrapped TPMS with a box clip
+
+- Chain: gyroid (cell 4 mm, 5 cells, t 0.5) → wrap onto R = 10 mm → clip to the box x, y ∈ [−30, 30], z ∈ [0, 20].
+- Shows: a TPMS sheet mapped onto a cylinder and cut open by a box.
+- Result: 5727.8 mm³ at res 288 (graph_check) vs 2864.0 mm³ flat source at res 96; ratio 2.00 = mean Jacobian over t ∈ [0, 20]; 3 components (0.05 mm³) removed.
+- Render: `gyroid_wrap_box_{iso,top}.png`. Annular sector with holes from the top; open box-cut edges.
+
+## What is not in these examples
+
+- No exact B-Rep, STEP, or GLB for any of them. Exact lattice work is tracked in `docs/EXACT_LATTICES.md`.
+- No closed outer skin (by the no-skin rule). Clip is the only boundary operation.
+- No lattice tiling of the fractal, and no conformal mapping (C1).
