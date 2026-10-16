@@ -38,6 +38,9 @@ export type TransformSpec =
   // Cylinder projection (C1, partial): source (s, t, z) is wrapped onto a cylinder of radius R about z.
   // s is arc length from the phase angle phi0 (s = s0 at phi0), t is the radial offset from R.
   | { op: "wrap"; radius: number; phase: number; s0: number }
+  // Conformal log-polar map (C1): w = r0 * exp((x + i y) / scale). Angle-preserving; the local scale is |w|/scale.
+  // The source y-extent must stay inside (-pi*scale, pi*scale] so the angle does not wrap.
+  | { op: "conformal_log"; r0: number; scale: number }
   | { op: "shear"; a: number; b: number; c: number }
   | { op: "gradient"; axis: "x" | "y" | "z"; slope: number; centre: number }
   // Offset-type density functions (B3): f' = f - g(x). g is a scalar field of the point.
@@ -127,6 +130,10 @@ function checkTransform(n: GraphNode & { kind: "transform" }, issues: GraphIssue
       break;
     case "stretch":
       need(isVec3(t.factors) && (t.factors as Vec3).every((f) => f > 0), "stretch: factors must be positive 3-vector");
+      break;
+    case "conformal_log":
+      need(isNum(t.r0) && (t.r0 as number) > 0, "conformal_log: r0 must be > 0");
+      need(isNum(t.scale) && (t.scale as number) > 0, "conformal_log: scale must be > 0");
       break;
     case "wrap":
       need(isNum(t.radius) && (t.radius as number) > 0, "wrap: radius must be > 0");
@@ -304,6 +311,8 @@ function inverseMap(t: TransformSpec): ((p: Vec3) => Vec3) | null {
       };
     case "stretch":
       return (p) => [p[0] / t.factors[0], p[1] / t.factors[1], p[2] / t.factors[2]];
+    case "conformal_log":
+      return conformalLog(t).inverse;
     case "wrap":
       return (p) => {
         const r = Math.hypot(p[0], p[1]);
@@ -406,6 +415,11 @@ function transformBounds(b: Bounds, t: TransformSpec): Bounds {
     if (min.some((v, a) => v >= max[a])) throw new Error("clip: the shape does not overlap the field bounds");
     return { min, max } as Bounds;
   }
+  if (t.op === "conformal_log") {
+    // The image of the box lies in the square of half-width r0 * exp(x_max / scale).
+    const R = t.r0 * Math.exp(b.max[0] / t.scale);
+    return { min: [-R, -R, b.min[2]], max: [R, R, b.max[2]] } as Bounds;
+  }
   if (t.op === "wrap") {
     const rOut = t.radius + Math.max(Math.abs(b.min[1]), Math.abs(b.max[1]));
     return { min: [-rOut, -rOut, b.min[2]], max: [rOut, rOut, b.max[2]] } as Bounds;
@@ -431,6 +445,18 @@ function transformBounds(b: Bounds, t: TransformSpec): Bounds {
   return { min, max } as Bounds;
 }
 
+/** Conformal log-polar map and its inverse (C1). Exported for tests. */
+export function conformalLog(t: { r0: number; scale: number }): { forward: (p: Vec3) => Vec3; inverse: (p: Vec3) => Vec3 } {
+  const r0 = t.r0, s = t.scale;
+  return {
+    forward: (p) => {
+      const m = r0 * Math.exp(p[0] / s), th = p[1] / s;
+      return [m * Math.cos(th), m * Math.sin(th), p[2]];
+    },
+    inverse: (p) => [s * Math.log(Math.hypot(p[0], p[1]) / r0), s * Math.atan2(p[1], p[0]), p[2]],
+  };
+}
+
 /** Angle wrapped into (-pi, pi]. */
 function wrapAngle(a: number): number {
   let x = a % (2 * Math.PI);
@@ -454,6 +480,8 @@ function forwardMap(t: TransformSpec, p: Vec3): Vec3 {
     }
     case "stretch":
       return [p[0] * t.factors[0], p[1] * t.factors[1], p[2] * t.factors[2]];
+    case "conformal_log":
+      return conformalLog(t).forward(p);
     case "wrap": {
       const phi = t.phase + (p[0] - t.s0) / t.radius, rr = t.radius + p[1];
       return [rr * Math.cos(phi), rr * Math.sin(phi), p[2]];
@@ -552,6 +580,22 @@ export function compileGraph(g: StructureGraph, structureId: string): Field {
     }
     const inv = inverseMap(t)!;
     const b = transformBounds(inner.bounds, t);
+    if (t.op === "conformal_log") {
+      // Conformal: the inverse Jacobian has norm scale/|w|, largest at the smallest radius in the source box.
+      // Lambda = sup |D inverse| = scale / (r0 * exp(x_min / scale)). Dividing by it keeps the field 1-Lipschitz,
+      // and the zero set is unchanged.
+      const xMin = (inner.bounds as { min: number[] }).min[0];
+      const lambda = t.scale / (t.r0 * Math.exp(xMin / t.scale));
+      field = {
+        bounds: b,
+        eval: (x, y, z) => {
+          const q = inv([x, y, z]);
+          return inner.eval(q[0], q[1], q[2]) / lambda;
+        },
+        expr: `(${inner.expr}) o conformal_log(r0=${t.r0}, s=${t.scale}) / ${lambda.toFixed(4)}`,
+      };
+      continue;
+    }
     if (t.op === "wrap") {
       // Wrap: the stretch rr/R varies strongly with radius, so a pointwise division by sigma(x) would add
       // a product term f*grad(1/sigma) that breaks the Lipschitz bound. Use a constant instead:

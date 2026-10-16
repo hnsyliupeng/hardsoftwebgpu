@@ -34,7 +34,18 @@ Not yet implemented from B3: user expression nodes (needs a safe, sandboxed expr
 - Not volume preserving: the Jacobian is (R+t)/R, so outer material is stretched tangentially and struts thicken with radius. This is a property of wrapping, not an error; a constant strut diameter would need a per-strut radius correction (not done).
 - Tests: the source sphere's zero set maps onto the cylinder (forward/inverse consistency); 1-Lipschitz inside the domain (R = 20, sphere radius 5).
 - Preset `presets/sc_cylinder_wrap.json`: SC lattice (cell 4, 5 cells, r 0.4) wrapped on R = 6, a curved sector of about 190°. At graph_check res 96 (spacing-matched to 250): volume 1547.3 mm³ vs flat source 609.0 mm³ (ratio 2.54, close to the mean Jacobian 2.67 over t ∈ [0, 20]), 0 floating components. Render: `examples/graph_presets/sc_cylinder_wrap_iso.png`.
-- Not done from C1: conformal (harmonic) mapping on a parameter plane; general surface projection.
+- Not done from C1: harmonic (general) conformal mapping on an arbitrary parameter plane; general surface projection. The log-polar conformal map below is the one conformal case implemented.
+- Render: `examples/graph_presets/sc_cylinder_wrap_{iso,top}.png` (res 96, 57,696 triangles). Thin struts show some aliasing where they are narrow relative to the grid spacing.
+
+## Conformal log-polar map (C1, second op)
+`{ "op": "conformal_log", "r0": r0, "scale": s }`: source (x, y, z) maps to w = r0 · exp((x + i·y)/s), with z unchanged. Inverse: x = s·ln(|w|/r0), y = s·arg(w).
+- Angle preserving: the xy Jacobian is (|w|/s) times a rotation, so the local scale is |w|/s. The 3D volume scale is (|w|/s)².
+- Requirements: r0 > 0 and s > 0. The source y-extent must lie inside (−π·s, π·s] or the angle wraps.
+- Lipschitz normalisation: a constant Λ = s / (r0 · exp(x_min/s)), the largest inverse scale over the source box, divides the field. This keeps it 1-Lipschitz with the zero set unchanged. A pointwise division would break the bound (same reasoning as wrap).
+- Tests: `tests/conformal.test.ts` (5). Checks: Jacobian = (|w|/s)²·I, inverse identity, zero set and interior value on a sphere source, 1-Lipschitz on the image of the box, bounds and validation.
+- Preset `presets/sc_conformal_log.json`: SC (cell 4 mm, 5 cells, r 0.4) on the source box [0, 20]³ with r0 = 16, s = 20. The world image is a fan about 87 mm across.
+- Volume check: the transformed/source ratio falls with resolution: 2.63 (res 48), 2.23 (72), 2.16 (96), 2.09 (128). It is predicted as the mean of (|w|/s)² over x ∈ [0, 20], which is 2.044. The ratio is still converging at the resolutions run, and the source volume is itself resolution-dependent (381.8, 547.4, 609.0, 643.3 mm³). At res 128 the transformed volume is 1344.0 mm³ with 0 floating components.
+- Render: `examples/graph_presets/sc_conformal_log_{iso,top}.png` at res 128 (32,616 triangles). The res 96 render (12,844 triangles) was too aliased near the axis to inspect, so it was replaced.
 
 ## Hierarchical (multi-scale) SC source (C2, partial)
 `{ "type": "hierarchical_sc", cellSize, cells, radius, levels (1..4), divisor (2 or 3) }`.

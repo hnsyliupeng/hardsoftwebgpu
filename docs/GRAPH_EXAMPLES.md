@@ -76,4 +76,10 @@ so the source spacing is kept; `res` is the source resolution.
 
 - No exact B-Rep, STEP, or GLB for any of them. Exact lattice work is tracked in `docs/EXACT_LATTICES.md`.
 - No closed outer skin (by the no-skin rule). Clip is the only boundary operation.
-- No lattice tiling of the fractal, and no conformal mapping (C1).
+- No lattice tiling of the fractal, and no general (harmonic) conformal mapping (C1). The log-polar map is implemented; see `docs/STRUCTURE_GRAPH.md`.
+
+## 9. `sc_conformal_log` — lattice under an angle-preserving log-polar map
+- Chain: SC lattice (cell 4 mm, 5 cells, r 0.4, source box [0, 20]³) → conformal log-polar map w = r0·exp((x + i·y)/s), r0 = 16 mm, s = 20 mm.
+- Shows: the conformal case of C1. Cells keep their angles and grow with radius; the field is 1-Lipschitz (constant Λ normalisation).
+- Volume: the transformed/source ratio approaches the predicted mean Jacobian 2.044 as resolution rises (2.09 at res 128).
+- Render: `sc_conformal_log_{iso,top}.png` at res 128. Field-based (non-exact).

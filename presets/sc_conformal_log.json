@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "nodes": [
+    { "id": "lat", "kind": "field", "source": { "type": "sc", "cellSize": 4, "cells": 5, "radius": 0.4 } },
+    { "id": "conf", "kind": "transform", "transform": { "op": "conformal_log", "r0": 16, "scale": 20 } },
+    { "id": "out", "kind": "structure", "name": "sc_conformal_log" }
+  ],
+  "edges": [
+    { "from": "lat", "to": "conf" },
+    { "from": "conf", "to": "out" }
+  ]
+}
