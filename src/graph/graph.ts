@@ -15,6 +15,7 @@
 
 import type { Bounds, Field } from "../topology/fields.ts";
 import { strutLattice, tpmsShell } from "../topology/lattice.ts";
+import { compileExpr, checkExpr } from "./expr.ts";
 
 export type Vec3 = [number, number, number];
 
@@ -39,7 +40,9 @@ export type TransformSpec =
   // Offset-type density functions (B3): f' = f - g(x). g is a scalar field of the point.
   | { op: "radial"; slope: number; centre: Vec3; radius0: number }
   | { op: "polynomial"; axis: "x" | "y" | "z"; coeffs: number[] }
-  | { op: "noise"; amplitude: number; frequency: number; seed: number };
+  | { op: "noise"; amplitude: number; frequency: number; seed: number }
+  // Safe arithmetic expression of x, y, z (see expr.ts). g(x) = expression; the offset is f - g.
+  | { op: "expr"; text: string };
 
 export type GraphNode =
   | { id: string; kind: "field"; source: SourceSpec }
@@ -136,6 +139,11 @@ function checkTransform(n: GraphNode & { kind: "transform" }, issues: GraphIssue
       need(isNum(t.frequency) && (t.frequency as number) > 0, "noise: frequency must be > 0 (cycles per mm)");
       need(isNum(t.seed) && Number.isInteger(t.seed), "noise: seed must be an integer");
       break;
+    case "expr": {
+      const err = checkExpr(t.text);
+      need(err === null, `expr: ${err}`);
+      break;
+    }
     default:
       issues.push({ code: "unknown_transform", message: `unknown transform ${String(t?.op)}`, node: n.id });
   }
@@ -283,13 +291,14 @@ function inverseMap(t: TransformSpec): ((p: Vec3) => Vec3) | null {
     case "radial":
     case "polynomial":
     case "noise":
+    case "expr":
       return null; // offset-type: handled as f - g(x), not a coordinate map
   }
 }
 
 /** Offset-type density functions: f' = f - g(x). */
 export function isOffset(t: TransformSpec): boolean {
-  return t.op === "gradient" || t.op === "radial" || t.op === "polynomial" || t.op === "noise";
+  return t.op === "gradient" || t.op === "radial" || t.op === "polynomial" || t.op === "noise" || t.op === "expr";
 }
 
 // Deterministic value noise in [0, 1): hash of integer lattice corners, trilinear with smoothstep.
@@ -330,6 +339,10 @@ export function offsetFunction(t: TransformSpec): (p: Vec3) => number {
         return acc;
       };
     }
+    case "expr": {
+      const fn = compileExpr(t.text);
+      return (p) => fn(p[0], p[1], p[2]);
+    }
     case "noise":
       // amplitude * (2 n - 1), n in [0, 1): the offset is in (-amplitude, amplitude).
       return (p) => t.amplitude * (2 * valueNoise(p[0] * t.frequency, p[1] * t.frequency, p[2] * t.frequency, t.seed) - 1);
@@ -344,6 +357,7 @@ function offsetExpr(t: TransformSpec): string {
     case "radial": return `${t.slope}*(|x-${t.centre.join(",")}|-${t.radius0})`;
     case "polynomial": return `poly_${t.axis}[${t.coeffs.join(",")}]`;
     case "noise": return `${t.amplitude}*(2*valueNoise(${t.frequency}*x,seed=${t.seed})-1)`;
+    case "expr": return `(${t.text})`;
     default: return t.op;
   }
 }
@@ -413,6 +427,7 @@ function forwardMap(t: TransformSpec, p: Vec3): Vec3 {
     case "radial":
     case "polynomial":
     case "noise":
+    case "expr":
       return p; // offset-type: no coordinate change
   }
 }

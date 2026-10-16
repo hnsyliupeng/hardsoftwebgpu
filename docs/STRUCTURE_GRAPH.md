@@ -3,7 +3,7 @@
 Code: `src/graph/graph.ts` (types, `validateGraph`, `compileGraph`), `src/graph/history.ts` (`GraphHistory`), `src/graph/presets.ts` (`savePreset`, `loadPreset`).
 Presets: `presets/sc_rotated_gradient.json`, `presets/gyroid_bent_sheared.json`.
 Tools: `scripts/graph_check.ts` (volume, floating components, spacing-matched resolution), `scripts/render_graph.ts` (cut-away renders).
-Tests: `tests/graph.test.ts` (16 tests, all pass).
+Tests: `tests/graph.test.ts` (16 tests) and `tests/expr.test.ts` (3 tests), all pass.
 
 ## Graph
 - Node kinds: `field` (source: `sc`, `gyroid`, `sphere`), `transform` (one input), `structure` (terminal, one input, has a name).
@@ -72,3 +72,10 @@ The +9 % in gyroid_noise_radial comes from the radial term (slope 0.01 mm⁻¹ t
 ## Spacing-matched results (latest)
 - `sc_rotated_gradient`: at source res 126 the source gives 642.7 mm³. Rotation only (no gradient) gives 641.0 mm³ at res 165 with 0 floating components (−0.3 %). Adding `gradient` (z, slope 0.02, centre 10) gives 740.6 mm³ with 15 components (0.27 mm³) removed. The +15 % is a real effect of the offset, not a grid artefact: the offset changes the strut radius from 0.2 mm (z = 0) to 0.6 mm (z = 20). A zero-mean radius swing δ adds E[δ²] to r² (≈ +8 % here), and node regions add the rest. A Monte-Carlo check of the z-slab occupancy confirms the top-heavy thickening (no-gradient 664 vs gradient 788 in the MC estimate). The earlier 96-cell value (662 mm³, 108 loose components) is superseded.
 - Renders are labelled field-based (non-exact) in `examples/graph_presets/README.md`.
+
+## Expression node (B3, done)
+`{ "op": "expr", "text": "0.03*(x*y - z) + sin(z)" }` is an offset-type transform: f' = f − g(x), with g the expression.
+- Parser (`src/graph/expr.ts`): recursive descent, no `eval`, no property access. Allowed: numbers, `x`, `y`, `z`, `pi`, `e`, `+ - * / ^`, unary minus, parentheses, `sin cos tan abs sqrt exp log` (1 argument), `min max` (2 arguments). Text limited to 300 characters. Anything else is rejected at validation with an `expr:` message.
+- Own-property lookup for names, so `constructor`, `__proto__` and similar are rejected (found by the test suite).
+- Tests (`tests/expr.test.ts`, 3 tests): precedence and associativity, functions, rejection of 17 unsafe or malformed strings, exact f' = f − g in a compiled graph.
+- Not guaranteed 1-Lipschitz: the expression's gradient is not bounded by the compiler. Keep |∇g| small (or check with a sampler) when the result is used as a distance field.
