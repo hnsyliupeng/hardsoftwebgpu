@@ -38,3 +38,17 @@ Defaults: `lines` for sc, bcc, fcc, fbcc, bccz; `bonds` for diamond and kelvin.
 - Fuse in spatial order per cell with explicit overlap (instead of balanced tree).
 - Per-cell builds merged by a single final fuse, with per-cell jitter seeds.
 - Accept the field-based render for BCC/FCC and label them as field-based in the gallery.
+
+## Round 2 (kernel diagnosis)
+Experiment switches added (all off by default):
+- `EXACT_DEBUG=1`: on a fuse failure, print the failing tree depth and the two operands' labels (centre and direction of each line/bond/node).
+- `EXACT_CLIP_LEVELS=1`: intersect each intermediate solid with a box slightly larger than the lattice (margin 0.5 mm). Intersecting with the exact box instead fails at BCC L=8 in 3 s.
+- `EXACT_FUSE_ALL=1`: one multi-tool `fuse(...tools)` call instead of the balanced tree.
+
+Results (BCC, cell 4, r 0.4, EPS 0.01 unless noted):
+- Default tree, L=20: fails at the top-level fuse (depth 7) joining two large halves. Each side is a valid solid; the pair of halves is what the kernel rejects, not any single line pair.
+- `EXACT_CLIP_LEVELS=1`: L=8 PASS (91.375 mm³, same as default). L=20 FAIL at depth 6 after 92 s. The same switch makes SC L=20 fail in 6 s, so it stays opt-in.
+- `EXACT_FUSE_ALL=1`: L=8 PASS (91.375 mm³, 36 s). L=20 did not finish in 25 min, so it is not usable.
+- Default restored; SC L=20 re-verified: 663.433 mm³, 108 pieces.
+
+Conclusion for now: the BCC L=20 failure is in the global merge of large sub-solids. The three switches above move or change it but do not remove it. Next candidate (not tried): spatially ordered slab fusion with per-slab intermediate clip, so the failing merge is local and can be located.

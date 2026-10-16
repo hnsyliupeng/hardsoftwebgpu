@@ -167,12 +167,36 @@ function lineHitsBox(q: Vec3, d: Vec3, L: number, pad: number): boolean {
   return lineInterval(q, d, L, pad) !== null;
 }
 
-function balancedFuse(parts: any[]): any {
+function balancedFuse(parts: any[], tags?: string[], clip?: any): any {
+  // EXACT_FUSE_ALL=1: one multi-tool fuse call instead of the tree (experiment).
+  if (process.env.EXACT_FUSE_ALL === "1") return parts[0].fuse(...parts.slice(1));
+  // EXACT_DEBUG=1: on a kernel failure, report the two operands' tags (centre and direction) and the level.
   let level = parts;
+  let labels = tags ?? parts.map((_, i) => String(i));
+  let depth = 0;
   while (level.length > 1) {
     const next: any[] = [];
-    for (let i = 0; i < level.length; i += 2) next.push(i + 1 < level.length ? level[i].fuse(level[i + 1]) : level[i]);
+    const nextLabels: string[] = [];
+    for (let i = 0; i < level.length; i += 2) {
+      if (i + 1 < level.length) {
+        try {
+          const f = level[i].fuse(level[i + 1]);
+          // EXACT_CLIP_LEVELS=1 (experiment): keep intermediate solids inside the box. Off by default: it
+          // breaks SC at L=20 (fails in 6 s) while BCC L=8 passes either way.
+          next.push(clip && process.env.EXACT_CLIP_LEVELS === "1" ? f.intersect(clip) : f);
+        } catch (e) {
+          if (process.env.EXACT_DEBUG) console.error(`FUSE_FAIL depth=${depth} a=${labels[i]} b=${labels[i + 1]}`);
+          throw e;
+        }
+        nextLabels.push(`(${labels[i]}+${labels[i + 1]})`);
+      } else {
+        next.push(level[i]);
+        nextLabels.push(labels[i]);
+      }
+    }
     level = next;
+    labels = nextLabels;
+    depth++;
   }
   return level[0];
 }
@@ -185,6 +209,7 @@ export async function buildExactLattice(K: any, opts: ExactLatticeOptions): Prom
   const forced = process.env.EXACT_MODE;
   const mode: ExactMode = forced === "lines" || forced === "bonds" ? forced : modeOf(type);
   const pieces: any[] = [];
+  const tags: string[] = [];
   const t0 = Date.now();
 
   if (mode === "lines") {
@@ -204,6 +229,7 @@ export async function buildExactLattice(K: any, opts: ExactLatticeOptions): Prom
         if (!lineHitsBox(onLine, dn, L, r)) continue;
         const off = lineOffset(dn, idx++, Number(process.env.EXACT_EPS ?? EPS_LINE)); // EXACT_EPS: experiments only
         pieces.push(cylinderAlong(K, r, lineLen, onLine, dn, off));
+        tags.push(`line p=${onLine.map((c) => c.toFixed(2)).join(",")} d=${dn.map((c) => c.toFixed(2)).join(",")}`);
       }
     }
   } else {
@@ -252,17 +278,25 @@ export async function buildExactLattice(K: any, opts: ExactLatticeOptions): Prom
       // so the cap rim lies inside the node sphere.
       const dl = DELTA_BOND * (0.6 + 1.2 * ((bi * 0.7548776662) % 1));
       pieces.push(cylinderAlong(K, rc, len - 2 * dl, c, unit(d)));
+      tags.push(`bond c=${c.map((x) => x.toFixed(2)).join(",")}`);
       nodes.set(A.map((x) => x.toFixed(6)).join(","), A);
       nodes.set(B.map((x) => x.toFixed(6)).join(","), B);
     }
-    for (const P of nodes.values()) pieces.push(K.Rot(...SPHERE_ROT).mul(K.Sphere(RS)).translate(P[0], P[1], P[2]));
+    for (const P of nodes.values()) {
+      pieces.push(K.Rot(...SPHERE_ROT).mul(K.Sphere(RS)).translate(P[0], P[1], P[2]));
+      tags.push(`node p=${P.map((x) => x.toFixed(2)).join(",")}`);
+    }
   }
 
   // Build box [0, L]^3, centred the way the kernel's Box is (Box is centred at the origin).
   const clip = K.Box(L, L, L).translate(L / 2, L / 2, L / 2);
   const tBuild = Date.now() - t0;
   const t1 = Date.now();
-  const union = balancedFuse(pieces);
+  // Intermediate clip box is slightly larger than the lattice box, so intermediate solids do not share
+  // faces with it; the final intersect uses the exact box.
+  const margin = 0.5;
+  const clipBox = K.Box(L + 2 * margin, L + 2 * margin, L + 2 * margin).translate(L / 2, L / 2, L / 2);
+  const union = balancedFuse(pieces, tags, clipBox);
   const solid = union.intersect(clip);
   const tBool = Date.now() - t1;
   return { shape: solid, volume: solid.volume, area: solid.area, pieces: pieces.length, mode, timeMs: { build: tBuild, boolean: tBool } };
