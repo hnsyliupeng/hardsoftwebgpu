@@ -19,8 +19,19 @@ export function nodeIndex(g: Pick<Grid, "nx" | "ny">, i: number, j: number, k: n
   return i + g.nx * (j + g.ny * k);
 }
 
-/** Sample a field on a regular grid that covers its bounds with `pad` extra nodes on every side. */
-export function sampleField(field: Field, resolution: number, pad = 2): Grid {
+export interface GridLayout {
+  nx: number;
+  ny: number;
+  nz: number;
+  origin: [number, number, number];
+  h: number;
+}
+
+/**
+ * Node layout for sampling `field` at `resolution` cells along its largest extent. Shared by the
+ * dense sampler and the sparse (narrow-band) sampler so that both produce identical node positions.
+ */
+export function gridLayout(field: Field, resolution: number, pad = 2): GridLayout {
   const { min, max } = field.bounds;
   const extent = Math.max(max[0] - min[0], max[1] - min[1], max[2] - min[2]);
   const h = extent / resolution;
@@ -35,6 +46,12 @@ export function sampleField(field: Field, resolution: number, pad = 2): Grid {
   const nx = Math.ceil((max[0] - min[0]) / h) + 2 * padCells + 1;
   const ny = Math.ceil((max[1] - min[1]) / h) + 2 * padCells + 1;
   const nz = Math.ceil((max[2] - min[2]) / h) + 2 * padCells + 1;
+  return { nx, ny, nz, origin, h };
+}
+
+/** Sample a field on a regular grid that covers its bounds with `pad` extra nodes on every side. */
+export function sampleField(field: Field, resolution: number, pad = 2): Grid {
+  const { nx, ny, nz, origin, h } = gridLayout(field, resolution, pad);
   const values = new Float32Array(nx * ny * nz);
   for (let k = 0; k < nz; k++) {
     const z = origin[2] + k * h;

@@ -40,4 +40,5 @@ Each step has an acceptance check. A step is done only when its check passes and
 
 | Step | Status |
 |---|---|
-| A1 | in progress |
+| A1 | done: sparse sampler matches dense volume (SC, gyroid at 256). Saving 39% for SC, ~0% for TPMS. See docs/SPARSE_SAMPLING.md |
+| A2 | next: mesh budget. Triangles grow as res^2 (gyroid 256 = 5.9 M), so decide decimation/LOD before 384/512 benchmarks |
