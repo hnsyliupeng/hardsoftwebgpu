@@ -3,7 +3,7 @@
 Code: `src/graph/graph.ts` (types, `validateGraph`, `compileGraph`), `src/graph/history.ts` (`GraphHistory`), `src/graph/presets.ts` (`savePreset`, `loadPreset`).
 Presets: `presets/sc_rotated_gradient.json`, `presets/gyroid_bent_sheared.json`.
 Tools: `scripts/graph_check.ts` (volume, floating components, spacing-matched resolution), `scripts/render_graph.ts` (cut-away renders).
-Tests: `tests/graph.test.ts` (14 tests, all pass).
+Tests: `tests/graph.test.ts` (16 tests, all pass).
 
 ## Graph
 - Node kinds: `field` (source: `sc`, `gyroid`, `sphere`), `transform` (one input), `structure` (terminal, one input, has a name).
@@ -26,6 +26,15 @@ Offset-type nodes are not normalised: they change the gradient of the field, so 
 Normalisation: for a non-isometric map the composed field f∘M⁻¹ is divided by σ_max of the inverse Jacobian (numerical, power iteration). This keeps a 1-Lipschitz base SDF 1-Lipschitz. Without it the test `bend, stretch and shear keep a sphere SDF 1-Lipschitz` fails.
 
 Not yet implemented from B3: user expression nodes (needs a safe, sandboxed expression parser; not started).
+
+## Cylinder projection (C1, partial)
+`{ "op": "wrap", "radius": R, "phase": φ0, "s0": s0 }`: source (s, t, z) is wrapped onto a cylinder of radius R about z: world = ((R+t) cos(φ0 + (s−s0)/R), (R+t) sin(φ0 + (s−s0)/R), z). Inverse: s = s0 + R·wrap(φ − φ0), t = r − R.
+- Normalisation: a constant Λ = max(1, R/(R + t_min)) (not a pointwise σ, which would break the Lipschitz bound through the product term f·∇(1/σ)). Λ = 1 when the source starts at t ≥ 0, as in the presets.
+- Domain: rr = R + t must stay > 0 (the map is singular on the axis). The graph compiler rejects R + t_min ≤ 0.
+- Not volume preserving: the Jacobian is (R+t)/R, so outer material is stretched tangentially and struts thicken with radius. This is a property of wrapping, not an error; a constant strut diameter would need a per-strut radius correction (not done).
+- Tests: the source sphere's zero set maps onto the cylinder (forward/inverse consistency); 1-Lipschitz inside the domain (R = 20, sphere radius 5).
+- Preset `presets/sc_cylinder_wrap.json`: SC lattice (cell 4, 5 cells, r 0.4) wrapped on R = 6, a curved sector of about 190°. At graph_check res 96 (spacing-matched to 250): volume 1547.3 mm³ vs flat source 609.0 mm³ (ratio 2.54, close to the mean Jacobian 2.67 over t ∈ [0, 20]), 0 floating components. Render: `examples/graph_presets/sc_cylinder_wrap_iso.png`.
+- Not done from C1: conformal (harmonic) mapping on a parameter plane; general surface projection.
 
 ## Hierarchical (multi-scale) SC source (C2, partial)
 `{ "type": "hierarchical_sc", cellSize, cells, radius, levels (1..4), divisor (2 or 3) }`.

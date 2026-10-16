@@ -31,6 +31,9 @@ export type TransformSpec =
   | { op: "rotate"; axis: Vec3; angle: number }
   | { op: "bend"; k: number }
   | { op: "stretch"; factors: Vec3 }
+  // Cylinder projection (C1, partial): source (s, t, z) is wrapped onto a cylinder of radius R about z.
+  // s is arc length from the phase angle phi0 (s = s0 at phi0), t is the radial offset from R.
+  | { op: "wrap"; radius: number; phase: number; s0: number }
   | { op: "shear"; a: number; b: number; c: number }
   | { op: "gradient"; axis: "x" | "y" | "z"; slope: number; centre: number }
   // Offset-type density functions (B3): f' = f - g(x). g is a scalar field of the point.
@@ -105,6 +108,11 @@ function checkTransform(n: GraphNode & { kind: "transform" }, issues: GraphIssue
       break;
     case "stretch":
       need(isVec3(t.factors) && (t.factors as Vec3).every((f) => f > 0), "stretch: factors must be positive 3-vector");
+      break;
+    case "wrap":
+      need(isNum(t.radius) && (t.radius as number) > 0, "wrap: radius must be > 0");
+      need(isNum(t.phase), "wrap: phase must be a number (radians)");
+      need(isNum(t.s0), "wrap: s0 must be a number");
       break;
     case "shear":
       need(isNum(t.a) && isNum(t.b) && isNum(t.c), "shear: a, b, c must be numbers");
@@ -259,6 +267,12 @@ function inverseMap(t: TransformSpec): ((p: Vec3) => Vec3) | null {
       };
     case "stretch":
       return (p) => [p[0] / t.factors[0], p[1] / t.factors[1], p[2] / t.factors[2]];
+    case "wrap":
+      return (p) => {
+        const r = Math.hypot(p[0], p[1]);
+        const phi = wrapAngle(Math.atan2(p[1], p[0]) - t.phase);
+        return [t.radius * phi + t.s0, r - t.radius, p[2]];
+      };
     case "shear":
       // Forward: x' = x + a*y + b*z, y' = y + c*z. Inverse: solve from the top.
       return (p) => {
@@ -341,6 +355,10 @@ function offsetExpr(t: TransformSpec): string {
  */
 function transformBounds(b: Bounds, t: TransformSpec): Bounds {
   if (isOffset(t)) return b;
+  if (t.op === "wrap") {
+    const rOut = t.radius + Math.max(Math.abs(b.min[1]), Math.abs(b.max[1]));
+    return { min: [-rOut, -rOut, b.min[2]], max: [rOut, rOut, b.max[2]] } as Bounds;
+  }
   if (t.op === "bend") {
     // Rotation about z keeps |xy| and z, so the xy extent is a disc of the largest input radius.
     const R = Math.hypot(Math.max(Math.abs(b.min[0]), Math.abs(b.max[0])), Math.max(Math.abs(b.min[1]), Math.abs(b.max[1])));
@@ -362,6 +380,14 @@ function transformBounds(b: Bounds, t: TransformSpec): Bounds {
   return { min, max } as Bounds;
 }
 
+/** Angle wrapped into (-pi, pi]. */
+function wrapAngle(a: number): number {
+  let x = a % (2 * Math.PI);
+  if (x <= -Math.PI) x += 2 * Math.PI;
+  if (x > Math.PI) x -= 2 * Math.PI;
+  return x;
+}
+
 /** Forward map (source point -> world point), the inverse of inverseMap. */
 function forwardMap(t: TransformSpec, p: Vec3): Vec3 {
   switch (t.op) {
@@ -377,6 +403,10 @@ function forwardMap(t: TransformSpec, p: Vec3): Vec3 {
     }
     case "stretch":
       return [p[0] * t.factors[0], p[1] * t.factors[1], p[2] * t.factors[2]];
+    case "wrap": {
+      const phi = t.phase + (p[0] - t.s0) / t.radius, rr = t.radius + p[1];
+      return [rr * Math.cos(phi), rr * Math.sin(phi), p[2]];
+    }
     case "shear":
       return [p[0] + t.a * p[1] + t.b * p[2], p[1] + t.c * p[2], p[2]];
     case "gradient":
@@ -441,6 +471,23 @@ export function compileGraph(g: StructureGraph, structureId: string): Field {
     }
     const inv = inverseMap(t)!;
     const b = transformBounds(inner.bounds, t);
+    if (t.op === "wrap") {
+      // Wrap: the stretch rr/R varies strongly with radius, so a pointwise division by sigma(x) would add
+      // a product term f*grad(1/sigma) that breaks the Lipschitz bound. Use a constant instead:
+      // Lambda = sup over the source box of max(1, R/rr) = max(1, R/(R + t_min)). Rr = R + t_min must be > 0.
+      const tMin = (inner.bounds as { min: number[] }).min[1];
+      if (t.radius + tMin <= 0) throw new Error(`wrap: radius ${t.radius} + source t_min ${tMin} must be > 0`);
+      const lambda = Math.max(1, t.radius / (t.radius + tMin));
+      field = {
+        bounds: b,
+        eval: (x, y, z) => {
+          const q = inv([x, y, z]);
+          return inner.eval(q[0], q[1], q[2]) / lambda;
+        },
+        expr: `(${inner.expr}) o wrap(R=${t.radius}) / ${lambda.toFixed(4)}`,
+      };
+      continue;
+    }
     // Rotation is isometric (sigma = 1), so it is not normalised.
     const normalise = t.op !== "rotate";
     field = {

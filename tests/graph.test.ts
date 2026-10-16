@@ -249,3 +249,47 @@ test("hierarchical SC: min over levels, same box at every level, validation", as
   assert.ok(validateGraph(chain([], { ...src, levels: 5 } as never)).some((i) => i.code === "bad_param"));
   assert.ok(validateGraph(chain([], { ...src, divisor: 4 } as never)).some((i) => i.code === "bad_param"));
 });
+
+// Cylinder projection (C1 partial): the zero set of a sphere source of radius 5 at the origin, wrapped
+// onto a cylinder of radius 6, must be where the source sphere is, mapped with the forward formula
+// world = ((R+t) cos(phase + s/R), (R+t) sin(phase + s/R), z) with (s, t, z) = source point.
+test("wrap: source surface maps onto the cylinder zero set; validation", () => {
+  const R = 6, phase = 0.3, s0 = 0;
+  const f = compileGraph(chain([{ op: "wrap", radius: R, phase, s0 }]), "out");
+  let seed = 4242;
+  const rnd = () => ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff) * 2 - 1;
+  for (let n = 0; n < 60; n++) {
+    let u = [rnd(), rnd(), rnd()];
+    const l = Math.hypot(u[0], u[1], u[2]);
+    u = [(5 * u[0]) / l, (5 * u[1]) / l, (5 * u[2]) / l]; // point on the source sphere
+    const [s, t, z] = u;
+    const phi = phase + (s - s0) / R, rr = R + t;
+    const w = [rr * Math.cos(phi), rr * Math.sin(phi), z];
+    assert.ok(Math.abs(f.eval(w[0], w[1], w[2])) < 1e-9, `zero set off by ${f.eval(w[0], w[1], w[2])}`);
+  }
+  assert.ok(validateGraph(chain([{ op: "wrap", radius: -1, phase: 0, s0: 0 }])).some((i) => i.code === "bad_param"));
+});
+
+// Wrap is Lipschitz only inside its domain (source t >= t_min, i.e. rr = R + t > 0 with the stretch
+// bounded by Lambda). Test with R = 20 and a source sphere of radius 5: t in [-5, 5], stretch <= 1.33.
+test("wrap: 1-Lipschitz inside its domain", () => {
+  const R = 20, phase = 0.3, s0 = 0;
+  const f = compileGraph(chain([{ op: "wrap", radius: R, phase, s0 }]), "out");
+  let seed = 777;
+  const rnd = () => ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff) * 2 - 1;
+  const toWorld = (q: number[]) => {
+    const phi = phase + (q[0] - s0) / R, rr = R + q[1];
+    return [rr * Math.cos(phi), rr * Math.sin(phi), q[2]];
+  };
+  for (let n = 0; n < 400; n++) {
+    let q = [rnd(), rnd(), rnd()];
+    const l = Math.hypot(q[0], q[1], q[2]);
+    const k = (4.5 * Math.cbrt((n + 1) / 401)) / l; // radii spread over (0, 4.5]
+    q = [q[0] * k, q[1] * k, q[2] * k];
+    const w = toWorld(q);
+    const w2 = [w[0] + 0.05 * rnd(), w[1] + 0.05 * rnd(), w[2] + 0.05 * rnd()];
+    const d = Math.hypot(w2[0] - w[0], w2[1] - w[1], w2[2] - w[2]);
+    const df = Math.abs(f.eval(w[0], w[1], w[2]) - f.eval(w2[0], w2[1], w2[2]));
+    assert.ok(df <= d * 1.02 + 1e-9, `wrap: |df|=${df} > |dp|=${d}`);
+  }
+});
