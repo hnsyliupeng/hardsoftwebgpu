@@ -142,13 +142,16 @@ function lineOffset(d: Vec3, i: number, eps: number): Vec3 {
   ];
 }
 
-/** True if the line (point q, unit direction d) passes within pad of the box [0,L]^3 (slab test). */
-function lineHitsBox(q: Vec3, d: Vec3, L: number, pad: number): boolean {
+/**
+ * Parameter interval [t0, t1] over which the line q + t d (d unit) lies inside the box [-pad, L+pad]^3
+ * (slab test), or null if it misses the box.
+ */
+function lineInterval(q: Vec3, d: Vec3, L: number, pad: number): [number, number] | null {
   let t0 = -Infinity, t1 = Infinity;
   for (let k = 0; k < 3; k++) {
     const lo = -pad, hi = L + pad;
     if (Math.abs(d[k]) < 1e-12) {
-      if (q[k] < lo || q[k] > hi) return false;
+      if (q[k] < lo || q[k] > hi) return null;
     } else {
       let a = (lo - q[k]) / d[k], b = (hi - q[k]) / d[k];
       if (a > b) [a, b] = [b, a];
@@ -156,7 +159,12 @@ function lineHitsBox(q: Vec3, d: Vec3, L: number, pad: number): boolean {
       t1 = Math.min(t1, b);
     }
   }
-  return t0 <= t1;
+  return t0 <= t1 ? [t0, t1] : null;
+}
+
+/** True if the line (point q, unit direction d) passes within pad of the box [0,L]^3. */
+function lineHitsBox(q: Vec3, d: Vec3, L: number, pad: number): boolean {
+  return lineInterval(q, d, L, pad) !== null;
 }
 
 function balancedFuse(parts: any[]): any {
@@ -173,7 +181,9 @@ function balancedFuse(parts: any[]): any {
 export async function buildExactLattice(K: any, opts: ExactLatticeOptions): Promise<ExactLatticeResult> {
   const { type, cellSize: a, cells: n, radius: r } = opts;
   const L = n * a;
-  const mode = modeOf(type);
+  // EXACT_MODE=lines|bonds overrides the default per type (for experiments only).
+  const forced = process.env.EXACT_MODE;
+  const mode: ExactMode = forced === "lines" || forced === "bonds" ? forced : modeOf(type);
   const pieces: any[] = [];
   const t0 = Date.now();
 
@@ -189,8 +199,10 @@ export async function buildExactLattice(K: any, opts: ExactLatticeOptions): Prom
         const pc: Vec3 = [p[0] * a, p[1] * a, p[2] * a];
         const t = dot(sub(centre, pc), dn);
         const onLine: Vec3 = [pc[0] + t * dn[0], pc[1] + t * dn[1], pc[2] + t * dn[2]];
+        // Full-length lines: trimming each line to the box (tried, see docs/EXACT_LATTICES.md) made the
+        // BCC fuse fail even at L=8, so the untrimmed construction is kept; the final intersect clips it.
         if (!lineHitsBox(onLine, dn, L, r)) continue;
-        const off = lineOffset(dn, idx++, EPS_LINE);
+        const off = lineOffset(dn, idx++, Number(process.env.EXACT_EPS ?? EPS_LINE)); // EXACT_EPS: experiments only
         pieces.push(cylinderAlong(K, r, lineLen, onLine, dn, off));
       }
     }

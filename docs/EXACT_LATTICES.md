@@ -1,0 +1,36 @@
+# Exact lattice B-Rep status (SMLib kernel, cell 4 mm, r 0.4 mm, tessellation tol 0.02 mm)
+
+Runner: `node --experimental-strip-types scripts/exact_lattice.ts <type> <L> <cell> <r> <tol>`.
+Experiment switches (not for production): `EXACT_MODE=lines|bonds` overrides the default mode per type;
+`EXACT_EPS=<mm>` overrides the per-line normal-plane offset in `lines` mode (default 0.01).
+
+Defaults: `lines` for sc, bcc, fcc, fbcc, bccz; `bonds` for diamond and kelvin.
+
+| Type | Mode | L | Result |
+|---|---|---|---|
+| sc | lines | 8 | PASS, B-Rep 42.515 mm³ |
+| sc | lines | 20 | PASS, B-Rep 663.433 mm³, 108 pieces, mesh 661.157 mm³ (field 256 = 671.758, MC 664) |
+| bcc | lines | 8 | PASS, B-Rep 91.375 mm³, 76 pieces, mesh 91.04 mm³ |
+| bcc | lines | 20 | FAIL, fuse not closed/manifold (about 4.5 min) |
+| bcc | bonds | 8 | PASS, mesh 91.018 mm³, 99 pieces |
+| bcc | bonds | 20 | FAIL, SM_ERR in fuse (15 s) |
+| fcc | lines | 8 | FAIL, fuse not closed/manifold |
+| fcc | bonds | 8 | FAIL |
+| diamond | bonds | 8 | PASS, 89.985 mm³ (earlier run) |
+| diamond | bonds | 20 | FAIL, SM_ERR in fuse (69 s) |
+| kelvin | bonds | 4 (one cell) | PASS, 10.755 mm³ (earlier run) |
+| kelvin | bonds | ≥ 8 | FAIL (see earlier attempts) |
+
+## Tried, did not help (do not repeat as-is)
+- Trimming each line to the box plus a margin (instead of the full 2√3·L+4 cylinder): BCC L=8 fails for pad margins of 0.5 mm and for golden-ratio-spread margins; EPS 0.03/0.05/0.1 also fail. The untrimmed construction is kept.
+- Larger line offsets (EXACT_EPS 0.03–0.1) at BCC L=8 in trimmed form: still fail.
+
+## Diagnosis so far
+- Every BCC and FCC node is shared by several lines (4 or more in one point), so `lines` mode needs the golden-angle offsets; the failure appears only at larger L (BCC) or already at L=8 (FCC).
+- `bonds` mode fails at larger L with SM_ERR, which points to touching/tangent node-sphere joins that the current jitter does not remove.
+- None of these failures are resolution-related: they are kernel boolean failures on exact coincidences.
+
+## Next options (not yet tried)
+- Fuse in spatial order per cell with explicit overlap (instead of balanced tree).
+- Per-cell builds merged by a single final fuse, with per-cell jitter seeds.
+- Accept the field-based render for BCC/FCC and label them as field-based in the gallery.
