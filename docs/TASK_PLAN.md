@@ -43,7 +43,7 @@ Each step has an acceptance check. A step is done only when its check passes and
 | B1 | done: structure graph schema, validation, compile (src/graph/graph.ts, tests/graph.test.ts). See docs/STRUCTURE_GRAPH.md |
 | B2 | partial: undo/redo over snapshots (src/graph/history.ts) and preset save/load (presets/). UI not yet wired |
 | B3 | done: rotate, bend, stretch, shear (Lipschitz-normalised); linear, radial, polynomial, noise and safe expression offsets (src/graph/expr.ts, no eval; tests/expr.test.ts) |
-| C2 | partial: hierarchical (multi-scale) SC source, union of levels with divisor 2 or 3 (src/graph/graph.ts, presets/hierarchical_sc.json). Recursive substitution not done. See docs/STRUCTURE_GRAPH.md |
+| C2 | partial: hierarchical SC (union of levels, presets/hierarchical_sc.json); fractal cube skeleton with recursive corner-subcube substitution, depth 1..3 (src/graph/fractal.ts, tests/fractal.test.ts, presets/fractal_cube_d3.json). Tiling fractals over a lattice and other generators not done. See docs/STRUCTURE_GRAPH.md |
 | C1 | partial: cylinder projection (wrap transform, constant Lipschitz normalisation, zero-set and Lipschitz tests, render). Conformal harmonic mapping not done. See docs/STRUCTURE_GRAPH.md |
 | A1 | done: sparse sampler matches dense volume (SC, gyroid at 256). Saving 39% for SC, ~0% for TPMS. See docs/SPARSE_SAMPLING.md |
 | A3 | done: GLB writer/reader, round trip test, glTF validator 0 errors on display and full meshes. See docs/GLB_EXPORT.md |

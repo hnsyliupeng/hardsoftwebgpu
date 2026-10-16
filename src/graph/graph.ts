@@ -16,6 +16,7 @@
 import type { Bounds, Field } from "../topology/fields.ts";
 import { strutLattice, tpmsShell } from "../topology/lattice.ts";
 import { compileExpr, checkExpr } from "./expr.ts";
+import { fractalField } from "./fractal.ts";
 
 export type Vec3 = [number, number, number];
 
@@ -26,7 +27,9 @@ export type SourceSpec =
   // Hierarchical (multi-scale, self-similar) SC lattice, C2 of docs/TASK_PLAN.md. Level k has cell
   // cellSize/m^k, cells*m^k cells per axis and radius/m^k, for k = 0..levels-1; the field is the minimum
   // over the levels (union of all struts). Fine struts sit inside the coarse cells.
-  | { type: "hierarchical_sc"; cellSize: number; cells: number; radius: number; levels: number; divisor: number };
+  | { type: "hierarchical_sc"; cellSize: number; cells: number; radius: number; levels: number; divisor: number }
+  // Fractal cube skeleton (C2, recursive substitution): see fractal.ts. Radius at level k is radius * radiusRatio^k.
+  | { type: "fractal_cube"; size: number; divisor: number; depth: number; radius: number; radiusRatio: number };
 
 export type TransformSpec =
   | { op: "rotate"; axis: Vec3; angle: number }
@@ -85,6 +88,14 @@ function checkSource(n: GraphNode & { kind: "field" }, issues: GraphIssue[]): vo
       break;
     case "sphere":
       need(isNum(s.radius) && s.radius > 0, "sphere: radius must be > 0");
+      break;
+    case "fractal_cube":
+      need(isNum(s.size) && s.size > 0, "fractal_cube: size must be > 0");
+      need(isNum(s.divisor) && Number.isInteger(s.divisor) && (s.divisor as number) >= 2 && (s.divisor as number) <= 3, "fractal_cube: divisor must be 2 or 3");
+      need(isNum(s.depth) && Number.isInteger(s.depth) && (s.depth as number) >= 1 && (s.depth as number) <= 3, "fractal_cube: depth must be an integer 1..3");
+      need(isNum(s.radius) && s.radius > 0, "fractal_cube: radius must be > 0");
+      need(isNum(s.radiusRatio) && s.radiusRatio > 0 && s.radiusRatio <= 1, "fractal_cube: radiusRatio must be in (0, 1]");
+      need(isNum(s.size) && isNum(s.radius) && (s.radius as number) < ((s.size as number) / Math.pow((s.divisor as number) || 2, (s.depth as number) || 1)), "fractal_cube: radius must be < finest subcube size, size/divisor^depth");
       break;
     case "hierarchical_sc":
       need(isNum(s.cellSize) && s.cellSize > 0, "hierarchical_sc: cellSize must be > 0");
@@ -236,6 +247,7 @@ function hierarchicalField(s: Extract<SourceSpec, { type: "hierarchical_sc" }>):
 }
 
 function sourceField(s: SourceSpec): Field {
+  if (s.type === "fractal_cube") return fractalField(s);
   if (s.type === "hierarchical_sc") return hierarchicalField(s);
   if (s.type === "sc") return strutLattice({ type: "sc", cellSize: s.cellSize, cells: [s.cells, s.cells, s.cells], radius: s.radius } as never) as Field;
   if (s.type === "gyroid") return tpmsShell({ type: "gyroid", cellSize: s.cellSize, cells: [s.cells, s.cells, s.cells], thickness: s.thickness } as never) as Field;

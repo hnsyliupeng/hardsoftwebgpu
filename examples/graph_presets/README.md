@@ -15,6 +15,7 @@ with `scripts/render_graph.ts <preset> <res> examples/graph_presets`.
 | `gyroid_bent_sheared` | Gyroid, t 0.8 | bend, shear | 299 | 4188.1 | 2 (0.07 mm³) | Source at 96: 4196.2 |
 | `gyroid_noise_radial` | Gyroid, t 0.8 | radial offset, seeded value noise | 128 | 4581.7 | 2 (0.26 mm³) | +9.2 % vs source 4196.7 (radial thickening; noise zero-mean) |
 | `hierarchical_sc` | SC levels 1–4, divisor 2/3 | field = min over levels | 160 | 1054.4 | 0 | One SC level at 128: 643.3 |
+| `fractal_cube_d3` | Fractal cube skeleton, size 24, depth 3, d 2, r0 0.6, ratio 0.7 | recursive corner substitution | 240 | 774.2 (160: 753.6) | 0 | Strut-skeleton (wireframe), not a solid lattice; union volume not independently verified |
 | `sc_cylinder_wrap` | SC, cell 4 mm, r 0.4, 5 cells | wrap onto cylinder R = 6 | 250 (spacing-matched from 96) | 1547.3 | 0 | Source 609.0. Volume ratio 2.54 ≈ mean Jacobian (R+t)/R; struts thicken outward |
 
 ## Resolution and convergence

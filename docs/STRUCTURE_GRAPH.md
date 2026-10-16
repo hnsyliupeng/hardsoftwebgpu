@@ -79,3 +79,12 @@ The +9 % in gyroid_noise_radial comes from the radial term (slope 0.01 mm⁻¹ t
 - Own-property lookup for names, so `constructor`, `__proto__` and similar are rejected (found by the test suite).
 - Tests (`tests/expr.test.ts`, 3 tests): precedence and associativity, functions, rejection of 17 unsafe or malformed strings, exact f' = f − g in a compiled graph.
 - Not guaranteed 1-Lipschitz: the expression's gradient is not bounded by the compiler. Keep |∇g| small (or check with a sampler) when the result is used as a distance field.
+
+## Fractal cube skeleton (C2, recursive substitution, done for one cube)
+`{ "type": "fractal_cube", "size": 24, "divisor": 2, "depth": 3, "radius": 0.6, "radiusRatio": 0.7 }` (source).
+- Level k cube (size s/d^k) draws its 12 edges as struts of radius r0·ratio^k, then recurses into the 8 corner subcubes of size s/d^(k+1) (divisor 2 or 3; the corners of a d-subdivision). Depth 1..3.
+- Strut counts: 12, 108, 876 for depth 1, 2, 3 (d = 2). Corner subcubes share edges with their parent, so the union is smaller than the sum of strut volumes.
+- Field: min over struts of (distance − radius), with a bucket grid (27-bucket neighbourhood). Exact where the value is below T = w − r0 (w = finest subcube size). Validation requires r0 < size/divisor^depth. The field is 1-Lipschitz.
+- Tests (`tests/fractal.test.ts`, 4 tests): strut counts and radius ratios; bucket field equals brute force on 400 random points; exact on level-0 edge and cube-centre values; Lipschitz; graph validation.
+- Preset `presets/fractal_cube_d3.json`. graph_check: 753.6 mm³ at res 160, 774.2 mm³ at res 240 (+2.7 %, 0 components). The finest struts are about 0.4 mm across, so res 240 is used for the render. The union volume is not independently verified (same status as C2 hierarchical).
+- Not done: tiling the fractal over a lattice of cubes, and a generator other than the corner-subcube rule. Those belong to a later C2 step.
