@@ -17,6 +17,7 @@ with `scripts/render_graph.ts <preset> <res> examples/graph_presets`.
 | `hierarchical_sc` | SC levels 1–4, divisor 2/3 | field = min over levels | 160 | 1054.4 | 0 | One SC level at 128: 643.3 |
 | `fractal_cube_d3` | Fractal cube skeleton, size 24, depth 3, d 2, r0 0.6, ratio 0.7 | recursive corner substitution | 240 | 774.2 (160: 753.6) | 0 | Strut-skeleton (wireframe), not a solid lattice; union volume not independently verified |
 | `graded_infill_sphere` | Hierarchical SC (2 levels, cell 8, r 0.5) + radial grading, clipped to sphere R 10 | radial offset, sphere clip | 240 | 210.5 (coarse grid: 201.9) | 0 | Open infill: struts end on the sphere, no closed skin |
+| `gyroid_wrap_box` | Gyroid (cell 4 mm, 5 cells, t 0.5) wrapped on R = 10, clipped to box x,y ±30, z 0..20 | wrap, box clip | 240 (graph_check 96 → 288) | 5727.8 (flat source 2864.0 at 96) | 3 (0.05 mm³) | Ratio 2.00 = mean Jacobian (R+t)/R for t in [0, 20]; open sheet with box-cut edges, no closed skin |
 | `sc_cylinder_wrap` | SC, cell 4 mm, r 0.4, 5 cells | wrap onto cylinder R = 6 | 250 (spacing-matched from 96) | 1547.3 | 0 | Source 609.0. Volume ratio 2.54 ≈ mean Jacobian (R+t)/R; struts thicken outward |
 
 ## Resolution and convergence

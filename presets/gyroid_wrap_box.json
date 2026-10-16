@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "nodes": [
+    { "id": "gyr", "kind": "field", "source": { "type": "gyroid", "cellSize": 4, "cells": 5, "thickness": 0.5 } },
+    { "id": "wrap", "kind": "transform", "transform": { "op": "wrap", "radius": 10, "phase": 0, "s0": 0 } },
+    { "id": "clip", "kind": "transform", "transform": { "op": "clip", "shape": { "type": "box", "min": [-30, -30, 0], "max": [30, 30, 20] } } },
+    { "id": "out", "kind": "structure", "name": "gyroid_wrap_box" }
+  ],
+  "edges": [
+    { "from": "gyr", "to": "wrap" },
+    { "from": "wrap", "to": "clip" },
+    { "from": "clip", "to": "out" }
+  ]
+}

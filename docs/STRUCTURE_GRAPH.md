@@ -108,3 +108,9 @@ The +9 % in gyroid_noise_radial comes from the radial term (slope 0.01 mm⁻¹ t
 - Web panel: one slider per slot. The slider commits on release (`change`), so a drag is one undo step, and a rejected value is reverted.
 - Tests (`tests/params.test.ts`, 5 tests): starter-graph slots and ranges, copy and clamp behaviour, rule violations reported by validation, unknown slots and non-finite values, and every preset in `presets/` round-tripping through each slot to a valid graph.
 - Not done: a separate expression input box (the expr node text is edited in the JSON), and slider ranges tied to the bounds of a specific model.
+
+## Wrapped gyroid with box clip (eighth graph example, E3 count)
+- `presets/gyroid_wrap_box.json`: gyroid (cell 4 mm, 5 cells, thickness 0.5) wrapped on R = 10 mm, then clipped to the box x, y ∈ [−30, 30], z ∈ [0, 20].
+- graph_check: 5727.8 mm³ at res 288 (3 components, 0.05 mm³ removed) vs flat source 2864.0 mm³ at res 96. The ratio 2.00 equals the mean Jacobian (R + t)/R over t ∈ [0, 20], so the volume gain is the expected wrap stretch.
+- Renders: iso (sheet with box-cut edges) and top (annular sector with holes). Both checked; no closed skin.
+- Count: eight field-based graph examples now combine transforms (rotate, gradient, bend/shear, noise, hierarchical, wrap, fractal, clip). E3 needs written guides for them, which are not done.
