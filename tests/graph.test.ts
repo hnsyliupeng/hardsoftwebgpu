@@ -233,3 +233,19 @@ test("validation: radial centre, polynomial axis, noise frequency", () => {
   assert.ok(validateGraph(chain([{ op: "noise", amplitude: 0.1, frequency: 0, seed: 1 }])).some((i) => i.code === "bad_param"));
   assert.deepEqual(validateGraph(chain([{ op: "noise", amplitude: 0.1, frequency: 0.5, seed: 1 }])), []);
 });
+
+// Hierarchical SC (C2): union of self-similar SC levels, field = min over levels.
+test("hierarchical SC: min over levels, same box at every level, validation", async () => {
+  const { strutLattice } = await import("../src/topology/lattice.ts");
+  const src = { type: "hierarchical_sc" as const, cellSize: 4, cells: 5, radius: 0.4, levels: 2, divisor: 2 };
+  const h = compileGraph(chain([], src as never), "out");
+  const l0 = strutLattice({ type: "sc", cellSize: 4, cells: [5, 5, 5], radius: 0.4 } as never);
+  const l1 = strutLattice({ type: "sc", cellSize: 2, cells: [10, 10, 10], radius: 0.2 } as never);
+  for (const [x, y, z] of [[1.3, 2.2, 0.4], [7.9, 3.1, 11.0], [19.5, 0.2, 5.5]] as [number, number, number][]) {
+    assert.ok(Math.abs(h.eval(x, y, z) - Math.min(l0.eval(x, y, z), l1.eval(x, y, z))) < 1e-12);
+  }
+  const bl0 = (l0.bounds as { max: number[] }).max, bl1 = (l1.bounds as { max: number[] }).max;
+  assert.deepEqual(bl0, bl1, "all levels span the same box");
+  assert.ok(validateGraph(chain([], { ...src, levels: 5 } as never)).some((i) => i.code === "bad_param"));
+  assert.ok(validateGraph(chain([], { ...src, divisor: 4 } as never)).some((i) => i.code === "bad_param"));
+});

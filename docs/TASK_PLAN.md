@@ -43,6 +43,7 @@ Each step has an acceptance check. A step is done only when its check passes and
 | B1 | done: structure graph schema, validation, compile (src/graph/graph.ts, tests/graph.test.ts). See docs/STRUCTURE_GRAPH.md |
 | B2 | partial: undo/redo over snapshots (src/graph/history.ts) and preset save/load (presets/). UI not yet wired |
 | B3 | partial: rotate, bend, stretch, shear (Lipschitz-normalised); linear, radial, polynomial and noise offsets. Expression node not yet done (needs a safe parser) |
+| C2 | partial: hierarchical (multi-scale) SC source, union of levels with divisor 2 or 3 (src/graph/graph.ts, presets/hierarchical_sc.json). Recursive substitution not done. See docs/STRUCTURE_GRAPH.md |
 | A1 | done: sparse sampler matches dense volume (SC, gyroid at 256). Saving 39% for SC, ~0% for TPMS. See docs/SPARSE_SAMPLING.md |
 | A3 | done: GLB writer/reader, round trip test, glTF validator 0 errors on display and full meshes. See docs/GLB_EXPORT.md |
 | A4 | partial: src/render/cutaway.ts (shared cut-away + supersampled PNG), scripts/render_fine.ts, examples/fine_256 (sc, gyroid, schwarz_p, 1600 px, 4 views). Exact-B-Rep renders still pending (see Phase B/exact). |

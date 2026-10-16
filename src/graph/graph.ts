@@ -21,7 +21,11 @@ export type Vec3 = [number, number, number];
 export type SourceSpec =
   | { type: "sc"; cellSize: number; cells: number; radius: number }
   | { type: "gyroid"; cellSize: number; cells: number; thickness: number }
-  | { type: "sphere"; radius: number };
+  | { type: "sphere"; radius: number }
+  // Hierarchical (multi-scale, self-similar) SC lattice, C2 of docs/TASK_PLAN.md. Level k has cell
+  // cellSize/m^k, cells*m^k cells per axis and radius/m^k, for k = 0..levels-1; the field is the minimum
+  // over the levels (union of all struts). Fine struts sit inside the coarse cells.
+  | { type: "hierarchical_sc"; cellSize: number; cells: number; radius: number; levels: number; divisor: number };
 
 export type TransformSpec =
   | { op: "rotate"; axis: Vec3; angle: number }
@@ -75,6 +79,13 @@ function checkSource(n: GraphNode & { kind: "field" }, issues: GraphIssue[]): vo
       break;
     case "sphere":
       need(isNum(s.radius) && s.radius > 0, "sphere: radius must be > 0");
+      break;
+    case "hierarchical_sc":
+      need(isNum(s.cellSize) && s.cellSize > 0, "hierarchical_sc: cellSize must be > 0");
+      need(isNum(s.cells) && Number.isInteger(s.cells) && (s.cells as number) >= 1, "hierarchical_sc: cells must be an integer >= 1");
+      need(isNum(s.radius) && s.radius > 0 && s.radius < ((s.cellSize as number) / 2 || 0), "hierarchical_sc: radius must be > 0 and < cellSize/2");
+      need(isNum(s.levels) && Number.isInteger(s.levels) && (s.levels as number) >= 1 && (s.levels as number) <= 4, "hierarchical_sc: levels must be an integer 1..4");
+      need(isNum(s.divisor) && Number.isInteger(s.divisor) && (s.divisor as number) >= 2 && (s.divisor as number) <= 3, "hierarchical_sc: divisor must be 2 or 3");
       break;
     default:
       issues.push({ code: "unknown_source", message: `unknown source type ${String(s?.type)}`, node: n.id });
@@ -191,7 +202,25 @@ export function chainOf(g: StructureGraph, structureId: string): GraphNode[] {
   return chain;
 }
 
+function hierarchicalField(s: Extract<SourceSpec, { type: "hierarchical_sc" }>): Field {
+  const levels: Field[] = [];
+  for (let k = 0; k < s.levels; k++) {
+    const m = Math.pow(s.divisor, k);
+    levels.push(strutLattice({ type: "sc", cellSize: s.cellSize / m, cells: [s.cells * m, s.cells * m, s.cells * m], radius: s.radius / m } as never) as Field);
+  }
+  return {
+    bounds: levels[0].bounds,
+    eval: (x, y, z) => {
+      let v = Infinity;
+      for (const f of levels) v = Math.min(v, f.eval(x, y, z));
+      return v;
+    },
+    expr: `min_k<${s.levels} sc(cell=${s.cellSize}/${s.divisor}^k, r=${s.radius}/${s.divisor}^k)`,
+  };
+}
+
 function sourceField(s: SourceSpec): Field {
+  if (s.type === "hierarchical_sc") return hierarchicalField(s);
   if (s.type === "sc") return strutLattice({ type: "sc", cellSize: s.cellSize, cells: [s.cells, s.cells, s.cells], radius: s.radius } as never) as Field;
   if (s.type === "gyroid") return tpmsShell({ type: "gyroid", cellSize: s.cellSize, cells: [s.cells, s.cells, s.cells], thickness: s.thickness } as never) as Field;
   const r = s.radius;

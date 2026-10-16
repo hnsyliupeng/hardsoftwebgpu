@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "nodes": [
+    { "id": "hier", "kind": "field", "source": { "type": "hierarchical_sc", "cellSize": 4, "cells": 5, "radius": 0.4, "levels": 2, "divisor": 2 } },
+    { "id": "out", "kind": "structure", "name": "hierarchical_sc" }
+  ],
+  "edges": [
+    { "from": "hier", "to": "out" }
+  ]
+}
