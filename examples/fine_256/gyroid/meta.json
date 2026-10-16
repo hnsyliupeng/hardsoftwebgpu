@@ -1,0 +1,23 @@
+{
+  "family": "gyroid",
+  "res": 256,
+  "budget": 1000000,
+  "size_px": 1600,
+  "supersample": 2,
+  "views": [
+    "iso",
+    "top",
+    "front",
+    "side"
+  ],
+  "display_triangles": 988890,
+  "full_triangles": 5905764,
+  "display_volume_error_pct": 0.3222,
+  "render_ms": {
+    "iso": 2675,
+    "top": 3774,
+    "front": 3647,
+    "side": 3595
+  },
+  "total_ms": 29564
+}

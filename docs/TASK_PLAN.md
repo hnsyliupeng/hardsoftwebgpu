@@ -42,4 +42,5 @@ Each step has an acceptance check. A step is done only when its check passes and
 |---|---|
 | A1 | done: sparse sampler matches dense volume (SC, gyroid at 256). Saving 39% for SC, ~0% for TPMS. See docs/SPARSE_SAMPLING.md |
 | A3 | done: GLB writer/reader, round trip test, glTF validator 0 errors on display and full meshes. See docs/GLB_EXPORT.md |
+| A4 | partial: src/render/cutaway.ts (shared cut-away + supersampled PNG), scripts/render_fine.ts, examples/fine_256 (sc, gyroid, schwarz_p, 1600 px, 4 views). Exact-B-Rep renders still pending (see Phase B/exact). |
 | A2 | done: benchmark + display budget 1 M triangles (vertex clustering, volume bias <=0.7 %). See docs/MESH_BUDGET.md. Previous note: mesh budget. Triangles grow as res^2 (gyroid 256 = 5.9 M), so decide decimation/LOD before 384/512 benchmarks |

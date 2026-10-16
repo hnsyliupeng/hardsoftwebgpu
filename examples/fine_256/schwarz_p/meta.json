@@ -1,0 +1,23 @@
+{
+  "family": "schwarz_p",
+  "res": 256,
+  "budget": 1000000,
+  "size_px": 1600,
+  "supersample": 2,
+  "views": [
+    "iso",
+    "top",
+    "front",
+    "side"
+  ],
+  "display_triangles": 993504,
+  "full_triangles": 4596600,
+  "display_volume_error_pct": 0.1286,
+  "render_ms": {
+    "iso": 2399,
+    "top": 3394,
+    "front": 2947,
+    "side": 3219
+  },
+  "total_ms": 24854
+}

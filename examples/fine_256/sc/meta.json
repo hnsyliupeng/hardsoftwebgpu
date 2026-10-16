@@ -1,0 +1,23 @@
+{
+  "family": "sc",
+  "res": 256,
+  "budget": 1000000,
+  "size_px": 1600,
+  "supersample": 2,
+  "views": [
+    "iso",
+    "top",
+    "front",
+    "side"
+  ],
+  "display_triangles": 995946,
+  "full_triangles": 1569312,
+  "display_volume_error_pct": -0.7281,
+  "render_ms": {
+    "iso": 1762,
+    "top": 1583,
+    "front": 1659,
+    "side": 1510
+  },
+  "total_ms": 38495
+}
