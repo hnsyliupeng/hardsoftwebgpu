@@ -29,7 +29,7 @@ export type SourceSpec =
   // over the levels (union of all struts). Fine struts sit inside the coarse cells.
   | { type: "hierarchical_sc"; cellSize: number; cells: number; radius: number; levels: number; divisor: number }
   // Fractal cube skeleton (C2, recursive substitution): see fractal.ts. Radius at level k is radius * radiusRatio^k.
-  | { type: "fractal_cube"; size: number; divisor: number; depth: number; radius: number; radiusRatio: number };
+  | { type: "fractal_cube"; size: number; divisor: number; depth: number; radius: number; radiusRatio: number; tiles?: number };
 
 export type TransformSpec =
   | { op: "rotate"; axis: Vec3; angle: number }
@@ -103,6 +103,7 @@ function checkSource(n: GraphNode & { kind: "field" }, issues: GraphIssue[]): vo
       need(isNum(s.depth) && Number.isInteger(s.depth) && (s.depth as number) >= 1 && (s.depth as number) <= 3, "fractal_cube: depth must be an integer 1..3");
       need(isNum(s.radius) && s.radius > 0, "fractal_cube: radius must be > 0");
       need(isNum(s.radiusRatio) && s.radiusRatio > 0 && s.radiusRatio <= 1, "fractal_cube: radiusRatio must be in (0, 1]");
+      need(s.tiles === undefined || (isNum(s.tiles) && Number.isInteger(s.tiles) && (s.tiles as number) >= 1 && (s.tiles as number) <= 4), "fractal_cube: tiles must be an integer 1..4 (default 1)");
       need(isNum(s.size) && isNum(s.radius) && (s.radius as number) < ((s.size as number) / Math.pow((s.divisor as number) || 2, (s.depth as number) || 1)), "fractal_cube: radius must be < finest subcube size, size/divisor^depth");
       break;
     case "hierarchical_sc":

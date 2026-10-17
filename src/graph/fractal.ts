@@ -9,7 +9,8 @@ import type { Bounds, Field } from "../topology/fields.ts";
 type Vec3 = [number, number, number];
 interface Strut { a: Vec3; b: Vec3; r: number }
 
-export interface FractalSpec { size: number; divisor: number; depth: number; radius: number; radiusRatio: number }
+/** tiles: number of fractal cubes along each axis (default 1); cubes share faces, so shared edges are drawn twice (harmless for the field). */
+export interface FractalSpec { size: number; divisor: number; depth: number; radius: number; radiusRatio: number; tiles?: number }
 
 /** All struts of the fractal skeleton inside [0, size]^3. */
 export function fractalStruts(s: FractalSpec): Strut[] {
@@ -29,7 +30,9 @@ export function fractalStruts(s: FractalSpec): Strut[] {
       rec([x + i * far, y + j * far, z + l * far], sub, k + 1);
     }
   };
-  rec([0, 0, 0], s.size, 0);
+  const n = s.tiles ?? 1;
+  for (let tx = 0; tx < n; tx++) for (let ty = 0; ty < n; ty++) for (let tz = 0; tz < n; tz++)
+    rec([tx * s.size, ty * s.size, tz * s.size], s.size, 0);
   return out;
 }
 
@@ -46,8 +49,10 @@ function segDist(p: Vec3, a: Vec3, b: Vec3): number {
 /** Field of the fractal skeleton: min over struts of (distance - radius), bucket-accelerated. */
 export function fractalField(s: FractalSpec): Field {
   const struts = fractalStruts(s);
-  const nb = Math.pow(s.divisor, s.depth); // buckets per axis = finest subcube count
-  const w = s.size / nb;
+  const tiles = s.tiles ?? 1;
+  const perTile = Math.pow(s.divisor, s.depth); // finest subcubes per axis within one tile
+  const nb = perTile * tiles; // buckets per axis over the whole tiled extent
+  const w = s.size / perTile;
   const rMax = s.radius; // the largest strut radius (level 0)
   if (!(rMax < w)) throw new Error("fractal: radius must be < finest subcube size (bucket width)");
   const T = w - rMax; // clamp value; > 0 by the check above
@@ -74,10 +79,11 @@ export function fractalField(s: FractalSpec): Field {
     // Exact whenever the true value is below T: such a strut has distance < w, so it lies in the 3x3x3 block.
     return Math.min(best, T);
   };
-  const bounds: Bounds = { min: [-rMax, -rMax, -rMax], max: [s.size + rMax, s.size + rMax, s.size + rMax] } as Bounds;
+  const ext = s.size * tiles;
+  const bounds: Bounds = { min: [-rMax, -rMax, -rMax], max: [ext + rMax, ext + rMax, ext + rMax] } as Bounds;
   return {
     bounds,
     eval: eval_,
-    expr: `fractal_cube(size=${s.size}, d=${s.divisor}, depth=${s.depth}, r0=${s.radius}, ratio=${s.radiusRatio}; ${struts.length} struts)`,
+    expr: `fractal_cube(size=${s.size}, d=${s.divisor}, depth=${s.depth}, r0=${s.radius}, ratio=${s.radiusRatio}, tiles=${tiles}; ${struts.length} struts)`,
   };
 }

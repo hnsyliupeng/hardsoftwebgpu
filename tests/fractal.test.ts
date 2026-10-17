@@ -30,6 +30,38 @@ test("fractal: strut counts 12, 108, 876 for depth 1, 2, 3 (d = 2), radii shrink
   assert.ok(Math.abs(radii[2] / radii[0] - 0.49) < 1e-12);
 });
 
+test("fractal: tiled cubes draw tiles^3 copies; bucket field equals brute force on the tiled extent", () => {
+  const t = spec(2, { tiles: 2 });
+  assert.equal(fractalStruts(t).length, 8 * 108);
+  const f = fractalField(t);
+  assert.deepEqual(f.bounds.max.map((v) => Math.round(v * 1e6) / 1e6), [48.6, 48.6, 48.6]);
+  // Bucket width is size / divisor^depth = 6; clamp T = w - r0.
+  const w = 24 / 4, T = w - 0.6;
+  let seed = 11;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647) * 48;
+  for (let i = 0; i < 300; i++) {
+    const p: [number, number, number] = [rnd(), rnd(), rnd()];
+    const want = Math.min(brute(t, p), T);
+    assert.ok(Math.abs(f.eval(p[0], p[1], p[2]) - want) < 1e-9, `tiled point ${p}`);
+  }
+});
+
+test("fractal: tiles default to 1 (unchanged) and tiles outside 1..4 are reported", () => {
+  assert.equal(fractalStruts(spec(2, { tiles: 1 })).length, fractalStruts(spec(2)).length);
+  const g = (tiles: number): StructureGraph => ({
+    version: 1,
+    nodes: [
+      { id: "fr", kind: "field", source: { type: "fractal_cube", size: 24, divisor: 2, depth: 2, radius: 0.6, radiusRatio: 0.7, tiles } as never },
+      { id: "out", kind: "structure", name: "t" },
+    ],
+    edges: [{ from: "fr", to: "out" }],
+  });
+  assert.deepEqual(validateGraph(g(2)), []);
+  assert.ok(validateGraph(g(0)).some((i) => i.code === "bad_param"));
+  assert.ok(validateGraph(g(5)).some((i) => i.code === "bad_param"));
+  assert.ok(validateGraph(g(1.5)).some((i) => i.code === "bad_param"));
+});
+
 test("fractal: bucket field equals brute force within the clamp; exact on a level-0 edge", () => {
   const s = spec(3);
   const f = fractalField(s);

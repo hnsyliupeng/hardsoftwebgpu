@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "nodes": [
+    { "id": "fr", "kind": "field", "source": { "type": "fractal_cube", "size": 24, "divisor": 2, "depth": 2, "radius": 0.8, "radiusRatio": 0.7, "tiles": 2 } },
+    { "id": "out", "kind": "structure", "name": "fractal_tiled_d2" }
+  ],
+  "edges": [{ "from": "fr", "to": "out" }]
+}
