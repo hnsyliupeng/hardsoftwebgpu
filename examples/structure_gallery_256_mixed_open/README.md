@@ -8,7 +8,7 @@ Field-based (non-exact) renders: these come from the field and surface-nets mesh
 
 | id | title | group | volume (mm³) | validation | images |
 |---|---|---|---|---|---|
-| `fusion_gyroid_plus_helical` | Gyroid union helical rectangular fibres | fusion | 7419.539 | PASS (7/7) | screenshot.png, view_top.png, view_front.png, view_side.png |
+| `fusion_gyroid_plus_helical` | Gyroid union helical rectangular fibres | fusion | 7766.338 | PASS (7/7) | screenshot.png, view_top.png, view_front.png, view_side.png |
 | `fusion_schwarzp_to_gyroid` | Schwarz P below, gyroid above (zoned at mid-height) | fusion | 2179.981 | PASS (7/7) | screenshot.png, view_top.png, view_front.png, view_side.png |
 | `fusion_kelvin_to_iwp` | Kelvin lattice below, I-WP above (zoned), open (no skin) | fusion | 2205.499 | PASS (7/7) | screenshot.png, view_top.png, view_front.png, view_side.png |
 | `fusion_bcc_plus_voronoi` | BCC lattice union Voronoi foam | fusion | 6174.205 | PASS (7/7) | screenshot.png, view_top.png, view_front.png, view_side.png |
