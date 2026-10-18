@@ -151,8 +151,8 @@ const BASE_ENTRIES: Entry[] = [
     make: () => fusionSpec("zoned", rawTpms("schwarz P", TPMS_CELL, TPMS_T), rawTpms("gyroid", TPMS_CELL, TPMS_T), SKIN, 1.0),
   },
   {
-    id: "fusion_kelvin_to_iwp", group: "fusion", title: "Kelvin lattice below, I-WP above (zoned), in a 1 mm skin",
-    prompt: "fusion zoned: Kelvin lattice below, I-WP above, with skin",
+    id: "fusion_kelvin_to_iwp", group: "fusion", title: "Kelvin lattice below, I-WP above (zoned), open (no skin)",
+    prompt: "fusion zoned: Kelvin lattice below, I-WP above, open",
     make: () => fusionSpec("zoned", rawLattice("kelvin", LAT_CELL, LAT_R), rawTpms("iwp", TPMS_CELL, TPMS_T), SKIN, 1.0),
   },
   {
@@ -166,8 +166,8 @@ const BASE_ENTRIES: Entry[] = [
     make: () => fusionSpec("intersect", bioSpec("stacked helical plate structure with 10 plies, 10 degrees"), rawTpms("iwp", TPMS_CELL, TPMS_T)),
   },
   {
-    id: "fusion_diamond_plus_lidinoid", group: "fusion", title: "Diamond lattice union Lidinoid, 1 mm skin",
-    prompt: "fusion union: diamond lattice with lidinoid TPMS and skin",
+    id: "fusion_diamond_plus_lidinoid", group: "fusion", title: "Diamond lattice union Lidinoid, open (no skin)",
+    prompt: "fusion union: diamond lattice with lidinoid TPMS, open",
     make: () => fusionSpec("union", rawLattice("diamond", LAT_CELL, LAT_R), rawTpms("lidinoid", TPMS_CELL, TPMS_T), SKIN),
   },
 ];
