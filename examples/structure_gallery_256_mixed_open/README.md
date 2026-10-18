@@ -8,7 +8,7 @@ Field-based (non-exact) renders: these come from the field and surface-nets mesh
 
 | id | title | group | volume (mm³) | validation | images |
 |---|---|---|---|---|---|
-| `fusion_gyroid_plus_helical` | Gyroid union helical plies | fusion | 7419.539 | PASS (7/7) | screenshot.png, view_top.png, view_front.png, view_side.png |
+| `fusion_gyroid_plus_helical` | Gyroid union helical rectangular fibres | fusion | 7419.539 | PASS (7/7) | screenshot.png, view_top.png, view_front.png, view_side.png |
 | `fusion_schwarzp_to_gyroid` | Schwarz P below, gyroid above (zoned at mid-height) | fusion | 2179.981 | PASS (7/7) | screenshot.png, view_top.png, view_front.png, view_side.png |
 | `fusion_kelvin_to_iwp` | Kelvin lattice below, I-WP above (zoned), open (no skin) | fusion | 2205.499 | PASS (7/7) | screenshot.png, view_top.png, view_front.png, view_side.png |
 | `fusion_bcc_plus_voronoi` | BCC lattice union Voronoi foam | fusion | 6174.205 | PASS (7/7) | screenshot.png, view_top.png, view_front.png, view_side.png |
@@ -37,8 +37,10 @@ The nine entries not inspected before (Kelvin and R2 were checked earlier) were 
 | `deep_R5_hierarchy` | large flat faces with pocketed infill | flat faces not yet verified as foam walls |
 | `fusion_bcc_plus_voronoi` | flat faces; strut stubs stick out past the box at top and sides | open: stubs beyond envelope to check |
 | `fusion_diamond_plus_lidinoid` | flat faces; strut stubs past the box; jagged rim | open: as above, plus rim sawtooth |
-| `fusion_gyroid_plus_helical` | **near-full disc plate over the top face** (`view_top.png`), gyroid only at corners | open: plate covers the face; contradicts the open-design intent |
+| `fusion_gyroid_plus_helical` | previous version (helical plate family, solid square plies) had a near-full disc plate over the top face. Re-run with helical rectangular fibres: volume 7766.338 mm³, 1 component, PASS. The new `view_top.png` still shows no background through the face, as do the other helical entries (0.00 % in `bio_helical_rectfibers`), so top-view coverage is not a test of closure | **unverified:** top-face closure in 3D not measured (needs a slice test) |
 | `fusion_helical_cap_iwp` | I-WP-type sheet, jagged rim; one small stray fragment at top | open: rim sawtooth, fragment |
 | `fusion_schwarzp_to_gyroid` | gyroid-type sheet, jagged rim | open: rim sawtooth |
 
 Open points carried forward: the helical plate (see `docs/TASK_PLAN.md`), the rim sawtooth on gyroid-based entries, and whether the flat faces in `deep_R5_hierarchy`, `fusion_bcc_plus_voronoi` and `fusion_diamond_plus_lidinoid` are the intended foam walls.
+
+Note on `fusion_gyroid_plus_helical` (re-run): the entry now uses `helical_rectfibers` instead of the plate family, because plate plies are solid squares that close the top face. Its volume changed from 7419.539 to 7766.338 mm³. The previous render is in git history (commit b38dbfc).

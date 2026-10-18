@@ -1,5 +1,5 @@
 {
-  "prompt": "fusion union: gyroid TPMS with helical plies",
+  "prompt": "fusion union: gyroid TPMS with helical rectangular fibres",
   "design_spec": {
     "topology": "fusion",
     "bio_motif": "fusion:union",
@@ -90,9 +90,9 @@
       },
       "b": {
         "topology": "helical",
-        "bio_motif": "helical_generic",
+        "bio_motif": "helical_rectfibers",
         "family": "helical",
-        "variant": "helical_generic",
+        "variant": "helical_rectfibers",
         "parameters": {
           "num_plies": 10,
           "rotation": 10,
@@ -108,19 +108,19 @@
           "resolution": 256
         },
         "retrieval": {
-          "base_id": "helical_generic",
+          "base_id": "helical_rectfibers",
           "top_k": [
             {
-              "id": "helical_generic",
-              "score": 7.237
-            },
-            {
-              "id": "helical_noise",
-              "score": 3.567
+              "id": "helical_rectfibers",
+              "score": 8.94
             },
             {
               "id": "helical_cylinfibers",
-              "score": 2.594
+              "score": 5.248
+            },
+            {
+              "id": "helical_generic",
+              "score": 4.363
             }
           ]
         },
@@ -134,11 +134,11 @@
     }
   },
   "metrics": {
-    "volume": 7419.53883618695,
-    "surface_area": 3305.653535170189,
-    "min_wall_thickness": 0.4799596647776512,
+    "volume": 7766.338255355342,
+    "surface_area": 7976.69256888109,
+    "min_wall_thickness": 1.0830343309861916,
     "connectivity": true,
-    "genus": 50
+    "genus": 191
   },
   "render_preview": null,
   "repair_history": [],
@@ -148,7 +148,7 @@
     "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
     "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
     "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
-    "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
+    "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 2 sub-voxel chords discarded. Not a certified manufacturing check.",
     "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
     "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
   ],
@@ -163,8 +163,8 @@
   "validation": {
     "id": "fusion_gyroid_plus_helical",
     "group": "fusion",
-    "title": "Gyroid union helical plies",
-    "prompt": "fusion union: gyroid TPMS with helical plies",
+    "title": "Gyroid union helical rectangular fibres",
+    "prompt": "fusion union: gyroid TPMS with helical rectangular fibres",
     "pass": true,
     "checks": [
       {
@@ -182,7 +182,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 7419.8 vs MC 7411.1 mm3 (0.12 %)",
+        "value": "mesh at 320 7750.5 vs MC 7727.0 mm3 (0.30 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -194,13 +194,13 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 7419.5 vs 320 7419.8 mm3 (0.00 %)",
+        "value": "256 px-grid 7766.3 vs 320 7750.5 mm3 (0.20 %)",
         "rule": "<= 5 %"
       },
       {
         "name": "fusion_union_identity",
         "pass": true,
-        "value": "|A|=58888 |B|=179156 |A∪B|=185277 (samples)",
+        "value": "|A|=58888 |B|=190285 |A∪B|=193176 (samples)",
         "rule": "max(|A|,|B|) <= |A∪B| <= |A|+|B|"
       },
       {
@@ -217,22 +217,22 @@
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 7419.539,
-      "volume_mc_mm3": 7411.08,
-      "surface_area_mm2": 3305.654,
-      "volume_fraction": 0.92744,
-      "porosity": 0.07256,
+      "volume_mm3": 7766.338,
+      "volume_mc_mm3": 7727.04,
+      "surface_area_mm2": 7976.693,
+      "volume_fraction": 0.97079,
+      "porosity": 0.02921,
       "components": 1,
-      "cavities": 6,
-      "genus_handles": 50,
-      "euler_characteristic": -43,
-      "min_wall_p5_mm": 0.48,
-      "min_wall_median_mm": 0.4831,
-      "triangles": 1319408,
+      "cavities": 1785,
+      "genus_handles": 191,
+      "euler_characteristic": 1595,
+      "min_wall_p5_mm": 1.083,
+      "min_wall_median_mm": 2,
+      "triangles": 3191000,
       "center_of_mass": [
-        9.9984,
-        10.0017,
-        10
+        9.9987,
+        9.9959,
+        9.9984
       ]
     },
     "coupling_metrics": null,
@@ -250,7 +250,7 @@
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
-      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
+      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 2 sub-voxel chords discarded. Not a certified manufacturing check.",
       "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
       "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
     ],
@@ -352,9 +352,9 @@
         },
         "b": {
           "topology": "helical",
-          "bio_motif": "helical_generic",
+          "bio_motif": "helical_rectfibers",
           "family": "helical",
-          "variant": "helical_generic",
+          "variant": "helical_rectfibers",
           "parameters": {
             "num_plies": 10,
             "rotation": 10,
@@ -370,19 +370,19 @@
             "resolution": 256
           },
           "retrieval": {
-            "base_id": "helical_generic",
+            "base_id": "helical_rectfibers",
             "top_k": [
               {
-                "id": "helical_generic",
-                "score": 7.237
-              },
-              {
-                "id": "helical_noise",
-                "score": 3.567
+                "id": "helical_rectfibers",
+                "score": 8.94
               },
               {
                 "id": "helical_cylinfibers",
-                "score": 2.594
+                "score": 5.248
+              },
+              {
+                "id": "helical_generic",
+                "score": 4.363
               }
             ]
           },
@@ -395,6 +395,6 @@
         }
       }
     },
-    "timing_s": 131.5
+    "timing_s": 153.5
   }
 }

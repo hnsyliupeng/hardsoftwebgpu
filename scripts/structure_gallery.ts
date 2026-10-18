@@ -141,9 +141,11 @@ const BASE_ENTRIES: Entry[] = [
 
   // ---- fusions of different structure types -----------------------------------------------
   {
-    id: "fusion_gyroid_plus_helical", group: "fusion", title: "Gyroid union helical plies",
-    prompt: "fusion union: gyroid TPMS with helical plies",
-    make: () => fusionSpec("union", rawTpms("gyroid", TPMS_CELL, TPMS_T), bioSpec("stacked helical plate structure with 10 plies, 10 degrees")),
+    // Helical rectangular fibres, not the plate family: plate plies are solid squares that close the top face
+    // (see examples/structure_gallery_256_mixed_open/README.md). Fibres keep the entry open.
+    id: "fusion_gyroid_plus_helical", group: "fusion", title: "Gyroid union helical rectangular fibres",
+    prompt: "fusion union: gyroid TPMS with helical rectangular fibres",
+    make: () => fusionSpec("union", rawTpms("gyroid", TPMS_CELL, TPMS_T), bioSpec("helical rectangular fibers plies with 10 plies, 10 degrees")),
   },
   {
     id: "fusion_schwarzp_to_gyroid", group: "fusion", title: "Schwarz P below, gyroid above (zoned at mid-height)",
