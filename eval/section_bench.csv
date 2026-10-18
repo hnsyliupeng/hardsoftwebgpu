@@ -1,0 +1,4 @@
+subdiv,triangles,build_ms,measure_ms,section_ms_mean,area_err_pct,volume_err_pct,equator_err_pct,offcentre_err_pct,sections
+6,81920,105,17.3,11.01,0.0075,0.0135,0.0080,0.0158,3
+7,327680,241,30.9,13.87,0.0019,0.0034,0.0020,0.0038,3
+8,1310720,1124,131.6,45.31,0.0005,0.0008,0.0005,0.0010,3

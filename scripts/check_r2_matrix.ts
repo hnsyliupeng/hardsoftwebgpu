@@ -32,6 +32,5 @@ const out = {
   matrix_solid_fraction: +(matrixSolid / matrixN).toFixed(4),
   pore_samples: poreN,
   pore_solid_fraction: +(poreSolid / poreN).toFixed(4),
-  metrics: build.metrics ?? null,
 };
 console.log(JSON.stringify(out, null, 2));
