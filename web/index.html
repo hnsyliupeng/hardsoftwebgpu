@@ -88,6 +88,23 @@
     <div class="note">CPU software render of the same mesh (always available; works without any GPU):</div>
     <img id="preview" alt="CPU render of the generated model" />
   </section>
+  <section class="wide">
+    <h2>Section and measurement</h2>
+    <div class="note">Cuts the displayed mesh with an axis-aligned plane. The area is the enclosed cross-section (outer boundaries add area, cavities subtract it). Volume and area come from the mesh itself.</div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
+      <div>
+        <label>Plane normal
+          <select id="secAxis"><option value="0">x</option><option value="1">y</option><option value="2" selected>z</option></select>
+        </label>
+        <div style="margin-top:8px">
+          <input id="secOffset" type="range" min="0" max="20" step="0.02" value="10" />
+          <span id="secOffsetVal"></span>
+        </div>
+        <canvas id="secCanvas" width="360" height="360" style="border:1px solid #ccc;margin-top:8px"></canvas>
+      </div>
+      <table id="measureTable" style="min-width:320px"></table>
+    </div>
+  </section>
   <section>
     <h2>Metrics</h2>
     <table id="metrics"></table>

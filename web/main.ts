@@ -6,6 +6,7 @@ import { createViewer, type Backend, type Viewer } from "./viewer.ts";
 import { EXAMPLE_PROGRAMS } from "../src/program/index.ts";
 import { loadCoupled, timelineRows, type CoupledBundle } from "./coupled.ts";
 import { initGraphPanel } from "./graphPanel.ts";
+import { initSectionPanel } from "./section.ts";
 
 const COUPLED_DIR = "examples/coupled_bio_lattice/";
 
@@ -31,6 +32,7 @@ const resEl = $<HTMLSelectElement>("resolution");
 const repairsEl = $<HTMLInputElement>("repairs");
 
 let viewer: Viewer | null = null;
+const sectionPanel = initSectionPanel();
 let worker: Worker | null = null;
 
 const forced = new URLSearchParams(location.search).get("backend") as Backend | null;
@@ -135,6 +137,7 @@ async function showViewer(mesh: { positions: Float32Array; normals: Float32Array
   old.replaceWith(fresh);
   const choice = (backendSel.value || undefined) as Backend | undefined;
   viewer = await createViewer(fresh, mesh, choice);
+  sectionPanel.setMesh(mesh);
   backendEl.textContent = viewer.backend === "cpu" ? "CPU (software render, no GPU)" : viewer.backend === "webgpu" ? "WebGPU" : "WebGL2";
   fresh.style.display = viewer.backend === "cpu" ? "none" : "block";
 }

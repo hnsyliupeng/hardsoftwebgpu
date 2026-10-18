@@ -22,6 +22,6 @@ Icosphere, R = 10 mm. Section time is the mean over three planes. Errors are aga
 Errors fall about 4× per subdivision, which is the expected convergence of an inscribed icosphere. Timings were measured in this sandbox (single thread, Node).
 
 ## Not done (D3 remainder)
-- Interactive section plane and measurement tools in the web viewer (`web/`). The library above is what the viewer would call; no UI is wired yet.
+- Viewer panel (`web/section.ts`, "Section and measurement" in `web/index.html`): plane normal x/y/z, offset slider, outline drawn on a canvas, area, surface area, volume, bounding box and triangle count. It is fed by `showViewer` in `web/main.ts`. Pure parts are tested (`tests/section_view.test.ts`); the build compiles. The panel has not been viewed in a browser in this sandbox.
 - Benchmarks on design meshes (lattice, TPMS, fusion). The benchmark uses spheres only, so it gives geometric accuracy and speed, not design-specific behaviour.
 - Section images of designs (the segments are available, but no renderer draws them yet).
