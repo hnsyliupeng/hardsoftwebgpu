@@ -14,3 +14,5 @@ fusion_kelvin_to_iwp/design.json	20	0.305	0.240	0.286	0.218	0.286	0.218	0.273
 bio_helical_generic/design.json	20	1.000	1.000	0.574	0.574	0.574	0.574	0.894
 bio_helical_rectfibers/design.json	20	0.950	0.950	0.959	0.959	0.959	0.959	0.952
 bio_helical_cylinfibers/design.json	20	0.570	0.570	0.789	0.789	0.762	0.762	0.792
+slice_reference/fusion_gyroid_plus_helical_cylfibre_variant.design.json	20	0.705	0.704	0.833	0.832	0.834	0.829	0.851
+slice_reference/gyroid_only.design.json	20	0.259	0.259	0.259	0.259	0.259	0.259	0.295

@@ -68,6 +68,8 @@ Proposed criterion (mine, not yet approved): a face counts as **open** if its so
 | `fusion_schwarzp_to_gyroid` | 0.155 | 0.259 | 0.217 | 0.217 | 0.215 | 0.215 | 0.273 | yes |
 | `fusion_kelvin_to_iwp` | 0.305 | 0.240 | 0.286 | 0.218 | 0.286 | 0.218 | 0.273 | yes |
 
+Reference variants (`eval/slice_reference/`): the gyroid part alone (`gyroid_only`) is 0.259 on every face, so it is open. The union with helical fibres is closed by the helical part. With `helical_cylinfibers` in place of the rectangular fibres, `fusion_gyroid_plus_helical` gives faces 0.70–0.83 and mean 0.85, which is still not open.
+
 Helical base families alone (no fusion, same test): `bio_helical_generic` 1.000 on z faces (plate), `bio_helical_rectfibers`
 0.950, `bio_helical_cylinfibers` 0.570 (the most open helical option, still above 0.5).
 
