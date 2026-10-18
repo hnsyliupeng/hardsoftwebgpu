@@ -37,10 +37,45 @@ The nine entries not inspected before (Kelvin and R2 were checked earlier) were 
 | `deep_R5_hierarchy` | large flat faces with pocketed infill | flat faces not yet verified as foam walls |
 | `fusion_bcc_plus_voronoi` | flat faces; strut stubs stick out past the box at top and sides | open: stubs beyond envelope to check |
 | `fusion_diamond_plus_lidinoid` | flat faces; strut stubs past the box; jagged rim | open: as above, plus rim sawtooth |
-| `fusion_gyroid_plus_helical` | previous version (helical plate family, solid square plies) had a near-full disc plate over the top face. Re-run with helical rectangular fibres: volume 7766.338 mm³, 1 component, PASS. The new `view_top.png` still shows no background through the face, as do the other helical entries (0.00 % in `bio_helical_rectfibers`), so top-view coverage is not a test of closure | **unverified:** top-face closure in 3D not measured (needs a slice test) |
+| `fusion_gyroid_plus_helical` | previous version (helical plate family, solid square plies) had a near-full disc plate over the top face. Re-run with helical rectangular fibres: volume 7766.338 mm³, 1 component, PASS. Slice test: face solid fraction 0.96–0.97 (plate version 1.00 on z faces); the fibre version is also closed on its faces | **not open** by the slice criterion (below); no fix claimed |
 | `fusion_helical_cap_iwp` | I-WP-type sheet, jagged rim; one small stray fragment at top | open: rim sawtooth, fragment |
 | `fusion_schwarzp_to_gyroid` | gyroid-type sheet, jagged rim | open: rim sawtooth |
 
 Open points carried forward: the helical plate (see `docs/TASK_PLAN.md`), the rim sawtooth on gyroid-based entries, and whether the flat faces in `deep_R5_hierarchy`, `fusion_bcc_plus_voronoi` and `fusion_diamond_plus_lidinoid` are the intended foam walls.
 
-Note on `fusion_gyroid_plus_helical` (re-run): the entry now uses `helical_rectfibers` instead of the plate family, because plate plies are solid squares that close the top face. Its volume changed from 7419.539 to 7766.338 mm³. The previous render is in git history (commit b38dbfc).
+Note on `fusion_gyroid_plus_helical` (re-run): the entry now uses `helical_rectfibers` instead of the plate family. Its volume changed from 7419.539 to 7766.338 mm³. The previous render is in git history (commit b38dbfc). A correction: the earlier commit message called the fibre version "open". The slice test shows it is not (faces 0.96–0.97). The plate version is kept as `eval/slice_reference/fusion_gyroid_plus_helical_plate_v1.design.json`.
+
+## Open-face test (slice test, `scripts/slice_test.ts` → `eval/slice_test.tsv`)
+The top-down projection cannot show whether a face is closed, because every ply stacks in the same view. The slice test
+instead samples the field itself on planes 0.2 mm inside each face (grid 0.1 mm) and reports the solid fraction (share of
+points with field < 0). Mean is over z-planes every 0.25 mm, offset so that planes avoid ply interfaces.
+
+Proposed criterion (mine, not yet approved): a face counts as **open** if its solid fraction is ≤ 0.5. Calibration: the BCC lattice
+(`deep_R3_twist`) gives 0.13–0.16 on the faces, which is clearly open.
+
+| design | z bottom | z top | x min | x max | y min | y max | mean (z-planes) | open (≤ 0.5)? |
+|---|---|---|---|---|---|---|---|---|
+| `fusion_gyroid_plus_helical` (plate v1, reference) | 1.000 | 1.000 | 0.689 | 0.686 | 0.683 | 0.688 | 0.926 | no |
+| `fusion_gyroid_plus_helical` (fibres, current) | 0.965 | 0.964 | 0.969 | 0.969 | 0.971 | 0.969 | 0.966 | no |
+| `deep_R1_thickness` | 0.421 | 0.425 | 0.421 | 0.431 | 0.416 | 0.442 | 0.506 | yes on faces (0.42–0.44); mean 0.51 |
+| `deep_R3_twist` | 0.126 | 0.126 | 0.161 | 0.161 | 0.161 | 0.161 | 0.181 | yes |
+| `deep_R4_blend` | 0.305 | 0.240 | 0.416 | 0.380 | 0.418 | 0.383 | 0.440 | yes |
+| `deep_R5_hierarchy` | 0.703 | 0.705 | 0.690 | 0.721 | 0.675 | 0.746 | 0.822 | no |
+| `deep_R2_nested` | 0.756 | 0.681 | 1.000 | 1.000 | 1.000 | 1.000 | 0.706 | no (solid matrix, by design) |
+| `fusion_bcc_plus_voronoi` | 0.610 | 0.620 | 0.588 | 0.638 | 0.580 | 0.674 | 0.774 | no |
+| `fusion_diamond_plus_lidinoid` | 0.598 | 0.598 | 0.598 | 0.598 | 0.598 | 0.598 | 0.638 | no |
+| `fusion_helical_cap_iwp` | 0.240 | 0.240 | 0.145 | 0.145 | 0.145 | 0.145 | 0.296 | yes |
+| `fusion_schwarzp_to_gyroid` | 0.155 | 0.259 | 0.217 | 0.217 | 0.215 | 0.215 | 0.273 | yes |
+| `fusion_kelvin_to_iwp` | 0.305 | 0.240 | 0.286 | 0.218 | 0.286 | 0.218 | 0.273 | yes |
+
+Helical base families alone (no fusion, same test): `bio_helical_generic` 1.000 on z faces (plate), `bio_helical_rectfibers`
+0.950, `bio_helical_cylinfibers` 0.570 (the most open helical option, still above 0.5).
+
+What this shows:
+- The flat faces seen in `deep_R5_hierarchy`, `fusion_bcc_plus_voronoi` and `fusion_diamond_plus_lidinoid` are real solid boundary
+  regions (0.6–0.7), not rendering artefacts. They are not open by the criterion.
+- `fusion_gyroid_plus_helical` is not open in either version. The helical families are dense on the faces by design, so
+  making this entry open needs a change to the helical base density, which is a design decision (not made here).
+- `deep_R2_nested` is solid on its sides (matrix, as documented), so it is not open either.
+- The face test does not address the rim sawtooth or the strut stubs past the envelope; those remain open.
+

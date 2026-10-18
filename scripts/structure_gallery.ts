@@ -141,8 +141,9 @@ const BASE_ENTRIES: Entry[] = [
 
   // ---- fusions of different structure types -----------------------------------------------
   {
-    // Helical rectangular fibres, not the plate family: plate plies are solid squares that close the top face
-    // (see examples/structure_gallery_256_mixed_open/README.md). Fibres keep the entry open.
+    // Helical rectangular fibres instead of the plate family (plate plies are solid squares; the old plate version
+    // had face solid fraction 1.000). Measured with scripts/slice_test.ts: the fibre version is still closed on its
+    // faces (0.96-0.97), so this change does NOT make the entry open. See examples/structure_gallery_256_mixed_open/README.md.
     id: "fusion_gyroid_plus_helical", group: "fusion", title: "Gyroid union helical rectangular fibres",
     prompt: "fusion union: gyroid TPMS with helical rectangular fibres",
     make: () => fusionSpec("union", rawTpms("gyroid", TPMS_CELL, TPMS_T), bioSpec("helical rectangular fibers plies with 10 plies, 10 degrees")),

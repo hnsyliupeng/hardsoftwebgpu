@@ -1,0 +1,16 @@
+design	L	face_z_bot	face_z_top	face_x_min	face_x_max	face_y_min	face_y_max	mean_z_planes
+slice_reference/fusion_gyroid_plus_helical_plate_v1.design.json	20	1.000	1.000	0.689	0.686	0.683	0.688	0.926
+fusion_gyroid_plus_helical/design.json	20	0.965	0.964	0.969	0.969	0.971	0.969	0.966
+deep_R1_thickness/design.json	20	0.421	0.425	0.421	0.431	0.416	0.442	0.506
+deep_R3_twist/design.json	20	0.126	0.126	0.161	0.161	0.161	0.161	0.181
+deep_R4_blend/design.json	20	0.305	0.240	0.416	0.380	0.418	0.383	0.440
+deep_R5_hierarchy/design.json	20	0.703	0.705	0.690	0.721	0.675	0.746	0.822
+deep_R2_nested/design.json	20	0.756	0.681	1.000	1.000	1.000	1.000	0.706
+fusion_bcc_plus_voronoi/design.json	20	0.610	0.620	0.588	0.638	0.580	0.674	0.774
+fusion_diamond_plus_lidinoid/design.json	20	0.598	0.598	0.598	0.598	0.598	0.598	0.638
+fusion_helical_cap_iwp/design.json	20	0.240	0.240	0.145	0.145	0.145	0.145	0.296
+fusion_schwarzp_to_gyroid/design.json	20	0.155	0.259	0.217	0.217	0.215	0.215	0.273
+fusion_kelvin_to_iwp/design.json	20	0.305	0.240	0.286	0.218	0.286	0.218	0.273
+bio_helical_generic/design.json	20	1.000	1.000	0.574	0.574	0.574	0.574	0.894
+bio_helical_rectfibers/design.json	20	0.950	0.950	0.959	0.959	0.959	0.959	0.952
+bio_helical_cylinfibers/design.json	20	0.570	0.570	0.789	0.789	0.762	0.762	0.792
