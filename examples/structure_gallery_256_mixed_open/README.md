@@ -35,8 +35,8 @@ The nine entries not inspected before (Kelvin and R2 were checked earlier) were 
 | `deep_R3_twist` | BCC-like strut lattice, open | acceptable |
 | `deep_R4_blend` | blended sheets, jagged rim | open: rim sawtooth |
 | `deep_R5_hierarchy` | large flat faces with pocketed infill | flat faces not yet verified as foam walls |
-| `fusion_bcc_plus_voronoi` | flat faces; strut stubs stick out past the box at top and sides | open: stubs beyond envelope to check |
-| `fusion_diamond_plus_lidinoid` | flat faces; strut stubs past the box; jagged rim | open: as above, plus rim sawtooth |
+| `fusion_bcc_plus_voronoi` | flat faces; strut stubs stick out past the box at top and sides | stubs not outside the cube (envelope test: no material in a 0.5 mm shell outside any face); likely cut-away silhouettes, not re-rendered |
+| `fusion_diamond_plus_lidinoid` | flat faces; strut stubs past the box; jagged rim | stubs as above; plus rim sawtooth (open) |
 | `fusion_gyroid_plus_helical` | previous version (helical plate family, solid square plies) had a near-full disc plate over the top face. Re-run with helical rectangular fibres: volume 7766.338 mm³, 1 component, PASS. Slice test: face solid fraction 0.96–0.97 (plate version 1.00 on z faces); the fibre version is also closed on its faces | **not open** by the slice criterion (below); no fix claimed |
 | `fusion_helical_cap_iwp` | I-WP-type sheet, jagged rim; one small stray fragment at top | open: rim sawtooth, fragment |
 | `fusion_schwarzp_to_gyroid` | gyroid-type sheet, jagged rim | open: rim sawtooth |
@@ -80,4 +80,10 @@ What this shows:
   making this entry open needs a change to the helical base density, which is a design decision (not made here).
 - `deep_R2_nested` is solid on its sides (matrix, as documented), so it is not open either.
 - The face test does not address the rim sawtooth or the strut stubs past the envelope; those remain open.
+
+## Envelope test (`scripts/envelope_test.ts`)
+Samples a 0.5 mm shell just outside each face of the build cube. The fusion, deep and lattice fields tested (`fusion_bcc_plus_voronoi`,
+`fusion_diamond_plus_lidinoid`, `deep_R5_hierarchy`, `deep_R3_twist`, `fusion_kelvin_to_iwp`, `fusion_gyroid_plus_helical`) have **zero** solid fraction
+outside all six faces. The strut stubs seen in the renders are therefore not protruding past the cube. They are most likely interior struts at the
+silhouette of the cut-away view. This is a field-level result, not a new render.
 
