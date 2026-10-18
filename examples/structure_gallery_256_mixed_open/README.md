@@ -41,13 +41,13 @@ Each entry's main render was inspected. No fix is claimed unless stated.
 | `deep_R1_thickness` | gyroid-type sheet, jagged rim (sawtooth) | open: rim sawtooth (gyroid) |
 | `deep_R3_twist` | BCC-like strut lattice, open | acceptable |
 | `deep_R4_blend` | blended sheets, jagged rim | open: rim sawtooth |
-| `deep_R5_hierarchy` | large flat faces with pocketed infill | flat faces: solid boundary (0.7 on faces), intended as foam walls not verified |
-| `fusion_bcc_plus_voronoi` | flat faces; strut rods appear past the box at top and sides | rods are interior, seen through the cut-away walls; mesh extent −0.04 to 20.02 mm (inside the cube to one voxel) |
+| `deep_R5_hierarchy` | large flat faces with pocketed infill | flat faces are foam walls cut by the box, as designed (`scripts/face_origin.ts`: walls are 79% of the face solid; the rest is gyroid in pockets) |
+| `fusion_bcc_plus_voronoi` | flat faces (foam walls: 91% of the face solid, `scripts/face_origin.ts`); strut rods appear past the box at top and sides | rods are interior, seen through the cut-away walls; mesh extent −0.04 to 20.02 mm (inside the cube to one voxel) |
 | `fusion_diamond_plus_lidinoid` | flat faces; strut rods past the box; jagged rim | rods as above; plus rim sawtooth (open) |
 | `fusion_helical_cap_iwp` | I-WP-type sheet, jagged rim; one small stray fragment at top | open: rim sawtooth, fragment |
 | `fusion_schwarzp_to_gyroid` | gyroid-type sheet, jagged rim | open: rim sawtooth |
 
-Open points carried forward: the rim sawtooth on gyroid-based entries, and whether the flat faces in `deep_R5_hierarchy`, `fusion_bcc_plus_voronoi` and `fusion_diamond_plus_lidinoid` are the intended foam walls.
+Open points carried forward: the rim sawtooth on gyroid-based entries. The flat faces in `deep_R5_hierarchy` and `fusion_bcc_plus_voronoi` are foam walls cut by the box, as designed. `fusion_diamond_plus_lidinoid` is not a foam design and its flat faces are not yet checked.
 
 ## Solid fractions on the box faces (information only)
 Slice test (`scripts/slice_test.ts` → `eval/slice_test.tsv`): planes 0.2 mm inside each face, grid 0.1 mm, solid fraction = share of points with field < 0. Mean over z-planes every 0.25 mm. These are not used as a pass/fail criterion.
