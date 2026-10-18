@@ -26,7 +26,7 @@ npm run run -- --program rounded_hollow_box rounded_hollow_box 96
 
 Arguments: `"<prompt>" [name] [resolution]`, or `--program <example | file.json> [name] [resolution]`.
 Outputs go to `artifacts/<name>/`. The output includes `<name>.design.json` (DesignState, with metrics and
-`repair_history`), `design.ts` (copy-executable parametric code), and the mesh and export files in a subfolder. Re-run the code with:
+`repair_history`), `design.ts` (copy-executable parametric code), and the mesh and export files in a subfolder. After the command above has run (it writes `artifacts/gyroid_repair/`), re-run the generated code with:
 
 ```bash
 node --experimental-strip-types artifacts/gyroid_repair/design.ts
