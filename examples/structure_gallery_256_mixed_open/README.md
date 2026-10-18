@@ -47,7 +47,7 @@ Each entry's main render was inspected. No fix is claimed unless stated.
 | `fusion_helical_cap_iwp` | I-WP-type sheet, jagged rim; one small stray fragment at top | open: rim sawtooth, fragment |
 | `fusion_schwarzp_to_gyroid` | gyroid-type sheet, jagged rim | open: rim sawtooth |
 
-Open points carried forward: the rim sawtooth on gyroid-based entries. The flat faces in `deep_R5_hierarchy` and `fusion_bcc_plus_voronoi` are foam walls cut by the box, as designed. `fusion_diamond_plus_lidinoid` is not a foam design and its flat faces are not yet checked.
+Open points carried forward: the rim sawtooth on gyroid-based entries (cause identified, see the section below; no fix chosen). The flat faces in `deep_R5_hierarchy` and `fusion_bcc_plus_voronoi` are foam walls cut by the box, as designed. `fusion_diamond_plus_lidinoid` is not a foam design and its flat faces are not yet checked.
 
 ## Solid fractions on the box faces (information only)
 Slice test (`scripts/slice_test.ts` → `eval/slice_test.tsv`): planes 0.2 mm inside each face, grid 0.1 mm, solid fraction = share of points with field < 0. Mean over z-planes every 0.25 mm. These are not used as a pass/fail criterion.
@@ -70,3 +70,12 @@ Superseded helical reference (not in the gallery any more): the rectangular-fibr
 
 ## Envelope test (`scripts/envelope_test.ts`)
 Samples the full 3D shell (0.5 mm) outside the build cube, for the field, and checks the mesh extent. Zero solid points outside the cube for `fusion_bcc_plus_voronoi`, `fusion_diamond_plus_lidinoid`, `fusion_gyroid_plus_helical` (superseded) and `deep_R3_twist`. The mesh of `fusion_bcc_plus_voronoi` spans −0.04 to 20.02 mm on each axis. The rods in the cut-away render are interior struts seen through the cut walls, not protrusions.
+
+## Rim sawtooth (`scripts/rim_period.ts`)
+Cause: the periodic TPMS sheet is clipped by the box faces, so its cut edge at the boundary repeats along the edge. The
+strip profile (solid fraction along one box edge, 0.6 mm strip, 0.2 mm inside the face) swings between 0 and 1 with
+peaks about 2.4–2.5 mm apart (8 peaks in 20 mm): `gyroid_only` 2.436 mm, `deep_R1_thickness` 2.471 mm. That spacing is
+far larger than the 0.078 mm voxel size, so it is not a meshing artefact. It is a geometric consequence of clipping the
+sheet to the box. The spacing is about 2.5 mm, not the 2 mm half-cell I would expect from a 4 mm gyroid cell, so the link
+to the cell size is approximate. Whether to trim the edge or leave it is a design decision, not made here.
+
