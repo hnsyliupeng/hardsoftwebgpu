@@ -141,12 +141,12 @@ const BASE_ENTRIES: Entry[] = [
 
   // ---- fusions of different structure types -----------------------------------------------
   {
-    // Helical rectangular fibres instead of the plate family (plate plies are solid squares; the old plate version
-    // had face solid fraction 1.000). Measured with scripts/slice_test.ts: the fibre version is still closed on its
-    // faces (0.96-0.97), so this change does NOT make the entry open. See examples/structure_gallery_256_mixed_open/README.md.
-    id: "fusion_gyroid_plus_helical", group: "fusion", title: "Gyroid union helical rectangular fibres",
-    prompt: "fusion union: gyroid TPMS with helical rectangular fibres",
-    make: () => fusionSpec("union", rawTpms("gyroid", TPMS_CELL, TPMS_T), bioSpec("helical rectangular fibers plies with 10 plies, 10 degrees")),
+    // Open partner (chosen by the user, 2026-10-18): the helical part was dense on its faces (fibre version 0.96-0.97),
+    // so the gyroid is now united with a BCC lattice. The gyroid alone is open (0.259 on every face).
+    // The previous helical version is kept in git history (commit 43cc9b2 and earlier).
+    id: "fusion_gyroid_plus_bcc", group: "fusion", title: "Gyroid union BCC lattice",
+    prompt: "fusion union: gyroid TPMS with BCC lattice",
+    make: () => fusionSpec("union", rawTpms("gyroid", TPMS_CELL, TPMS_T), latticeSpec("bcc", LAT_CELL, LAT_R)),
   },
   {
     id: "fusion_schwarzp_to_gyroid", group: "fusion", title: "Schwarz P below, gyroid above (zoned at mid-height)",

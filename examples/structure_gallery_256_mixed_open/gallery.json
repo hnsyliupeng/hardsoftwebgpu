@@ -1,9 +1,9 @@
 [
   {
-    "id": "fusion_gyroid_plus_helical",
+    "id": "fusion_gyroid_plus_bcc",
     "group": "fusion",
-    "title": "Gyroid union helical rectangular fibres",
-    "prompt": "fusion union: gyroid TPMS with helical rectangular fibres",
+    "title": "Gyroid union BCC lattice",
+    "prompt": "fusion union: gyroid TPMS with BCC lattice",
     "pass": true,
     "checks": [
       {
@@ -21,7 +21,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 7750.5 vs MC 7727.0 mm3 (0.30 %)",
+        "value": "mesh at 320 3374.6 vs MC 3368.4 mm3 (0.18 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -33,13 +33,13 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 7766.3 vs 320 7750.5 mm3 (0.20 %)",
+        "value": "256 px-grid 3374.6 vs 320 3374.6 mm3 (0.00 %)",
         "rule": "<= 5 %"
       },
       {
         "name": "fusion_union_identity",
         "pass": true,
-        "value": "|A|=58888 |B|=190285 |A∪B|=193176 (samples)",
+        "value": "|A|=58888 |B|=35863 |A∪B|=84210 (samples)",
         "rule": "max(|A|,|B|) <= |A∪B| <= |A|+|B|"
       },
       {
@@ -56,22 +56,22 @@
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 7766.338,
-      "volume_mc_mm3": 7727.04,
-      "surface_area_mm2": 7976.693,
-      "volume_fraction": 0.97079,
-      "porosity": 0.02921,
+      "volume_mm3": 3374.646,
+      "volume_mc_mm3": 3368.4,
+      "surface_area_mm2": 12694.754,
+      "volume_fraction": 0.42183,
+      "porosity": 0.57817,
       "components": 1,
-      "cavities": 1785,
-      "genus_handles": 191,
-      "euler_characteristic": 1595,
-      "min_wall_p5_mm": 1.083,
-      "min_wall_median_mm": 2,
-      "triangles": 3191000,
+      "cavities": 699,
+      "genus_handles": 2316,
+      "euler_characteristic": -1616,
+      "min_wall_p5_mm": 0.48,
+      "min_wall_median_mm": 0.4837,
+      "triangles": 6437688,
       "center_of_mass": [
-        9.9987,
-        9.9959,
-        9.9984
+        9.995,
+        9.995,
+        9.995
       ]
     },
     "coupling_metrics": null,
@@ -89,7 +89,7 @@
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
-      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 2 sub-voxel chords discarded. Not a certified manufacturing check.",
+      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.039 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
       "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
       "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
     ],
@@ -190,14 +190,14 @@
           "notes": []
         },
         "b": {
-          "topology": "helical",
-          "bio_motif": "helical_rectfibers",
-          "family": "helical",
-          "variant": "helical_rectfibers",
+          "topology": "lattice",
+          "bio_motif": "lattice:bcc",
+          "family": "lattice",
+          "variant": "bcc",
           "parameters": {
-            "num_plies": 10,
-            "rotation": 10,
-            "seed": 42
+            "seed": 42,
+            "cell_size_mm": 4,
+            "strut_radius_mm": 0.4
           },
           "heterogeneity_field": null,
           "target_metrics": {
@@ -209,32 +209,34 @@
             "resolution": 256
           },
           "retrieval": {
-            "base_id": "helical_rectfibers",
+            "base_id": "cellular_generic",
             "top_k": [
               {
-                "id": "helical_rectfibers",
-                "score": 8.94
+                "id": "cellular_generic",
+                "score": 2.49
               },
               {
-                "id": "helical_cylinfibers",
-                "score": 5.248
+                "id": "cellular_sandwich",
+                "score": 0
               },
               {
-                "id": "helical_generic",
-                "score": 4.363
+                "id": "cellular_voronoi",
+                "score": 0
               }
             ]
           },
-          "confidence": 0.7,
+          "confidence": 0.85,
           "unknowns": [
             "Build edge length not given; 20 mm cube assumed.",
-            "Printability floor not given; 0.4 mm assumed for the RepairHarness."
+            "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
+            "Unit cell size not given; 4 mm assumed.",
+            "Strut radius not given; 10% of the cell size assumed."
           ],
           "notes": []
         }
       }
     },
-    "timing_s": 153.5
+    "timing_s": 202.1
   },
   {
     "id": "fusion_schwarzp_to_gyroid",
