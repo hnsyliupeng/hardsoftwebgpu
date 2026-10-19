@@ -60,7 +60,7 @@ function deepSpec(kind: DeepKind, extra: Partial<DeepSpec> = {}): DesignSpec {
 
 // No closed envelope skin: periodic structures stay open at the box faces (user request). The clipped
 // core is checked as one connected solid (single_solid) at the resolutions in the gallery.
-const SKIN = 0; // mm; set > 0 only to reproduce the earlier closed-skin designs
+const SKIN = Number(process.env.GALLERY_SKIN_MM ?? 0); // mm; default 0 (open). GALLERY_SKIN_MM=1 reproduces the earlier closed-skin records (96 and 192 sets) with the current mesher
 
 /** Raw periodic core, cut by the envelope; the skin is added by the fusion step in latticeSpec / tpmsSpec. */
 function rawLattice(type: string, cell: number, r: number): DesignSpec {

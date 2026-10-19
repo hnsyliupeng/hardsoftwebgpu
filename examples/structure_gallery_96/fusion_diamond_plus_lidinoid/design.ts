@@ -1,5 +1,5 @@
 // Bioinspired123D-WASM parametric design (final state after RepairHarness).
-// Prompt: "fusion union: diamond lattice with lidinoid TPMS and skin"
+// Prompt: "fusion union: diamond lattice with lidinoid TPMS, open"
 // Run from the project root:  node --experimental-strip-types artifacts/<name>/design.ts
 // Edit the constants below and re-run to regenerate geometry and metrics.
 // SDF (reference): fusion (union) of two designs; field = min(A, B)
@@ -17,7 +17,9 @@ const heterogeneity_field = null;
 // ---- Design specification (IntentHarness output, with the constants above applied) ----------
 const spec: DesignSpec = {
   topology: "fusion",
+  
   fusion: {"mode":"union","a":{"topology":"lattice","bio_motif":"lattice:diamond","family":"lattice","variant":"diamond","parameters":{"seed":42,"cell_size_mm":4,"strut_radius_mm":0.4},"heterogeneity_field":null,"target_metrics":{"connectivity":true},"constraints":{"size_mm":20,"min_printable_wall_mm":0.4,"resolution":96},"retrieval":{"base_id":"cellular_generic","top_k":[{"id":"cellular_generic","score":2.49},{"id":"cellular_sandwich","score":0},{"id":"cellular_voronoi","score":0}]},"confidence":0.85,"unknowns":["Build edge length not given; 20 mm cube assumed.","Printability floor not given; 0.4 mm assumed for the RepairHarness.","Unit cell size not given; 4 mm assumed.","Strut radius not given; 10% of the cell size assumed."],"notes":[]},"b":{"topology":"tpms","bio_motif":"tpms:lidinoid","family":"tpms","variant":"lidinoid","parameters":{"seed":42,"cell_size_mm":5,"wall_thickness_mm":0.5},"heterogeneity_field":null,"target_metrics":{"connectivity":true},"constraints":{"size_mm":20,"min_printable_wall_mm":0.4,"resolution":96},"retrieval":{"base_id":"cellular_generic","top_k":[{"id":"cellular_generic","score":0},{"id":"cellular_sandwich","score":0},{"id":"cellular_voronoi","score":0}]},"confidence":0.85,"unknowns":["Build edge length not given; 20 mm cube assumed.","Printability floor not given; 0.4 mm assumed for the RepairHarness.","Unit cell size not given; 4 mm assumed.","TPMS wall thickness not given; 12% of the period assumed."],"notes":[]},"skin_mm":1} as unknown as NonNullable<DesignSpec["fusion"]>,
+  
   bio_motif: "fusion:union",
   family: "fusion",
   variant: "union",

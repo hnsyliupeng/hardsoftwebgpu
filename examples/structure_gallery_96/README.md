@@ -85,3 +85,32 @@ Each folder contains `design.json` (DesignState, metrics, validation, repair_his
 - **Bio families are not yet compared numerically** with Bioinspired123D's `eval/benchmark.csv`; the family definitions come from its basecode. That comparison remains open.
 - **Not done here:** printing or FEA validation, and STEP export for these 31 designs.
 
+## Re-run with dual contouring (skin records, 2026-10-19)
+
+The 17 entries with a 1 mm envelope skin (periodic lattices, TPMS, and the two skin fusions) were regenerated with the current mesher. Each one is a fusion (skin ∪ structure), so manifold dual contouring is used (`src/geometry/dualcontour.ts`), not surface nets.
+
+- **Geometry unchanged.** The Monte Carlo volume is identical to the earlier record for each entry (column "MC mm³"), so the same solid was re-meshed.
+- **Mesh volume changes** by −2.6 % to +3.3 % (table). The mesh now agrees with Monte Carlo within 1.7 % for the lattices and TPMS (column "MC check" is the convergence-grid mesh against Monte Carlo, from the run).
+- **Convergence grid:** the convergence check of these entries uses 120 cells (1.25 × 96). The earlier records of this set used 144 cells (1.5 ×); the other entries keep 144.
+- All 17 pass with one component. The other entries in this set are unchanged.
+- These are still **closed-skin records** and are superseded for open designs by `examples/structure_gallery_256/` and `examples/structure_gallery_256_mixed_open/`.
+
+| id | old V (mm³) | new V (mm³) | change | MC (mm³) | MC check (convergence-grid mesh vs MC) | result |
+|---|---|---|---|---|---|---|
+| `lattice_sc` | 2525.496 | 2583.635 | +2.30 % | 2560.32 | 0.83 % | PASS |
+| `lattice_bcc` | 3178.740 | 3261.714 | +2.61 % | 3247.88 | 0.24 % | PASS |
+| `lattice_fcc` | 3246.762 | 3351.165 | +3.22 % | 3311.84 | 0.88 % | PASS |
+| `lattice_fbcc` | 4243.295 | 4382.993 | +3.29 % | 4311.60 | 1.25 % | PASS |
+| `lattice_diamond` | 3147.669 | 3228.650 | +2.57 % | 3215.08 | 0.18 % | PASS |
+| `lattice_bccz` | 3281.931 | 3373.813 | +2.80 % | 3350.92 | 0.48 % | PASS |
+| `lattice_kelvin` | 3295.295 | 3361.481 | +2.01 % | 3355.92 | 0.24 % | PASS |
+| `tpms_gyroid` | 3886.415 | 3871.999 | -0.37 % | 3870.52 | 0.08 % | PASS |
+| `tpms_schwarz_p` | 3555.992 | 3558.665 | +0.08 % | 3544.60 | 0.20 % | PASS |
+| `tpms_schwarz_d` | 4260.161 | 4225.223 | -0.82 % | 4232.64 | 0.06 % | PASS |
+| `tpms_neovius` | 4157.440 | 4101.230 | -1.35 % | 4118.84 | 0.05 % | PASS |
+| `tpms_iwp` | 4089.628 | 4062.901 | -0.65 % | 4097.00 | 0.63 % | PASS |
+| `tpms_lidinoid` | 5524.630 | 5381.692 | -2.59 % | 5394.72 | 0.04 % | PASS |
+| `fusion_schwarzp_to_gyroid` | 3786.470 | 3777.734 | -0.23 % | 3775.68 | 0.03 % | PASS |
+| `fusion_kelvin_to_iwp` | 3755.663 | 3775.643 | +0.53 % | 3790.28 | 0.45 % | PASS |
+| `fusion_bcc_plus_voronoi` | 6934.669 | 6935.821 | +0.02 % | 6917.72 | 0.17 % | PASS |
+| `fusion_diamond_plus_lidinoid` | 6050.947 | 5893.782 | -2.60 % | 5866.12 | 0.41 % | PASS |
