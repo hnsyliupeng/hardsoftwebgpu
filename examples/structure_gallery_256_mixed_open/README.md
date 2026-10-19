@@ -95,6 +95,6 @@ The six fused designs (`topology: fusion`) are now meshed with manifold dual con
 ## Flat faces on the box sides (checked 2026-10-19)
 Some renders show flat patches on the box faces. `scripts/flat_face_test.ts` splits the solid samples on each face plane (0.2 mm inside the face, grid 0.2 mm) by component. Results (fraction of solid samples on the face):
 - `fusion_bcc_plus_voronoi`: foam-only 0.74–0.81, BCC-only 0.07–0.11, shared 0.11–0.14. Foam alone covers 0.52–0.63 of each face.
-- `fusion_diamond_plus_lidinoid`: Lidinoid-only 0.74; diamond-only 0.12–0.12; shared 0.14. Lidinoid alone covers 0.53 of each face.
+- `fusion_diamond_plus_lidinoid`: Lidinoid-only 0.74; diamond-only 0.12; shared 0.14. Lidinoid alone covers 0.53 of each face.
 So the flat patches are wall sheets of the foam or TPMS part, cut by the box. They are not a skin added by the generator: the fusion specs use `SKIN = 0`. Face solid share is about 0.6–0.7, so the faces are not closed. `deep_R5_hierarchy` is built as a single field, not as a two-part fusion, so this split was not run on it.
 
