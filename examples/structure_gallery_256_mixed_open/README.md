@@ -8,12 +8,12 @@ Field-based (non-exact) renders: these come from the field and surface-nets mesh
 
 | id | title | group | volume (mm³) | validation | images |
 |---|---|---|---|---|---|
-| `fusion_gyroid_plus_bcc` | Gyroid union BCC lattice (open partner) | fusion | 3374.646 | PASS (7/7) | screenshot.png, view_top.png, view_front.png, view_side.png |
-| `fusion_schwarzp_to_gyroid` | Schwarz P below, gyroid above (zoned at mid-height) | fusion | 2179.981 | PASS (7/7) | screenshot.png, view_top.png, view_front.png, view_side.png |
-| `fusion_kelvin_to_iwp` | Kelvin lattice below, I-WP above (zoned), open (no skin) | fusion | 2205.499 | PASS (7/7) | screenshot.png, view_top.png, view_front.png, view_side.png |
-| `fusion_bcc_plus_voronoi` | BCC lattice union Voronoi foam | fusion | 6174.205 | PASS (7/7) | screenshot.png, view_top.png, view_front.png, view_side.png |
-| `fusion_helical_cap_iwp` | Helical plies intersected with I-WP | fusion | 2381.578 | PASS (7/7) | screenshot.png, view_top.png, view_front.png, view_side.png |
-| `fusion_diamond_plus_lidinoid` | Diamond lattice union Lidinoid, open (no skin) | fusion | 5138.036 | PASS (7/7) | screenshot.png, view_top.png, view_front.png, view_side.png |
+| `fusion_gyroid_plus_bcc` | Gyroid union BCC lattice (open partner) | fusion | 3376.501 | PASS (7/7) | screenshot.png, view_top.png, view_front.png, view_side.png |
+| `fusion_schwarzp_to_gyroid` | Schwarz P below, gyroid above (zoned at mid-height) | fusion | 2180.736 | PASS (7/7) | screenshot.png, view_top.png, view_front.png, view_side.png |
+| `fusion_kelvin_to_iwp` | Kelvin lattice below, I-WP above (zoned), open (no skin) | fusion | 2212.687 | PASS (7/7) | screenshot.png, view_top.png, view_front.png, view_side.png |
+| `fusion_bcc_plus_voronoi` | BCC lattice union Voronoi foam | fusion | 6175.190 | PASS (7/7) | screenshot.png, view_top.png, view_front.png, view_side.png |
+| `fusion_helical_cap_iwp` | Helical plies intersected with I-WP | fusion | 2380.508 | PASS (7/7) | screenshot.png, view_top.png, view_front.png, view_side.png |
+| `fusion_diamond_plus_lidinoid` | Diamond lattice union Lidinoid, open (no skin) | fusion | 5107.865 | PASS (7/7) | screenshot.png, view_top.png, view_front.png, view_side.png |
 | `deep_R1_thickness` | R1 thickness: gyroid wall set by a cellular foam field | coupled | 4032.182 | PASS (6/6) | screenshot.png, view_top.png, view_front.png, view_side.png |
 | `deep_R2_nested` | R2 nested: Kelvin lattice grown inside tubular pores | coupled | 5603.703 | PASS (6/6) | screenshot.png, view_top.png, view_front.png, view_side.png |
 | `deep_R3_twist` | R3 twist: BCC lattice twisted by a helical angle | coupled | 1419.638 | PASS (6/6) | screenshot.png, view_top.png, view_front.png, view_side.png |
@@ -85,4 +85,10 @@ Each of the six faces is 0.598 solid (inset 0.2 mm, h 0.1 mm). The Lidinoid part
 All 11 designs were re-run with the current code (`scripts/structure_gallery.ts 256`, output in a scratch folder inside the repository and then copied). All 11 PASS. Every volume and every render (44 PNG files) is identical to the committed values. The only changes in the files are:
 - `gallery.json` and each `design.json` now carry `min_wall_excluded_near_faces` (samples within 0.5 mm of the faces excluded from the wall metric; 690 to 1,987 per design).
 - Two `design.json` / `design.ts` files (`fusion_kelvin_to_iwp`, `fusion_diamond_plus_lidinoid`) had a stale prompt and title that still said "with skin" / "1 mm skin". They now say open, as in `gallery.json`.
+
+## Fused designs: manifold dual contouring (CPU re-run at 256)
+The six fused designs (`topology: fusion`) are now meshed with manifold dual contouring (`src/geometry/dualcontour.ts`) instead of surface nets, because surface nets gave non-manifold edges at the union creases. All six re-run and PASS. Their volumes change by at most 0.6 %:
+- `fusion_gyroid_plus_bcc` 3374.646 → 3376.501 mm³; `fusion_schwarzp_to_gyroid` 2179.981 → 2180.736; `fusion_kelvin_to_iwp` 2205.499 → 2212.687; `fusion_bcc_plus_voronoi` 6174.205 → 6175.190; `fusion_helical_cap_iwp` 2381.578 → 2380.508; `fusion_diamond_plus_lidinoid` 5138.036 → 5107.865 (Monte Carlo 5094.4).
+- Non-manifold edges at 96 cells, before → after: gyroid+BCC 3897 → 135; schwarz→gyroid 64 → 0; kelvin→iwp 488 → 14; BCC+Voronoi 1019 → 53; helical cap 113 → 6; diamond+lidinoid 7092 → 483. Open edges stay 0. The residual pinches are narrower than one voxel (see `docs/NONMANIFOLD.md`).
+- The other five entries use surface nets, unchanged.
 

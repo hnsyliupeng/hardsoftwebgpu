@@ -5,12 +5,12 @@ Volumes are field-based (surface nets of the SDF), not exact B-Rep, unless the R
 
 | id | title | group | check | components | volume (mm³) | min wall p5 (mm) | genus (handles) | repairs |
 |---|---|---|---|---|---|---|---|---|
-| `fusion_gyroid_plus_bcc` | Gyroid union BCC lattice | fusion | PASS | 1 | 3374.646 | 0.48 | 2316 | 0 |
-| `fusion_schwarzp_to_gyroid` | Schwarz P below, gyroid above (zoned at mid-height) | fusion | PASS | 1 | 2179.981 | 0.4799 | 433 | 0 |
-| `fusion_kelvin_to_iwp` | Kelvin lattice below, I-WP above (zoned), open (no skin) | fusion | PASS | 1 | 2205.499 | 0.4721 | 1137 | 0 |
-| `fusion_bcc_plus_voronoi` | BCC lattice union Voronoi foam | fusion | PASS | 1 | 6174.205 | 0.8 | 544 | 0 |
-| `fusion_helical_cap_iwp` | Helical plies intersected with I-WP | fusion | PASS | 1 | 2381.578 | 0.4708 | 699 | 0 |
-| `fusion_diamond_plus_lidinoid` | Diamond lattice union Lidinoid, open (no skin) | fusion | PASS | 1 | 5138.036 | 0.4349 | 3655 | 0 |
+| `fusion_gyroid_plus_bcc` | Gyroid union BCC lattice | fusion | PASS | 1 | 3376.501 | 0.4801 | 2316 | 0 |
+| `fusion_schwarzp_to_gyroid` | Schwarz P below, gyroid above (zoned at mid-height) | fusion | PASS | 1 | 2180.736 | 0.4799 | 433 | 0 |
+| `fusion_kelvin_to_iwp` | Kelvin lattice below, I-WP above (zoned), open (no skin) | fusion | PASS | 1 | 2212.687 | 0.4722 | 1137 | 0 |
+| `fusion_bcc_plus_voronoi` | BCC lattice union Voronoi foam | fusion | PASS | 1 | 6175.190 | 0.8 | 544 | 0 |
+| `fusion_helical_cap_iwp` | Helical plies intersected with I-WP | fusion | PASS | 1 | 2380.508 | 0.4711 | 699 | 0 |
+| `fusion_diamond_plus_lidinoid` | Diamond lattice union Lidinoid, open (no skin) | fusion | PASS | 1 | 5107.865 | 0.4349 | 3655 | 0 |
 | `deep_R1_thickness` | R1 thickness: gyroid wall set by a cellular foam field | coupled | PASS | 1 | 4032.182 | 0.4819 | 490 | 0 |
 | `deep_R2_nested` | R2 nested: Kelvin lattice grown inside tubular pores | coupled | PASS | 1 | 5603.703 | 0.5892 | 5936 | 0 |
 | `deep_R3_twist` | R3 twist: BCC lattice twisted by a helical angle | coupled | PASS | 1 | 1419.638 | 0.5451 | 627 | 0 |
