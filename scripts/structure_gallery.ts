@@ -460,6 +460,7 @@ async function runEntry(e: Entry) {
       euler_characteristic: vm.euler_characteristic,
       min_wall_p5_mm: +vm.min_wall_thickness.toFixed(4),
       min_wall_median_mm: +vm.min_wall_thickness_median.toFixed(4),
+      min_wall_excluded_near_faces: vm.min_wall_excluded_near_faces ?? null,
       triangles: vm.triangles,
       center_of_mass: vm.center_of_mass.map((v) => +v.toFixed(4)),
     },

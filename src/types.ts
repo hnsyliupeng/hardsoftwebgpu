@@ -145,6 +145,8 @@ export interface DesignMetrics {
   min_wall_thickness_median: number;
   /** 5th percentile of inward-ray chords (diagnostic; equals min_wall_thickness except for strut lattices). */
   min_wall_thickness_chord?: number;
+  /** Surface samples skipped because they lie within RIM_MARGIN_MM of the envelope faces (cut edges, not walls). */
+  min_wall_excluded_near_faces?: number;
   components: number;
   cavities: number;
   euler_characteristic: number;

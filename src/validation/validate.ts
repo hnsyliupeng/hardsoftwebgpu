@@ -55,7 +55,7 @@ export function validate(geo: GeometryOutput, spec: DesignSpec): HarnessResult<V
   if (topo.slivers > 0)
     observations.push(`${topo.slivers} sub-voxel sliver component(s) (< 27 nodes, typically clipped at the build boundary) excluded from connectivity.`);
   observations.push(
-    `Local wall thickness (inward ray chords over ${wall.chords} surface samples): robust minimum (5th percentile) ${wall.p5.toFixed(3)} mm, absolute minimum ${wall.min.toFixed(3)} mm, median ${wall.median.toFixed(3)} mm.`,
+    `Local wall thickness (inward ray chords over ${wall.chords} surface samples): robust minimum (5th percentile) ${wall.p5.toFixed(3)} mm, absolute minimum ${wall.min.toFixed(3)} mm, median ${wall.median.toFixed(3)} mm. ${wall.excludedNearFaces} samples within ${RIM_MARGIN_MM} mm of the envelope faces excluded (cut edges).`,
   );
 
   // The reported min_wall_thickness is the 5th percentile of the chord distribution: the absolute
@@ -96,6 +96,7 @@ export function validate(geo: GeometryOutput, spec: DesignSpec): HarnessResult<V
     min_wall_thickness_absolute: wall.min,
     min_wall_thickness_median: wall.median,
     min_wall_thickness_chord: wall.p5,
+    min_wall_excluded_near_faces: wall.excludedNearFaces,
     components: topo.components,
     cavities: topo.cavities,
     euler_characteristic: topo.euler,
