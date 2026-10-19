@@ -18,35 +18,35 @@ Design status is `PASS` for all five rounds (single solid, watertight, MC, conve
 
 ### R1: Parameter coupling across families
 
-- Design: `deep_R1_thickness`; screenshots `examples/structure_gallery/deep_R1_thickness/screenshot.png` (cut-away) and `screenshot_exterior.png`.
+- Design: `deep_R1_thickness`; screenshots `examples/structure_gallery/deep_R1_thickness/screenshot.png` (cut-away). The exterior view was removed (closed-skin rule); the open A5 versions are in `examples/structure_gallery_256_mixed_open/`.
 - Coupling: Gyroid wall thickness is set by the distance to a cellular foam field (thick near foam walls, thin in pockets).
 - Measured: wall-adjacent mean t 1.188 mm vs pocket mean t 0.515 mm (t range 0.5–1.2 mm).
 - Result: PASS, 6/6 checks; repair history: 0 steps.
 
 ### R2: Scale nesting
 
-- Design: `deep_R2_nested`; screenshots `examples/structure_gallery/deep_R2_nested/screenshot.png` (cut-away) and `screenshot_exterior.png`.
+- Design: `deep_R2_nested`; screenshots `examples/structure_gallery/deep_R2_nested/screenshot.png` (cut-away). The exterior view was removed (closed-skin rule); the open A5 versions are in `examples/structure_gallery_256_mixed_open/`.
 - Coupling: Kelvin lattice grows inside 16 tubular pores.
 - Measured: 16 pores; pore volume 40.8 % solid.
 - Result: PASS, 6/6 checks; repair history: 0 steps.
 
 ### R3: Orientation coupling
 
-- Design: `deep_R3_twist`; screenshots `examples/structure_gallery/deep_R3_twist/screenshot.png` (cut-away) and `screenshot_exterior.png`.
+- Design: `deep_R3_twist`; screenshots `examples/structure_gallery/deep_R3_twist/screenshot.png` (cut-away). The exterior view was removed (closed-skin rule); the open A5 versions are in `examples/structure_gallery_256_mixed_open/`.
 - Coupling: BCC lattice rotated about z by a helical angle (90° over the 20 mm height).
 - Measured: twist 90° total, 4.5°/mm.
 - Result: PASS, 6/6 checks; repair history: 0 steps.
 
 ### R4: Multi-material transition
 
-- Design: `deep_R4_blend`; screenshots `examples/structure_gallery/deep_R4_blend/screenshot.png` (cut-away) and `screenshot_exterior.png`.
+- Design: `deep_R4_blend`; screenshots `examples/structure_gallery/deep_R4_blend/screenshot.png` (cut-away). The exterior view was removed (closed-skin rule); the open A5 versions are in `examples/structure_gallery_256_mixed_open/`.
 - Coupling: Kelvin, gyroid and I-WP in three z-zones, joined by smooth minima (no planar seam).
 - Measured: solid fraction per zone 0.3002 / 0.5225 / 0.4749; blend radius 1.5 mm.
 - Result: PASS, 6/6 checks; repair history: 0 steps.
 
 ### R5: Hierarchical infill
 
-- Design: `deep_R5_hierarchy`; screenshots `examples/structure_gallery/deep_R5_hierarchy/screenshot.png` (cut-away) and `screenshot_exterior.png`.
+- Design: `deep_R5_hierarchy`; screenshots `examples/structure_gallery/deep_R5_hierarchy/screenshot.png` (cut-away). The exterior view was removed (closed-skin rule); the open A5 versions are in `examples/structure_gallery_256_mixed_open/`.
 - Coupling: Gyroid sheet fills the pockets of a cellular foam.
 - Measured: pocket fill 37.2 %; solid fraction 0.824.
 - Result: PASS, 6/6 checks; repair history: 0 steps.

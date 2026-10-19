@@ -7,7 +7,7 @@ and its volume is compared with a grid-free Monte Carlo estimate (MC) of the imp
 Run: `GALLERY_OUT=examples/structure_gallery_256 node --experimental-strip-types --no-warnings scripts/structure_gallery.ts 256`
 
 **Result: 36/36 PASS.** Full run before the fibre fix; the two fibre entries (`bio_helical_rectfibers`, `bio_helical_cylinfibers`) were re-run after it. The fibre change touches only those two designs. The five deep-fusion designs at 256 cells are in
-`examples/deep_fusion_256/` (5/5 PASS). Lower resolutions are kept in separate folders: `examples/structure_gallery_96/` (96 cells) and `examples/structure_gallery/` (192 cells). They are not merged; both have closed exterior skins.
+`examples/deep_fusion_256/` (5/5 PASS). Lower resolutions are kept in separate folders: `examples/structure_gallery_96/` (96 cells) and `examples/structure_gallery/` (192 cells). They are not merged; both have closed exterior skins. The open A5 fusion set (11 designs, 256 cells) is in `examples/structure_gallery_256_mixed_open/`.
 
 ## Images
 
