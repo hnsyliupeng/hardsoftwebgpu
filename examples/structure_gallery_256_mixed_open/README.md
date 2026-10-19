@@ -76,6 +76,5 @@ Cause: the periodic TPMS sheet is clipped by the box faces, so its cut edge at t
 strip profile (solid fraction along one box edge, 0.6 mm strip, 0.2 mm inside the face) swings between 0 and 1 with
 peaks about 2.4–2.5 mm apart (8 peaks in 20 mm): `gyroid_only` 2.436 mm, `deep_R1_thickness` 2.471 mm. That spacing is
 far larger than the 0.078 mm voxel size, so it is not a meshing artefact. It is a geometric consequence of clipping the
-sheet to the box. The spacing is about 2.5 mm, not the 2 mm half-cell I would expect from a 4 mm gyroid cell, so the link
-to the cell size is approximate. Whether to trim the edge or leave it is a design decision, not made here.
+sheet to the box. The gyroid cell in these designs is 5 mm (`design_spec.fusion.a.parameters.cell_size_mm`), so a half-cell is 2.5 mm, which matches the measured 2.44–2.47 mm. (An earlier draft of this note wrongly said 4 mm, which is the BCC cell.) Whether to trim the edge or leave it is a design decision, not made here.
 
