@@ -47,7 +47,7 @@ Each entry's main render was inspected. No fix is claimed unless stated.
 | `fusion_helical_cap_iwp` | I-WP-type sheet, jagged rim; one small stray fragment at top | open: rim sawtooth, fragment |
 | `fusion_schwarzp_to_gyroid` | gyroid-type sheet, jagged rim | open: rim sawtooth |
 
-Open points carried forward: the rim sawtooth on gyroid-based entries (cause identified, see the section below; no fix chosen). The flat faces in `deep_R5_hierarchy` and `fusion_bcc_plus_voronoi` are foam walls cut by the box, as designed. `fusion_diamond_plus_lidinoid` is not a foam design and its flat faces are not yet checked.
+Open points carried forward: the rim sawtooth on gyroid-based entries (cause identified, see the section below; no fix chosen). The flat faces in `deep_R5_hierarchy` and `fusion_bcc_plus_voronoi` are foam walls cut by the box, as designed. `fusion_diamond_plus_lidinoid` flat faces: the Lidinoid network cut by the box, not a skin (`scripts/face_parts.ts`: faces 0.598 solid, the same at all six faces; Lidinoid alone 0.520 on faces; mid-height plane 0.544). The faces are only slightly denser than the bulk.
 
 ## Solid fractions on the box faces (information only)
 Slice test (`scripts/slice_test.ts` → `eval/slice_test.tsv`): planes 0.2 mm inside each face, grid 0.1 mm, solid fraction = share of points with field < 0. Mean over z-planes every 0.25 mm. These are not used as a pass/fail criterion.
@@ -77,4 +77,7 @@ strip profile (solid fraction along one box edge, 0.6 mm strip, 0.2 mm inside th
 peaks about 2.4–2.5 mm apart (8 peaks in 20 mm): `gyroid_only` 2.436 mm, `deep_R1_thickness` 2.471 mm. That spacing is
 far larger than the 0.078 mm voxel size, so it is not a meshing artefact. It is a geometric consequence of clipping the
 sheet to the box. The gyroid cell in these designs is 5 mm (`design_spec.fusion.a.parameters.cell_size_mm`), so a half-cell is 2.5 mm, which matches the measured 2.44–2.47 mm. (An earlier draft of this note wrongly said 4 mm, which is the BCC cell.) Whether to trim the edge or leave it is a design decision, not made here.
+
+## Diamond + Lidinoid faces (`scripts/face_parts.ts`)
+Each of the six faces is 0.598 solid (inset 0.2 mm, h 0.1 mm). The Lidinoid part alone is 0.520 on the faces and the diamond part 0.163. The mid-height plane (offset 0.05 mm) is 0.544, so the faces are only about 0.05 denser than the bulk. This is the periodic network cut by the box, not a closed skin. Whether the render reads as open is a judgement from the render, as set by the user.
 
