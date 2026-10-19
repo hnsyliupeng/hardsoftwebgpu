@@ -13,6 +13,9 @@
 //                   Hierarchical infill.
 //   R6 morph      : the structure changes type inside one field: a gyroid sheet in the core, a BCC strut lattice in
 //                   the outer shell, blended over a radial transition zone. Topology (sheet to strut) coupling.
+//   R7 grading    : a gyroid whose period along z grows with height (3 mm at the base to 7 mm at the top; x and y
+//                   period 5 mm) at constant wall thickness. Scale coupling by a one-dimensional coordinate warp
+//                   (single structure; not a cross-structure coupling).
 //
 // All fields are signed distances in millimetres on the box [0, L]^3 (negative inside the solid).
 
@@ -22,7 +25,7 @@ import type { LatticeType, TpmsType } from "../types.ts";
 import { buildBio, toMillimetres } from "../bio/families.ts";
 import { sampleField } from "../geometry/grid.ts";
 
-export type CoupledRound = "R1" | "R2" | "R3" | "R4" | "R5" | "R6";
+export type CoupledRound = "R1" | "R2" | "R3" | "R4" | "R5" | "R6" | "R7";
 
 export interface CoupledSpec {
   round: CoupledRound;
@@ -39,6 +42,7 @@ const ROUND_DEFAULTS: Record<CoupledRound, Record<string, number | string>> = {
   R4: { lattice: "kelvin", lattice_cell_mm: 4, strut_radius_mm: 0.4, tpms_a: "gyroid", tpms_b: "iwp", tpms_cell_mm: 5, tpms_wall_mm: 0.5, blend_mm: 1.5, skin_mm: 1 },
   R5: { foam_grid: 120, gyroid_cell_mm: 4, gyroid_wall_mm: 0.5, skin_mm: 1 },
   R6: { lattice: "bcc", lattice_cell_mm: 4, strut_radius_mm: 0.4, tpms_cell_mm: 5, tpms_wall_mm: 0.5, core_radius_mm: 5.5, morph_width_mm: 2, skin_mm: 0 },
+  R7: { a_bottom_mm: 3, a_top_mm: 7, a_ref_mm: 5, wall_mm: 0.5, skin_mm: 0 },
 };
 
 export interface CoupledBuild {
@@ -331,6 +335,54 @@ function buildR6(L: number, p: Record<string, number | string>) {
   };
 }
 
+// ---- R7: gyroid with a period graded along z -----------------------------------------------
+
+function buildR7(L: number, p: Record<string, number | string>) {
+  const a0 = num(p, "a_bottom_mm"), a1 = num(p, "a_top_mm"), aRef = num(p, "a_ref_mm");
+  const t = num(p, "wall_mm");
+  const g = (a1 - a0) / L; // period gradient, mm per mm
+  const period = (z: number) => a0 + g * z;
+  // Warp along z only: Z(z) has dZ/dz = aRef / period(z), so the gyroid (period aRef in Z) has period period(z) in z.
+  // x and y keep period aRef. The map is one-dimensional, so the gradient of the warped field is exact:
+  // |grad f| = k sqrt(gx^2 + gy^2 + (gz * aRef / period)^2), with (gx, gy, gz) the gyroid gradient in its own variables.
+  const Zmap = (z: number) => (aRef / g) * Math.log(period(z) / a0);
+  const k = (2 * Math.PI) / aRef;
+  const field = boxField(
+    L,
+    `gyroid, period ${aRef} mm in x and y, period graded along z from ${a0} to ${a1} mm; wall ${t} mm`,
+    (x, y, z) => {
+      const pz = period(z);
+      const [F, gx, gy, gz] = tpmsValueGrad("gyroid" as TpmsType, k * x, k * y, k * Zmap(z));
+      const gzReal = gz * (aRef / pz);
+      const gn = k * Math.hypot(gx, gy, gzReal) + 1e-12;
+      const sheet = Math.abs(F) / gn - t / 2;
+      return Math.max(sheet, boxDist(L, x, y, z));
+    },
+  );
+  const pts = samplePoints(L, 6000, 23);
+  const third = [0, 0, 0], count = [0, 0, 0];
+  for (const [x, y, z] of pts) {
+    const i = Math.min(2, Math.floor((3 * z) / L));
+    count[i]++;
+    if (field.eval(x, y, z) < 0) third[i]++;
+  }
+  return {
+    field,
+    description: `R7 graded gyroid: period along z from ${a0} mm (z=0) to ${a1} mm (z=${L}), period ${aRef} mm in x and y, wall ${t} mm`,
+    metrics: {
+      period_z_bottom_mm: a0,
+      period_z_top_mm: a1,
+      period_xy_mm: aRef,
+      solid_fraction_bottom_third: +(third[0] / count[0]).toFixed(4),
+      solid_fraction_middle_third: +(third[1] / count[1]).toFixed(4),
+      solid_fraction_top_third: +(third[2] / count[2]).toFixed(4),
+    },
+    observations: [
+      `The gyroid period along z grows from ${a0} to ${a1} mm with height (x and y period ${aRef} mm); the wall stays ${t} mm. The grading is one-dimensional, so the sheet is continuous.`,
+    ],
+  };
+}
+
 // ---- entry point ----------------------------------------------------------------------------
 
 export function buildCoupled(spec: CoupledSpec, L: number): CoupledBuild {
@@ -345,6 +397,7 @@ export function buildCoupled(spec: CoupledSpec, L: number): CoupledBuild {
     case "R4": r = buildR4(L, p); break;
     case "R5": r = buildR5(L, p); break;
     case "R6": r = buildR6(L, p); break;
+    case "R7": r = buildR7(L, p); break;
     default: throw new Error(`unknown coupled round ${spec.round}`);
   }
   // Clip to the build box (no feature extends beyond it), then unite the closed envelope skin.

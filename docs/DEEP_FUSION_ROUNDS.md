@@ -76,3 +76,22 @@ Results are in `examples/structure_gallery_r6_open_96/`, `..._192/` and `..._256
 
 Coupling evidence (sampled on the box): solid fraction 0.284 in the core, 0.163 in the morph zone, 0.184 in the shell.
 Limits: SDF-only; the morph is a blend of two signed fields, not an exact interpolation of the two surfaces.
+
+## Round 7: graded period (open, added 2026-10-19)
+
+R7 adds scale grading: the gyroid period along z grows from 3 mm at the base to 7 mm at the top (x and y period 5 mm,
+wall 0.5 mm). It is a one-dimensional coordinate warp, so the gradient of the warped field is exact. Code: `buildR7` in
+`src/topology/coupled.ts`; test: `tests/coupled_r7.test.ts`. This is a single structure with graded scale, not a
+coupling between two structures.
+
+Open design (`skin_mm = 0`). Results are in `examples/structure_gallery_r7_open_96/`, `..._192/`, `..._256/`.
+
+| Cells | Volume (mm³) | MC (mm³) | Mesh vs MC | Convergence | Triangles | Components | Wall p5 (mm) | Result |
+|---|---|---|---|---|---|---|---|---|
+| 96 | 2378.648 | 2403.28 | 0.62 % | 0.41 % (vs 120) | 721,748 | 1 | 0.469 | PASS |
+| 192 | 2398.134 | 2403.28 | 0.12 % | 0.10 % (vs 240) | 2,912,720 | 1 | 0.470 | PASS |
+| 256 | 2400.894 | 2403.28 | 0.04 % | 0.06 % (vs 320) | 5,167,684 | 1 | 0.470 | PASS |
+
+Limits: a first version that warped x and y as well gave a wall of 0.31 mm (not printable under the 0.4 mm floor). That
+map is not conformal, so the distance estimate was wrong. The z-only warp replaces it. The front view projects -z, so
+z increases downward in `view_front.png`.
