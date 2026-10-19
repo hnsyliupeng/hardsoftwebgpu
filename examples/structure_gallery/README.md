@@ -1,5 +1,11 @@
 # Structure gallery
 
+> **Resolution set: 192 cells per axis (0.104 mm voxels).** This folder holds the 192-cell run (commit `5befa7f`).
+> It has closed exterior skins (`screenshot_exterior.png`). The 96-cell set is in `examples/structure_gallery_96/`,
+> the open 256-cell set is in `examples/structure_gallery_256/`, and the mixed open set is in `examples/structure_gallery_256_mixed_open/`.
+> The sets are kept separate and are not merged.
+
+
 **36 of 36 designs pass every check.** Geometry is sampled on a 192-cell grid across the 20 mm box (0.104 mm voxels). Convergence is checked against a 240-cell grid. Each design is a full run through the pipeline (IntentHarness, TopologyHarness, GeometryHarness, ValidationHarness, RepairHarness).
 
 Each folder holds `design.json` (DesignState, metrics, validation, repair_history, coupling metrics), a copy-executable `design.ts` (`node --experimental-strip-types design.ts`), `screenshot.png` (1600 px cut-away view that shows the internal structure) and `screenshot_exterior.png` (1600 px closed exterior). Regenerate: `node --experimental-strip-types --no-warnings scripts/structure_gallery.ts 192`. `gallery.json` holds every check.
