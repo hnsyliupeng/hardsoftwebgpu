@@ -90,7 +90,7 @@ Each folder contains `design.json` (DesignState, metrics, validation, repair_his
 The 17 entries with a 1 mm envelope skin (periodic lattices, TPMS, and the two skin fusions) were regenerated with the current mesher. Each one is a fusion (skin ∪ structure), so manifold dual contouring is used (`src/geometry/dualcontour.ts`), not surface nets.
 
 - **Geometry unchanged.** The Monte Carlo volume is identical to the earlier record for each entry (column "MC mm³"), so the same solid was re-meshed.
-- **Mesh volume changes** by −2.6 % to +3.3 % (table). The mesh now agrees with Monte Carlo within 1.7 % for the lattices and TPMS (column "MC check" is the convergence-grid mesh against Monte Carlo, from the run).
+- **Mesh volume changes** by −2.6 % to +3.3 % (table). The convergence-grid mesh agrees with Monte Carlo within 1.7 % for the lattices and TPMS (column "MC check" is the convergence-grid mesh against Monte Carlo, from the run).
 - **Convergence grid:** the convergence check of these entries uses 120 cells (1.25 × 96). The earlier records of this set used 144 cells (1.5 ×); the other entries keep 144.
 - All 17 pass with one component. The other entries in this set are unchanged.
 - These are still **closed-skin records** and are superseded for open designs by `examples/structure_gallery_256/` and `examples/structure_gallery_256_mixed_open/`.

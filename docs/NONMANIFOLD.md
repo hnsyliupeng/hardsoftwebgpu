@@ -57,8 +57,8 @@ designs) and `examples/structure_gallery_256/` (five fused designs).
 
 - The residual pinches above (about 135–588 edges per fused mesh at 96–256 cells) are not removed.
 - Non-manifold edges in non-fused designs are not measured in this document (surface nets there, 0 in the cases above).
-- The closed 96 and 192 gallery fusion records still use surface nets (not regenerated). Whether to regenerate them is
-  not decided.
+- The closed-skin records in the 96 and 192 sets (17 entries each, with a 1 mm skin) were re-meshed with dual contouring on 2026-10-19;
+  geometry unchanged (Monte Carlo identical). The 19 remaining entries in those sets are non-skin or stale records and keep their earlier meshes.
 - The section benchmark (`docs/SECTIONS.md`, `eval/design_section_bench.csv`) reported 861–1,413 non-manifold edges for
   a clipped gyroid. That clipped geometry was measured with surface nets and was not re-measured here.
 - STL and STEP outputs of fused designs may still carry the residual pinches; their consumers may reject them.
