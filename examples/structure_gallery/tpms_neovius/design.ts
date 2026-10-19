@@ -19,6 +19,7 @@ const spec: DesignSpec = {
   topology: "fusion",
   
   fusion: {"mode":"union","a":{"topology":"tpms","bio_motif":"tpms:neovius","family":"tpms","variant":"neovius","parameters":{"seed":42,"cell_size_mm":5,"wall_thickness_mm":0.5},"heterogeneity_field":null,"target_metrics":{"connectivity":true},"constraints":{"size_mm":20,"min_printable_wall_mm":0.4,"resolution":192},"retrieval":{"base_id":"cellular_generic","top_k":[{"id":"cellular_generic","score":0},{"id":"cellular_sandwich","score":0},{"id":"cellular_voronoi","score":0}]},"confidence":0.85,"unknowns":["Build edge length not given; 20 mm cube assumed.","Printability floor not given; 0.4 mm assumed for the RepairHarness.","Unit cell size not given; 4 mm assumed.","TPMS wall thickness not given; 12% of the period assumed."],"notes":[]},"skin_mm":1} as unknown as NonNullable<DesignSpec["fusion"]>,
+  
   bio_motif: "fusion:union",
   family: "fusion",
   variant: "union",

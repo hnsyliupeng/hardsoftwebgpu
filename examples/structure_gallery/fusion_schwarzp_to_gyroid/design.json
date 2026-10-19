@@ -138,21 +138,22 @@
     }
   },
   "metrics": {
-    "volume": 3774.0980572383023,
-    "surface_area": 10044.86302316968,
-    "min_wall_thickness": 0.47991404467585946,
+    "volume": 3779.645459649628,
+    "surface_area": 10133.707785511653,
+    "min_wall_thickness": 0.47987185652334136,
     "connectivity": true,
-    "genus": 270
+    "genus": 285
   },
   "render_preview": null,
   "repair_history": [],
   "limitations": [
     "Fusion geometry is SDF-only. Zoned fusion cuts each part with a half-space and unites them over an overlap band; the seam is a planar cut, not an exact B-Rep boolean.",
+    "Fused designs use manifold dual contouring; a few pinches narrower than one voxel can still give non-manifold edges (under 0.1 % of the edges at 96 cells, see docs/NONMANIFOLD.md).",
     "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
     "SDF surface resolution is limited to h = 0.1042 mm (constraints.resolution = 192); features below ~2h are not resolved.",
     "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
     "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
-    "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.052 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
+    "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.052 mm; 11 sub-voxel chords discarded. Not a certified manufacturing check.",
     "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
     "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
   ],
@@ -186,7 +187,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 240 3772.2 vs MC 3775.7 mm3 (0.09 %)",
+        "value": "mesh at 240 3778.1 vs MC 3775.7 mm3 (0.06 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -198,7 +199,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "192 px-grid 3774.1 vs 240 3772.2 mm3 (0.05 %)",
+        "value": "192 px-grid 3779.6 vs 240 3778.1 mm3 (0.04 %)",
         "rule": "<= 5 %"
       },
       {
@@ -221,22 +222,23 @@
       "resolution_convergence": 240
     },
     "metrics": {
-      "volume_mm3": 3774.098,
+      "volume_mm3": 3779.645,
       "volume_mc_mm3": 3775.68,
-      "surface_area_mm2": 10044.863,
-      "volume_fraction": 0.47176,
-      "porosity": 0.52824,
+      "surface_area_mm2": 10133.708,
+      "volume_fraction": 0.47246,
+      "porosity": 0.52754,
       "components": 1,
-      "cavities": 31,
-      "genus_handles": 270,
-      "euler_characteristic": -238,
+      "cavities": 14,
+      "genus_handles": 285,
+      "euler_characteristic": -270,
       "min_wall_p5_mm": 0.4799,
-      "min_wall_median_mm": 0.4949,
-      "triangles": 2547924,
+      "min_wall_median_mm": 0.4916,
+      "min_wall_excluded_near_faces": 1039,
+      "triangles": 2565348,
       "center_of_mass": [
-        10.0004,
-        9.9994,
-        10.188
+        9.9962,
+        9.9952,
+        10.1853
       ]
     },
     "coupling_metrics": null,
@@ -250,11 +252,12 @@
     "repair_history": [],
     "limitations": [
       "Fusion geometry is SDF-only. Zoned fusion cuts each part with a half-space and unites them over an overlap band; the seam is a planar cut, not an exact B-Rep boolean.",
+      "Fused designs use manifold dual contouring; a few pinches narrower than one voxel can still give non-manifold edges (under 0.1 % of the edges at 96 cells, see docs/NONMANIFOLD.md).",
       "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.1042 mm (constraints.resolution = 192); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
-      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.052 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
+      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.052 mm; 11 sub-voxel chords discarded. Not a certified manufacturing check.",
       "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
       "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
     ],
@@ -403,6 +406,6 @@
         "overlap_mm": 1
       }
     },
-    "timing_s": 58
+    "timing_s": 90.4
   }
 }

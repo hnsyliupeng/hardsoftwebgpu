@@ -92,9 +92,9 @@
     }
   },
   "metrics": {
-    "volume": 3338.8666935246574,
-    "surface_area": 9044.091610007876,
-    "min_wall_thickness": 0.7969442107889311,
+    "volume": 3364.1333627573226,
+    "surface_area": 9137.80957637172,
+    "min_wall_thickness": 0.7969261440531777,
     "connectivity": true,
     "genus": 1200
   },
@@ -102,6 +102,7 @@
   "repair_history": [],
   "limitations": [
     "Fusion geometry is SDF-only. Zoned fusion cuts each part with a half-space and unites them over an overlap band; the seam is a planar cut, not an exact B-Rep boolean.",
+    "Fused designs use manifold dual contouring; a few pinches narrower than one voxel can still give non-manifold edges (under 0.1 % of the edges at 96 cells, see docs/NONMANIFOLD.md).",
     "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
     "SDF surface resolution is limited to h = 0.1042 mm (constraints.resolution = 192); features below ~2h are not resolved.",
     "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
@@ -140,7 +141,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 240 3329.4 vs MC 3355.9 mm3 (0.79 %)",
+        "value": "mesh at 240 3370.0 vs MC 3355.9 mm3 (0.42 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -152,7 +153,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "192 px-grid 3338.9 vs 240 3329.4 mm3 (0.29 %)",
+        "value": "192 px-grid 3364.1 vs 240 3370.0 mm3 (0.17 %)",
         "rule": "<= 5 %"
       },
       {
@@ -181,22 +182,23 @@
       "resolution_convergence": 240
     },
     "metrics": {
-      "volume_mm3": 3338.867,
+      "volume_mm3": 3364.133,
       "volume_mc_mm3": 3355.92,
-      "surface_area_mm2": 9044.092,
-      "volume_fraction": 0.41736,
-      "porosity": 0.58264,
+      "surface_area_mm2": 9137.81,
+      "volume_fraction": 0.42052,
+      "porosity": 0.57948,
       "components": 1,
       "cavities": 1,
       "genus_handles": 1200,
       "euler_characteristic": -1198,
       "min_wall_p5_mm": 0.7969,
       "min_wall_median_mm": 0.8,
-      "triangles": 2189784,
+      "min_wall_excluded_near_faces": 1229,
+      "triangles": 2172672,
       "center_of_mass": [
-        10.0002,
-        10.0002,
-        10.0002
+        9.9917,
+        9.9917,
+        9.9917
       ]
     },
     "coupling_metrics": null,
@@ -210,6 +212,7 @@
     "repair_history": [],
     "limitations": [
       "Fusion geometry is SDF-only. Zoned fusion cuts each part with a half-space and unites them over an overlap band; the seam is a planar cut, not an exact B-Rep boolean.",
+      "Fused designs use manifold dual contouring; a few pinches narrower than one voxel can still give non-manifold edges (under 0.1 % of the edges at 96 cells, see docs/NONMANIFOLD.md).",
       "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.1042 mm (constraints.resolution = 192); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
@@ -317,6 +320,6 @@
         "skin_mm": 1
       }
     },
-    "timing_s": 131.5
+    "timing_s": 163.5
   }
 }
