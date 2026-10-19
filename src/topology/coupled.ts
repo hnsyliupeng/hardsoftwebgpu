@@ -11,6 +11,8 @@
 //                   Multi-material transition.
 //   R5 hierarchy  : a gyroid sheet fills every pocket of a cellular foam and bonds to the foam walls.
 //                   Hierarchical infill.
+//   R6 morph      : the structure changes type inside one field: a gyroid sheet in the core, a BCC strut lattice in
+//                   the outer shell, blended over a radial transition zone. Topology (sheet to strut) coupling.
 //
 // All fields are signed distances in millimetres on the box [0, L]^3 (negative inside the solid).
 
@@ -20,7 +22,7 @@ import type { LatticeType, TpmsType } from "../types.ts";
 import { buildBio, toMillimetres } from "../bio/families.ts";
 import { sampleField } from "../geometry/grid.ts";
 
-export type CoupledRound = "R1" | "R2" | "R3" | "R4" | "R5";
+export type CoupledRound = "R1" | "R2" | "R3" | "R4" | "R5" | "R6";
 
 export interface CoupledSpec {
   round: CoupledRound;
@@ -36,6 +38,7 @@ const ROUND_DEFAULTS: Record<CoupledRound, Record<string, number | string>> = {
   R3: { lattice: "bcc", lattice_cell_mm: 4, strut_radius_mm: 0.4, twist_deg: 90, skin_mm: 1 },
   R4: { lattice: "kelvin", lattice_cell_mm: 4, strut_radius_mm: 0.4, tpms_a: "gyroid", tpms_b: "iwp", tpms_cell_mm: 5, tpms_wall_mm: 0.5, blend_mm: 1.5, skin_mm: 1 },
   R5: { foam_grid: 120, gyroid_cell_mm: 4, gyroid_wall_mm: 0.5, skin_mm: 1 },
+  R6: { lattice: "bcc", lattice_cell_mm: 4, strut_radius_mm: 0.4, tpms_cell_mm: 5, tpms_wall_mm: 0.5, core_radius_mm: 5.5, morph_width_mm: 2, skin_mm: 0 },
 };
 
 export interface CoupledBuild {
@@ -277,6 +280,57 @@ function buildR5(L: number, p: Record<string, number | string>) {
   };
 }
 
+// ---- R6: sheet-to-strut morph ---------------------------------------------------------------
+
+function buildR6(L: number, p: Record<string, number | string>) {
+  const type = String(p.lattice) as LatticeType;
+  const nL = Math.round(L / num(p, "lattice_cell_mm"));
+  const lat = strutLattice({ type, cellSize: L / nL, cells: [nL, nL, nL], radius: num(p, "strut_radius_mm") });
+  const tpmsCell = num(p, "tpms_cell_mm");
+  const k = (2 * Math.PI) / tpmsCell;
+  const t = num(p, "tpms_wall_mm");
+  const r0 = num(p, "core_radius_mm"), w = num(p, "morph_width_mm");
+  const c = L / 2;
+  // Radial weight: 0 in the core (gyroid sheet), 1 in the outer shell (lattice), smooth over the morph width.
+  const weightAt = (x: number, y: number, z: number) =>
+    smoothstep(r0 - w / 2, r0 + w / 2, Math.hypot(x - c, y - c, z - c));
+  const field = boxField(
+    L,
+    `(1 - w) * gyroid sheet + w * ${type} lattice; w = smoothstep(${r0 - w / 2}, ${r0 + w / 2} mm) of the distance from the box centre`,
+    (x, y, z) => {
+      const [F, gx, gy, gz] = tpmsValueGrad("gyroid" as TpmsType, k * x, k * y, k * z);
+      const gn = Math.hypot(gx, gy, gz) * k + 1e-12;
+      const sheet = Math.max(Math.abs(F) / gn - t / 2, boxDist(L, x, y, z));
+      const strut = Math.max(lat.eval(x, y, z), boxDist(L, x, y, z));
+      const wt = weightAt(x, y, z);
+      return (1 - wt) * sheet + wt * strut;
+    },
+  );
+  const pts = samplePoints(L, 6000, 19);
+  let nCore = 0, sCore = 0, nShell = 0, sShell = 0, nMid = 0, sMid = 0;
+  for (const [x, y, z] of pts) {
+    const solid = field.eval(x, y, z) < 0 ? 1 : 0;
+    const r = Math.hypot(x - c, y - c, z - c);
+    if (r < r0 - w / 2) { sCore += solid; nCore++; }
+    else if (r > r0 + w / 2) { sShell += solid; nShell++; }
+    else { sMid += solid; nMid++; }
+  }
+  return {
+    field,
+    description: `R6 morph: gyroid sheet (core radius ${r0} mm) blended into a ${type} strut lattice shell over ${w} mm`,
+    metrics: {
+      core_solid_fraction: nCore ? +(sCore / nCore).toFixed(4) : 0,
+      morph_zone_solid_fraction: nMid ? +(sMid / nMid).toFixed(4) : 0,
+      shell_solid_fraction: nShell ? +(sShell / nShell).toFixed(4) : 0,
+      core_radius_mm: r0,
+      morph_width_mm: w,
+    },
+    observations: [
+      `Core (r < ${r0 - w / 2} mm): gyroid sheet. Shell (r > ${r0 + w / 2} mm): ${type} strut lattice. The change is a smooth blend of the two signed fields, so the structure changes type inside one solid.`,
+    ],
+  };
+}
+
 // ---- entry point ----------------------------------------------------------------------------
 
 export function buildCoupled(spec: CoupledSpec, L: number): CoupledBuild {
@@ -290,6 +344,7 @@ export function buildCoupled(spec: CoupledSpec, L: number): CoupledBuild {
     case "R3": r = buildR3(L, p); break;
     case "R4": r = buildR4(L, p); break;
     case "R5": r = buildR5(L, p); break;
+    case "R6": r = buildR6(L, p); break;
     default: throw new Error(`unknown coupled round ${spec.round}`);
   }
   // Clip to the build box (no feature extends beyond it), then unite the closed envelope skin.

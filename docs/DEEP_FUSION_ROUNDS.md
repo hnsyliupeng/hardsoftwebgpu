@@ -57,3 +57,22 @@ Design status is `PASS` for all five rounds (single solid, watertight, MC, conve
 - The fusion between rounds is a field operation (smooth minimum, masks, rotation, pore clipping). It is SDF-only, with no exact B-Rep boolean.
 - R4's lower zone (Kelvin) is visually hard to read in the cut-away view; the zone solid fraction (0.30) is the quantitative evidence that it is present.
 - The shallow baseline `fusion_gyroid_plus_helical` and the bio helical designs still show stepped plate edges in the 192 renders (see the gallery README). Not fixed in this round.
+
+## Round 6: sheet-to-strut morph (open, added 2026-10-19)
+
+R6 adds a dimension the first five rounds do not have: the structure changes **type** inside one field. A gyroid
+sheet fills the core (radius 5.5 mm from the box centre); a BCC strut lattice (4 mm cell, 0.4 mm strut) fills the outer
+shell; a smooth radial weight blends the two signed fields over 2 mm. Code: `buildR6` in `src/topology/coupled.ts`;
+test: `tests/coupled_r6.test.ts`.
+
+Unlike R1 to R5, R6 is **open** (`skin_mm = 0`, no closed envelope skin), so its lattice reaches the box faces.
+Results are in `examples/structure_gallery_r6_open_96/`, `..._192/` and `..._256/` (one README per resolution).
+
+| Cells | Volume (mm³) | MC (mm³) | Mesh vs MC | Convergence | Triangles | Components | Watertight | Result |
+|---|---|---|---|---|---|---|---|---|
+| 96 | 1464.007 | 1458.56 | 0.59 % | 0.21 % (vs 120) | 466,296 | 1 | 0 open | PASS |
+| 192 | 1458.989 | 1458.56 | 0.04 % | 0.01 % (vs 240) | 1,892,868 | 1 | 0 open | PASS |
+| 256 | 1457.855 | 1458.56 | 0.05 % | 0.00 % (vs 320) | 3,372,576 | 1 | 0 open | PASS |
+
+Coupling evidence (sampled on the box): solid fraction 0.284 in the core, 0.163 in the morph zone, 0.184 in the shell.
+Limits: SDF-only; the morph is a blend of two signed fields, not an exact interpolation of the two surfaces.

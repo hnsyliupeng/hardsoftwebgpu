@@ -176,7 +176,7 @@ const BASE_ENTRIES: Entry[] = [
 ];
 
 // ---- deep coupling (five rounds, src/topology/coupled.ts) -------------------------------------------
-function coupledSpec(round: "R1" | "R2" | "R3" | "R4" | "R5", params: Record<string, number | string> = {}): DesignSpec {
+function coupledSpec(round: "R1" | "R2" | "R3" | "R4" | "R5" | "R6", params: Record<string, number | string> = {}): DesignSpec {
   const s = mk(`coupled ${round}`);
   s.topology = "coupled";
   s.family = "coupled";
@@ -195,6 +195,7 @@ const COUPLED_ENTRIES: Entry[] = [
   { id: "deep_R3_twist", group: "coupled", title: "R3 twist: BCC lattice twisted by a helical angle", prompt: "coupled R3: bcc lattice twisted helically", make: () => coupledSpec("R3") },
   { id: "deep_R4_blend", group: "coupled", title: "R4 blend: Kelvin, gyroid and I-WP joined by smooth minima", prompt: "coupled R4: three-zone smooth blend", make: () => coupledSpec("R4") },
   { id: "deep_R5_hierarchy", group: "coupled", title: "R5 hierarchy: gyroid infill in every foam pocket", prompt: "coupled R5: gyroid infill in cellular foam pockets", make: () => coupledSpec("R5") },
+  { id: "deep_R6_morph", group: "coupled", title: "R6 morph: gyroid sheet core morphs radially into a BCC strut shell", prompt: "coupled R6: gyroid core morphing into bcc lattice shell", make: () => coupledSpec("R6") },
 ];
 
 const DEEP_ENTRIES: Entry[] = [
