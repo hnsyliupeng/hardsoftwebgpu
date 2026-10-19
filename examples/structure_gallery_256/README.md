@@ -85,11 +85,11 @@ Per design: `screenshot.png` (iso cut-away, shows the interior) and `view_top.pn
 | id | volume (mm³) | components | min wall (mm) | MC check | 256 vs 320 | result |
 |---|---|---|---|---|---|---|
 | fusion_gyroid_plus_helical | 7419.539 | 1 | 0.480 | 0.12 % | 0.00 % | PASS |
-| fusion_schwarzp_to_gyroid | 2179.981 | 1 | 0.480 | 0.22 % | 0.03 % | PASS |
-| fusion_kelvin_to_iwp | 2205.499 | 1 | 0.472 | 0.45 % | 0.00 % | PASS |
-| fusion_bcc_plus_voronoi | 6174.205 | 1 | 0.800 | 0.14 % | 0.00 % | PASS |
-| fusion_helical_cap_iwp | 2381.578 | 1 | 0.471 | 0.98 % | 0.16 % | PASS |
-| fusion_diamond_plus_lidinoid | 5138.036 | 1 | 0.435 | 0.65 % | 0.20 % | PASS |
+| fusion_schwarzp_to_gyroid | 2180.736 | 1 | 0.480 | 0.23 % † | n/r ‡ | PASS |
+| fusion_kelvin_to_iwp | 2212.687 | 1 | 0.472 | 0.13 % † | n/r ‡ | PASS |
+| fusion_bcc_plus_voronoi | 6175.190 | 1 | 0.800 | 0.15 % † | n/r ‡ | PASS |
+| fusion_helical_cap_iwp | 2380.508 | 1 | 0.471 | 1.18 % † | n/r ‡ | PASS |
+| fusion_diamond_plus_lidinoid | 5107.865 | 1 | 0.435 | 0.26 % † | n/r ‡ | PASS |
 
 ## Deep coupled fusion R1–R5 (coupled topology, from the remote branch)
 
@@ -99,3 +99,10 @@ Per design: `screenshot.png` (iso cut-away, shows the interior) and `view_top.pn
 
 
 Per entry: `<id>/screenshot.png` and `view_*.png` (cut-away), `design.json` (spec, metrics, repair history, limitations), `design.ts` (copy-executable parametric code); all checks in `gallery.json`.
+
+† Dual-contouring mesh (`src/geometry/dualcontour.ts`, 2026-10-19). MC check = |V − V_MC| / V_MC with V_MC from `gallery.json` (`volume_mc_mm3`). The earlier column values for these five were not reproduced from the stored metrics and are replaced.
+‡ n/r = not re-run. The 256 vs 320 column for these five is a surface-nets value from before the change and is not recomputed.
+
+## Fused designs: dual-contouring re-run (CPU, 256)
+The five fused designs above were re-meshed with manifold dual contouring; the sixth fused design (`fusion_gyroid_plus_bcc`) is in `examples/structure_gallery_256_mixed_open/`. All five PASS. Volume changes against the earlier surface-nets values are at most 0.6 %: schwarz→gyroid 2179.981 → 2180.736; kelvin→iwp 2205.499 → 2212.687; BCC+Voronoi 6174.205 → 6175.190; helical cap 2381.578 → 2380.508; diamond+Lidinoid 5138.036 → 5107.865 (Monte Carlo 5094.4). Non-manifold edges at 96 cells fall from 64 → 0, 488 → 14, 1019 → 53, 113 → 6, 7092 → 483. The residual sub-voxel pinches are documented in `docs/NONMANIFOLD.md`.
+

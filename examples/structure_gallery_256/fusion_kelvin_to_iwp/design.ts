@@ -1,5 +1,5 @@
 // Bioinspired123D-WASM parametric design (final state after RepairHarness).
-// Prompt: "fusion zoned: Kelvin lattice below, I-WP above, with skin"
+// Prompt: "fusion zoned: Kelvin lattice below, I-WP above, open"
 // Run from the project root:  node --experimental-strip-types artifacts/<name>/design.ts
 // Edit the constants below and re-run to regenerate geometry and metrics.
 // SDF (reference): fusion (zoned) of two designs; field = min(max(A, z - zc - o/2), max(B, zc - o/2 - z))
