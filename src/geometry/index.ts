@@ -7,6 +7,7 @@
 import type { TopologyBuild } from "../topology/index.ts";
 import { blurGaussianMm, removeFloatingComponents, sampleField, surfaceNets, type Grid } from "./grid.ts";
 import { dualContourManifold } from "./dualcontour.ts";
+import { splitPinchVertices } from "./pinch.ts";
 
 /** Reference grid (cells per 20 mm envelope edge) that defines the smoothing scale in mm. */
 const SMOOTH_REF_CELLS = 256;
@@ -50,12 +51,15 @@ export async function buildGeometry(build: TopologyBuild, spec: DesignSpec): Pro
   // between two sheets that cross in one cell, which gives non-manifold edges at the union creases.
   // Designs that combine structures in one field (fusion, coupled deep fields) use manifold dual contouring; the rest keep surface nets.
   const useDc = spec.topology === "fusion" || spec.topology === "coupled" || spec.topology === "deep";
-  const sdfMesh = useDc ? dualContourManifold(grid) : surfaceNets(grid);
+  // Pinches left by dual contouring (two sheets sharing a vertex pair at sub-voxel contact) are cut by vertex splitting
+  // (src/geometry/pinch.ts); positions and volume are unchanged.
+  const dc = useDc ? splitPinchVertices(dualContourManifold(grid)) : null;
+  const sdfMesh = dc ? dc.mesh : surfaceNets(grid);
   observations.push(
-    `SDF sampled on ${grid.nx}x${grid.ny}x${grid.nz} nodes (h = ${grid.h.toFixed(4)} mm); ${useDc ? "manifold dual contouring" : "surface nets"} produced ${sdfMesh.indices.length / 3} triangles.`,
+    `SDF sampled on ${grid.nx}x${grid.ny}x${grid.nz} nodes (h = ${grid.h.toFixed(4)} mm); ${useDc ? "manifold dual contouring with pinch splitting" : "surface nets"} produced ${sdfMesh.indices.length / 3} triangles${dc ? ` (${dc.splits} vertex splits)` : ""}.`,
   );
   if (useDc)
-    limitations.push("Fused designs use manifold dual contouring; a few pinches narrower than one voxel can still give non-manifold edges (under 0.1 % of the edges at 96 cells, see docs/NONMANIFOLD.md).");
+    limitations.push("Fused designs use manifold dual contouring with vertex splitting at pinches; at the measured resolutions (96, 128) no non-manifold edges remain (docs/NONMANIFOLD.md). Other resolutions are not guaranteed to be free of pinches.");
   let brep: BrepSolid | null = null;
   let kernelError: string | null = null;
   if (build.brep) {

@@ -1,12 +1,13 @@
-// Compares the surface-nets extractor with the manifold dual-contouring extractor on the same grid.
+// Compares the surface-nets extractor, the manifold dual-contouring extractor and DC followed by pinch split on the same grid.
 // Reports triangles, open edges, non-manifold edges, signed volume and time.
 //
 // Usage: node --experimental-strip-types --no-warnings scripts/compare_extractors.ts <design.json> [res ...]
 // Default resolutions: 96 128.
 import { readFileSync } from "node:fs";
 import { buildTopology } from "../src/topology/index.ts";
-import { sampleField, surfaceNets, meshIntegrals } from "../src/geometry/grid.ts";
+import { sampleField, surfaceNets, meshIntegrals, type Grid } from "../src/geometry/grid.ts";
 import { dualContourManifold } from "../src/geometry/dualcontour.ts";
+import { splitPinchVertices } from "../src/geometry/pinch.ts";
 import type { DesignSpec } from "../src/types.ts";
 
 const argv = process.argv.slice(2);
@@ -35,7 +36,7 @@ const field = buildTopology(spec).data.field;
 console.log("design\tres\textractor\ttriangles\topen_edges\tnonmanifold_edges\tvolume_mm3\tseconds");
 for (const res of resList) {
   const g = sampleField(field, res);
-  for (const [name, fn] of [["surface_nets", surfaceNets], ["manifold_dc", dualContourManifold]] as const) {
+  for (const [name, fn] of [["surface_nets", surfaceNets], ["manifold_dc", dualContourManifold], ["manifold_dc_split", (gr: Grid) => splitPinchVertices(dualContourManifold(gr)).mesh]] as const) {
     const t0 = Date.now();
     const m = fn(g);
     const secs = (Date.now() - t0) / 1000;
