@@ -1,5 +1,5 @@
 {
-  "prompt": "fusion zoned: Kelvin lattice below, I-WP above, with skin",
+  "prompt": "fusion zoned: Kelvin lattice below, I-WP above, open",
   "design_spec": {
     "topology": "fusion",
     "bio_motif": "fusion:zoned",
@@ -166,8 +166,8 @@
   "validation": {
     "id": "fusion_kelvin_to_iwp",
     "group": "fusion",
-    "title": "Kelvin lattice below, I-WP above (zoned), in a 1 mm skin",
-    "prompt": "fusion zoned: Kelvin lattice below, I-WP above, with skin",
+    "title": "Kelvin lattice below, I-WP above (zoned), open (no skin)",
+    "prompt": "fusion zoned: Kelvin lattice below, I-WP above, open",
     "pass": true,
     "checks": [
       {
@@ -231,6 +231,7 @@
       "euler_characteristic": -1118,
       "min_wall_p5_mm": 0.4721,
       "min_wall_median_mm": 0.4769,
+      "min_wall_excluded_near_faces": 1064,
       "triangles": 4577944,
       "center_of_mass": [
         9.9355,
@@ -401,6 +402,6 @@
         "overlap_mm": 1
       }
     },
-    "timing_s": 303.2
+    "timing_s": 228.2
   }
 }

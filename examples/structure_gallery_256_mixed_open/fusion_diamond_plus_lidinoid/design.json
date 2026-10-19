@@ -1,5 +1,5 @@
 {
-  "prompt": "fusion union: diamond lattice with lidinoid TPMS and skin",
+  "prompt": "fusion union: diamond lattice with lidinoid TPMS, open",
   "design_spec": {
     "topology": "fusion",
     "bio_motif": "fusion:union",
@@ -165,8 +165,8 @@
   "validation": {
     "id": "fusion_diamond_plus_lidinoid",
     "group": "fusion",
-    "title": "Diamond lattice union Lidinoid, 1 mm skin",
-    "prompt": "fusion union: diamond lattice with lidinoid TPMS and skin",
+    "title": "Diamond lattice union Lidinoid, open (no skin)",
+    "prompt": "fusion union: diamond lattice with lidinoid TPMS, open",
     "pass": true,
     "checks": [
       {
@@ -230,6 +230,7 @@
       "euler_characteristic": -1226,
       "min_wall_p5_mm": 0.4349,
       "min_wall_median_mm": 0.4727,
+      "min_wall_excluded_near_faces": 1074,
       "triangles": 8517480,
       "center_of_mass": [
         9.9937,
@@ -399,6 +400,6 @@
         }
       }
     },
-    "timing_s": 318.8
+    "timing_s": 247.6
   }
 }

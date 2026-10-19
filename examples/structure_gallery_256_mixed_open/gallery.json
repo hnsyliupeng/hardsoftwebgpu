@@ -67,6 +67,7 @@
       "euler_characteristic": -1616,
       "min_wall_p5_mm": 0.48,
       "min_wall_median_mm": 0.4837,
+      "min_wall_excluded_near_faces": 981,
       "triangles": 6437688,
       "center_of_mass": [
         9.995,
@@ -236,7 +237,7 @@
         }
       }
     },
-    "timing_s": 202.1
+    "timing_s": 189.1
   },
   {
     "id": "fusion_schwarzp_to_gyroid",
@@ -306,6 +307,7 @@
       "euler_characteristic": -432,
       "min_wall_p5_mm": 0.4799,
       "min_wall_median_mm": 0.4836,
+      "min_wall_excluded_near_faces": 942,
       "triangles": 4685272,
       "center_of_mass": [
         9.9946,
@@ -476,7 +478,7 @@
         "overlap_mm": 1
       }
     },
-    "timing_s": 128.9
+    "timing_s": 96.4
   },
   {
     "id": "fusion_kelvin_to_iwp",
@@ -546,6 +548,7 @@
       "euler_characteristic": -1118,
       "min_wall_p5_mm": 0.4721,
       "min_wall_median_mm": 0.4769,
+      "min_wall_excluded_near_faces": 1064,
       "triangles": 4577944,
       "center_of_mass": [
         9.9355,
@@ -716,7 +719,7 @@
         "overlap_mm": 1
       }
     },
-    "timing_s": 303.2
+    "timing_s": 228.2
   },
   {
     "id": "fusion_bcc_plus_voronoi",
@@ -786,6 +789,7 @@
       "euler_characteristic": -337,
       "min_wall_p5_mm": 0.8,
       "min_wall_median_mm": 2.4785,
+      "min_wall_excluded_near_faces": 1748,
       "triangles": 2494916,
       "center_of_mass": [
         9.9835,
@@ -955,7 +959,7 @@
         }
       }
     },
-    "timing_s": 256.4
+    "timing_s": 199.4
   },
   {
     "id": "fusion_helical_cap_iwp",
@@ -1025,6 +1029,7 @@
       "euler_characteristic": -698,
       "min_wall_p5_mm": 0.4708,
       "min_wall_median_mm": 0.4743,
+      "min_wall_excluded_near_faces": 690,
       "triangles": 4819608,
       "center_of_mass": [
         9.9994,
@@ -1192,7 +1197,7 @@
         }
       }
     },
-    "timing_s": 122.6
+    "timing_s": 95.5
   },
   {
     "id": "fusion_diamond_plus_lidinoid",
@@ -1262,6 +1267,7 @@
       "euler_characteristic": -1226,
       "min_wall_p5_mm": 0.4349,
       "min_wall_median_mm": 0.4727,
+      "min_wall_excluded_near_faces": 1074,
       "triangles": 8517480,
       "center_of_mass": [
         9.9937,
@@ -1431,7 +1437,7 @@
         }
       }
     },
-    "timing_s": 318.8
+    "timing_s": 247.6
   },
   {
     "id": "deep_R1_thickness",
@@ -1495,6 +1501,7 @@
       "euler_characteristic": -489,
       "min_wall_p5_mm": 0.4819,
       "min_wall_median_mm": 0.9758,
+      "min_wall_excluded_near_faces": 1169,
       "triangles": 4742296,
       "center_of_mass": [
         9.9719,
@@ -1572,7 +1579,7 @@
         }
       }
     },
-    "timing_s": 134.8
+    "timing_s": 104.4
   },
   {
     "id": "deep_R2_nested",
@@ -1636,6 +1643,7 @@
       "euler_characteristic": -5935,
       "min_wall_p5_mm": 0.5892,
       "min_wall_median_mm": 0.6094,
+      "min_wall_excluded_near_faces": 1031,
       "triangles": 5531712,
       "center_of_mass": [
         9.999,
@@ -1711,7 +1719,7 @@
         }
       }
     },
-    "timing_s": 421.8
+    "timing_s": 318.3
   },
   {
     "id": "deep_R3_twist",
@@ -1775,6 +1783,7 @@
       "euler_characteristic": -619,
       "min_wall_p5_mm": 0.5451,
       "min_wall_median_mm": 0.7124,
+      "min_wall_excluded_near_faces": 904,
       "triangles": 3438612,
       "center_of_mass": [
         9.9993,
@@ -1851,7 +1860,7 @@
         }
       }
     },
-    "timing_s": 250.3
+    "timing_s": 176.8
   },
   {
     "id": "deep_R4_blend",
@@ -1915,6 +1924,7 @@
       "euler_characteristic": -780,
       "min_wall_p5_mm": 0.4734,
       "min_wall_median_mm": 0.8,
+      "min_wall_excluded_near_faces": 1123,
       "triangles": 4710676,
       "center_of_mass": [
         9.9732,
@@ -1991,7 +2001,7 @@
         }
       }
     },
-    "timing_s": 329.6
+    "timing_s": 255.6
   },
   {
     "id": "deep_R5_hierarchy",
@@ -2055,6 +2065,7 @@
       "euler_characteristic": -21,
       "min_wall_p5_mm": 0.4699,
       "min_wall_median_mm": 0.476,
+      "min_wall_excluded_near_faces": 1987,
       "triangles": 3022940,
       "center_of_mass": [
         9.9828,
@@ -2129,6 +2140,6 @@
         }
       }
     },
-    "timing_s": 144
+    "timing_s": 108.6
   }
 ]

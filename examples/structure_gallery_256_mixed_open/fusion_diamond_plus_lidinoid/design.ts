@@ -1,5 +1,5 @@
 // Bioinspired123D-WASM parametric design (final state after RepairHarness).
-// Prompt: "fusion union: diamond lattice with lidinoid TPMS and skin"
+// Prompt: "fusion union: diamond lattice with lidinoid TPMS, open"
 // Run from the project root:  node --experimental-strip-types artifacts/<name>/design.ts
 // Edit the constants below and re-run to regenerate geometry and metrics.
 // SDF (reference): fusion (union) of two designs; field = min(A, B)

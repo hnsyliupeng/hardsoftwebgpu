@@ -81,3 +81,8 @@ sheet to the box. The gyroid cell in these designs is 5 mm (`design_spec.fusion.
 ## Diamond + Lidinoid faces (`scripts/face_parts.ts`)
 Each of the six faces is 0.598 solid (inset 0.2 mm, h 0.1 mm). The Lidinoid part alone is 0.520 on the faces and the diamond part 0.163. The mid-height plane (offset 0.05 mm) is 0.544, so the faces are only about 0.05 denser than the bulk. This is the periodic network cut by the box, not a closed skin. Whether the render reads as open is a judgement from the render, as set by the user.
 
+## Re-run check (CPU, 256 cells)
+All 11 designs were re-run with the current code (`scripts/structure_gallery.ts 256`, output in a scratch folder inside the repository and then copied). All 11 PASS. Every volume and every render (44 PNG files) is identical to the committed values. The only changes in the files are:
+- `gallery.json` and each `design.json` now carry `min_wall_excluded_near_faces` (samples within 0.5 mm of the faces excluded from the wall metric; 690 to 1,987 per design).
+- Two `design.json` / `design.ts` files (`fusion_kelvin_to_iwp`, `fusion_diamond_plus_lidinoid`) had a stale prompt and title that still said "with skin" / "1 mm skin". They now say open, as in `gallery.json`.
+

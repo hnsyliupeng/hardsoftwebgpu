@@ -126,6 +126,7 @@
       "euler_characteristic": -619,
       "min_wall_p5_mm": 0.5451,
       "min_wall_median_mm": 0.7124,
+      "min_wall_excluded_near_faces": 904,
       "triangles": 3438612,
       "center_of_mass": [
         9.9993,
@@ -202,6 +203,6 @@
         }
       }
     },
-    "timing_s": 250.3
+    "timing_s": 176.8
   }
 }
