@@ -48,7 +48,8 @@ export async function buildGeometry(build: TopologyBuild, spec: DesignSpec): Pro
     observations.push(`Removed ${floating.removedComponents} floating solid fragment(s) not connected to the main body (${floating.removedNodes} nodes, about ${floating.removedVolumeMm3.toFixed(3)} mm^3, clipped by the build envelope).`);
   // Fused designs use manifold dual contouring (src/geometry/dualcontour.ts): surface nets shares one vertex
   // between two sheets that cross in one cell, which gives non-manifold edges at the union creases.
-  const useDc = spec.topology === "fusion";
+  // Designs that combine structures in one field (fusion, coupled deep fields) use manifold dual contouring; the rest keep surface nets.
+  const useDc = spec.topology === "fusion" || spec.topology === "coupled" || spec.topology === "deep";
   const sdfMesh = useDc ? dualContourManifold(grid) : surfaceNets(grid);
   observations.push(
     `SDF sampled on ${grid.nx}x${grid.ny}x${grid.nz} nodes (h = ${grid.h.toFixed(4)} mm); ${useDc ? "manifold dual contouring" : "surface nets"} produced ${sdfMesh.indices.length / 3} triangles.`,

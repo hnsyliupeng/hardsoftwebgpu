@@ -40,6 +40,25 @@ Monte Carlo 5094.44. DC volume is nearly constant in resolution (5109–5112), w
 (diamond). The gallery values regenerated with DC are in `examples/structure_gallery_256_mixed_open/` (six fused
 designs) and `examples/structure_gallery_256/` (five fused designs).
 
+## Deep coupled fields (topology `coupled` and `deep`), 96 cells
+
+Measured with `scripts/compare_extractors.ts` (CPU, 2026-10-19). Dual contouring is now used for these topologies too (`src/geometry/index.ts`).
+
+| Design | Non-manifold, surface nets | Non-manifold, dual contouring | Volume SN → DC (mm³) |
+|---|---|---|---|
+| `deep_R1_thickness` (coupled) | 39 | 0 | 4023.9 → 4001.1 |
+| `deep_R2_nested` (coupled) | 3,444 | 928 | 5684.0 → 5635.7 |
+| `deep_R3_twist` (coupled) | 940 | 0 | 1329.4 → 1441.3 |
+| `deep_R4_blend` (coupled) | 566 | 9 | 3496.7 → 3483.0 |
+| `deep_R5_hierarchy` (coupled) | 1,369 | 63 | 6590.2 → 6554.4 |
+| `fieldfuse_r1_channel_lattice` (deep) | 704 | 0 | 6909.7 → 6950.2 |
+| `fieldfuse_r2_ply_tpms` (deep) | 1,186 | 34 | 4870.4 → 4834.0 |
+| `fieldfuse_r3_graded_tpms` (deep) | 273 | 0 | 3119.7 → 3111.3 |
+| `fieldfuse_r4_foam_lattice` (deep) | 501 | 38 | 3074.0 → 3212.4 |
+| `fieldfuse_r5_ply_graded_tpms` (deep) | 1,144 | 33 | 5050.6 → 5009.9 |
+
+At 96 cells, surface nets underestimates `deep_R3_twist` by 7.8 % (1329.4 against Monte Carlo 1442); dual contouring gives 1441.3. At 256 cells the final records differ from their earlier values by at most 1.24 % (R3). Every deep record was regenerated with dual contouring (256 open sets, the 192 closed-skin set, and `examples/deep_fusion_256/`), and each run passes.
+
 ## Reading
 
 - Each part alone is manifold at these resolutions. The non-manifold edges appear only where the parts meet.
@@ -56,7 +75,7 @@ designs) and `examples/structure_gallery_256/` (five fused designs).
 ## Not done
 
 - The residual pinches above (about 135–588 edges per fused mesh at 96–256 cells) are not removed.
-- Non-manifold edges in non-fused designs are not measured in this document (surface nets there, 0 in the cases above).
+- Designs of other topologies (lattices, TPMS and graded designs without a fusion or coupled wrapper) keep surface nets; their non-manifold counts are not measured in this document.
 - The closed-skin records in the 96 and 192 sets (17 entries each, with a 1 mm skin) were re-meshed with dual contouring on 2026-10-19;
   geometry unchanged (Monte Carlo identical). The other entries in those sets (14 in the 96 set, 19 in the 192 set) are not skin records, or are stale, and keep their earlier meshes.
 - The section benchmark (`docs/SECTIONS.md`, `eval/design_section_bench.csv`) reported 861–1,413 non-manifold edges for

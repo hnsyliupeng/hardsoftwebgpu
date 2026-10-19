@@ -127,3 +127,15 @@ The 17 entries with a 1 mm envelope skin (periodic lattices, TPMS, and the two s
 | `fusion_kelvin_to_iwp` | 3771.658 | 3786.411 | +0.39 % | 3790.28 | 0.00 % | PASS |
 | `fusion_bcc_plus_voronoi` | 6921.332 | 6923.221 | +0.03 % | 6917.72 | 0.05 % | PASS |
 | `fusion_diamond_plus_lidinoid` | 5909.288 | 5882.532 | -0.45 % | 5866.12 | 0.25 % | PASS |
+
+## Deep designs (`deep_R1`–`deep_R5`): dual-contouring re-run (2026-10-19)
+
+The five deep designs (`topology: coupled`) were regenerated with manifold dual contouring. Geometry is unchanged: the Monte Carlo volume (column "MC") is the same as in the earlier record for each design, to within 0.01 %. These are the closed-skin records of this set (1 mm skin, as before). The skin is what makes the 192 volumes larger than the 256 open ones.
+
+| id | old V (mm³) | new V (mm³) | change | MC (mm³) | MC check (convergence-grid mesh vs MC) | result |
+|---|---|---|---|---|---|---|
+| `deep_R1_thickness` | 5199.139 | 5187.740 | -0.22 % | 5195.84 | 0.12 % | PASS |
+| `deep_R2_nested` | 6014.357 | 5996.522 | -0.30 % | 6003.08 | 0.35 % | PASS |
+| `deep_R3_twist` | 3223.177 | 3241.994 | +0.58 % | 3243.6 | 0.10 % | PASS |
+| `deep_R4_blend` | 4844.500 | 4831.751 | -0.26 % | 4842.6 | 0.14 % | PASS |
+| `deep_R5_hierarchy` | 7149.637 | 7138.611 | -0.15 % | 7136.08 | 0.03 % | PASS |

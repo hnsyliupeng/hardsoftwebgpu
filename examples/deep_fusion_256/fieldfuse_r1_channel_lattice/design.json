@@ -48,9 +48,9 @@
     }
   },
   "metrics": {
-    "volume": 6811.622472189161,
-    "surface_area": 5418.234201133018,
-    "min_wall_thickness": 0.5000000015549897,
+    "volume": 6818.269781728458,
+    "surface_area": 5486.919687817462,
+    "min_wall_thickness": 0.5000000013983464,
     "connectivity": true,
     "genus": 1120
   },
@@ -58,6 +58,7 @@
   "repair_history": [],
   "limitations": [
     "Lattice struts are fused to the channel wall by a 0.2 mm overlap; no separate interface model.",
+    "Fused designs use manifold dual contouring; a few pinches narrower than one voxel can still give non-manifold edges (under 0.1 % of the edges at 96 cells, see docs/NONMANIFOLD.md).",
     "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
     "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
     "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
@@ -97,7 +98,7 @@
       {
         "name": "volume_mc_agreement",
         "pass": true,
-        "value": "mesh at 320 6796.5 vs MC 6731.0 mm3 (0.97 %)",
+        "value": "mesh at 320 6801.1 vs MC 6731.0 mm3 (1.04 %)",
         "rule": "<= 5 % (finer mesh)"
       },
       {
@@ -115,7 +116,7 @@
       {
         "name": "resolution_convergence",
         "pass": true,
-        "value": "256 px-grid 6811.6 vs 320 6796.5 mm3 (0.22 %)",
+        "value": "256 px-grid 6818.3 vs 320 6801.1 mm3 (0.25 %)",
         "rule": "<= 5 %"
       },
       {
@@ -132,17 +133,18 @@
       "resolution_convergence": 320
     },
     "metrics": {
-      "volume_mm3": 6811.622,
+      "volume_mm3": 6818.27,
       "volume_mc_mm3": 6731.04,
-      "surface_area_mm2": 5418.234,
-      "volume_fraction": 0.85145,
-      "porosity": 0.14855,
+      "surface_area_mm2": 5486.92,
+      "volume_fraction": 0.85228,
+      "porosity": 0.14772,
       "components": 1,
       "cavities": 112,
       "genus_handles": 1120,
       "euler_characteristic": -1007,
       "min_wall_p5_mm": 0.5,
       "min_wall_median_mm": 0.5,
+      "min_wall_excluded_near_faces": 2137,
       "triangles": 2251440,
       "center_of_mass": [
         9.9884,
@@ -161,6 +163,7 @@
     "repair_history": [],
     "limitations": [
       "Lattice struts are fused to the channel wall by a 0.2 mm overlap; no separate interface model.",
+      "Fused designs use manifold dual contouring; a few pinches narrower than one voxel can still give non-manifold edges (under 0.1 % of the edges at 96 cells, see docs/NONMANIFOLD.md).",
       "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
@@ -225,6 +228,6 @@
         "skin_mm": 0
       }
     },
-    "timing_s": 210.4
+    "timing_s": 205.6
   }
 }

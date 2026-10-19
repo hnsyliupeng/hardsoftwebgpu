@@ -14,11 +14,11 @@ Field-based (non-exact) renders: these come from the field and surface-nets mesh
 | `fusion_bcc_plus_voronoi` | BCC lattice union Voronoi foam | fusion | 6175.190 | PASS (7/7) | screenshot.png, view_top.png, view_front.png, view_side.png |
 | `fusion_helical_cap_iwp` | Helical plies intersected with I-WP | fusion | 2380.508 | PASS (7/7) | screenshot.png, view_top.png, view_front.png, view_side.png |
 | `fusion_diamond_plus_lidinoid` | Diamond lattice union Lidinoid, open (no skin) | fusion | 5107.865 | PASS (7/7) | screenshot.png, view_top.png, view_front.png, view_side.png |
-| `deep_R1_thickness` | R1 thickness: gyroid wall set by a cellular foam field | coupled | 4032.182 | PASS (6/6) | screenshot.png, view_top.png, view_front.png, view_side.png |
-| `deep_R2_nested` | R2 nested: Kelvin lattice grown inside tubular pores | coupled | 5603.703 | PASS (6/6) | screenshot.png, view_top.png, view_front.png, view_side.png |
-| `deep_R3_twist` | R3 twist: BCC lattice twisted by a helical angle | coupled | 1419.638 | PASS (6/6) | screenshot.png, view_top.png, view_front.png, view_side.png |
-| `deep_R4_blend` | R4 blend: Kelvin, gyroid and I-WP joined by smooth minima | coupled | 3509.109 | PASS (6/6) | screenshot.png, view_top.png, view_front.png, view_side.png |
-| `deep_R5_hierarchy` | R5 hierarchy: gyroid infill in every foam pocket | coupled | 6568.931 | PASS (6/6) | screenshot.png, view_top.png, view_front.png, view_side.png |
+| `deep_R1_thickness` | R1 thickness: gyroid wall set by a cellular foam field | coupled | 4028.944 | PASS (6/6) | screenshot.png, view_top.png, view_front.png, view_side.png |
+| `deep_R2_nested` | R2 nested: Kelvin lattice grown inside tubular pores | coupled | 5595.032 | PASS (6/6) | screenshot.png, view_top.png, view_front.png, view_side.png |
+| `deep_R3_twist` | R3 twist: BCC lattice twisted by a helical angle | coupled | 1437.257 | PASS (6/6) | screenshot.png, view_top.png, view_front.png, view_side.png |
+| `deep_R4_blend` | R4 blend: Kelvin, gyroid and I-WP joined by smooth minima | coupled | 3507.187 | PASS (6/6) | screenshot.png, view_top.png, view_front.png, view_side.png |
+| `deep_R5_hierarchy` | R5 hierarchy: gyroid infill in every foam pocket | coupled | 6563.376 | PASS (6/6) | screenshot.png, view_top.png, view_front.png, view_side.png |
 
 ## Notes
 - The volumes equal the committed `examples/structure_gallery_256` values for the same ids, except `fusion_gyroid_plus_bcc`, which is new. Those older entries were already built with `SKIN = 0`, so the "1 mm skin" wording in their titles was stale. The titles here are corrected.
@@ -97,4 +97,7 @@ Some renders show flat patches on the box faces. `scripts/flat_face_test.ts` spl
 - `fusion_bcc_plus_voronoi`: foam-only 0.74–0.81, BCC-only 0.07–0.11, shared 0.11–0.14. Foam alone covers 0.52–0.63 of each face.
 - `fusion_diamond_plus_lidinoid`: Lidinoid-only 0.74; diamond-only 0.12; shared 0.14. Lidinoid alone covers 0.53 of each face.
 So the flat patches are wall sheets of the foam or TPMS part, cut by the box. They are not a skin added by the generator: the fusion specs use `SKIN = 0`. Face solid share is about 0.6–0.7, so the faces are not closed. `deep_R5_hierarchy` is built as a single field, not as a two-part fusion, so this split was not run on it.
+
+## Deep designs (`deep_R1`–`deep_R5`): dual-contouring re-run (2026-10-19)
+The five deep designs (`topology: coupled`) are now meshed with manifold dual contouring, like the fused designs. Their geometry is unchanged: the Monte Carlo volume is identical to the earlier record for each. Volume changes against the earlier surface-nets values are −0.15 % (R2) to +1.24 % (R3, now 1437.257 mm³, against Monte Carlo 1441.96 mm³; the earlier 1419.638 was 1.5 % below it). The table above has the new volumes. Surface-nets non-manifold edges at 96 cells fall as follows: R1 39 → 0; R2 3444 → 928; R3 940 → 0; R4 566 → 9; R5 1369 → 63.
 

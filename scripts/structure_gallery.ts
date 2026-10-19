@@ -183,7 +183,7 @@ function coupledSpec(round: "R1" | "R2" | "R3" | "R4" | "R5", params: Record<str
   s.variant = round;
   s.bio_motif = `coupled:${round}`;
   s.parameters = {};
-  s.coupled = { round, params: { skin_mm: 0, ...params } };
+  s.coupled = { round, params: { skin_mm: SKIN, ...params } };
   s.fusion = undefined;
   s.unknowns = [];
   return s;

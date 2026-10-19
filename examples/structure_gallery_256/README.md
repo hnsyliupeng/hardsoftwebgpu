@@ -105,3 +105,14 @@ For the five regenerated fused rows, "MC check" is the 320-cell mesh volume agai
 ## Fused designs: dual-contouring re-run (CPU, 256)
 The five fused designs above were re-meshed with manifold dual contouring; the sixth fused design (`fusion_gyroid_plus_bcc`) is in `examples/structure_gallery_256_mixed_open/`. All five PASS. Volume changes against the earlier surface-nets values are at most 0.6 %: schwarz→gyroid 2179.981 → 2180.736; kelvin→iwp 2205.499 → 2212.687; BCC+Voronoi 6174.205 → 6175.190; helical cap 2381.578 → 2380.508; diamond+Lidinoid 5138.036 → 5107.865 (Monte Carlo 5094.4). Non-manifold edges at 96 cells fall from 64 → 0, 488 → 14, 1019 → 53, 113 → 6, 7092 → 483. The residual sub-voxel pinches are documented in `docs/NONMANIFOLD.md`.
 
+## Deep designs (`deep_R1`–`deep_R5`): dual-contouring re-run (2026-10-19)
+
+The five deep designs (`topology: coupled`) were regenerated with manifold dual contouring. Geometry is unchanged: the Monte Carlo volume (column "MC") is the same as in the earlier record for each design, to within 0.01 %. The 256-cell open records in this folder and in `examples/structure_gallery_256_mixed_open/` are the same designs.
+
+| id | old V (mm³) | new V (mm³) | change | MC (mm³) | MC check (convergence-grid mesh vs MC) | result |
+|---|---|---|---|---|---|---|
+| `deep_R1_thickness` | 4032.182 | 4028.944 | -0.08 % | 4033.72 | 0.07 % | PASS |
+| `deep_R2_nested` | 5603.703 | 5595.032 | -0.15 % | 5608.96 | 0.10 % | PASS |
+| `deep_R3_twist` | 1419.638 | 1437.257 | +1.24 % | 1441.96 | 0.35 % | PASS |
+| `deep_R4_blend` | 3509.109 | 3507.187 | -0.05 % | 3521.52 | 0.44 % | PASS |
+| `deep_R5_hierarchy` | 6568.931 | 6563.376 | -0.08 % | 6559.84 | 0.07 % | PASS |
