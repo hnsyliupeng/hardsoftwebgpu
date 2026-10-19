@@ -85,7 +85,7 @@
     "repair_history": [],
     "limitations": [
       "Strut lattices are SDF-only (capsule unions); exact STEP export is not generated for them.",
-      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "No exact B-Rep for this design: STL/glTF come from manifold dual contouring of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
@@ -233,7 +233,7 @@
     "repair_history": [],
     "limitations": [
       "Strut lattices are SDF-only (capsule unions); exact STEP export is not generated for them.",
-      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "No exact B-Rep for this design: STL/glTF come from manifold dual contouring of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
@@ -381,7 +381,7 @@
     "repair_history": [],
     "limitations": [
       "Strut lattices are SDF-only (capsule unions); exact STEP export is not generated for them.",
-      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "No exact B-Rep for this design: STL/glTF come from manifold dual contouring of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
@@ -529,7 +529,7 @@
     "repair_history": [],
     "limitations": [
       "Strut lattices are SDF-only (capsule unions); exact STEP export is not generated for them.",
-      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "No exact B-Rep for this design: STL/glTF come from manifold dual contouring of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
@@ -677,7 +677,7 @@
     "repair_history": [],
     "limitations": [
       "Strut lattices are SDF-only (capsule unions); exact STEP export is not generated for them.",
-      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "No exact B-Rep for this design: STL/glTF come from manifold dual contouring of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
@@ -825,7 +825,7 @@
     "repair_history": [],
     "limitations": [
       "Strut lattices are SDF-only (capsule unions); exact STEP export is not generated for them.",
-      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "No exact B-Rep for this design: STL/glTF come from manifold dual contouring of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
@@ -973,7 +973,7 @@
     "repair_history": [],
     "limitations": [
       "Strut lattices are SDF-only (capsule unions); exact STEP export is not generated for them.",
-      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "No exact B-Rep for this design: STL/glTF come from manifold dual contouring of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
@@ -1128,7 +1128,7 @@
     "limitations": [
       "TPMS sheets use the first-order distance |F|/|grad F| - t/2 (not an exact Euclidean SDF); accurate near the sheet.",
       "TPMS geometry is SDF-only; STL/glTF are produced by surface nets, STEP is not available.",
-      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "No exact B-Rep for this design: STL/glTF come from manifold dual contouring of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
@@ -1284,7 +1284,7 @@
     "limitations": [
       "TPMS sheets use the first-order distance |F|/|grad F| - t/2 (not an exact Euclidean SDF); accurate near the sheet.",
       "TPMS geometry is SDF-only; STL/glTF are produced by surface nets, STEP is not available.",
-      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "No exact B-Rep for this design: STL/glTF come from manifold dual contouring of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
@@ -1440,7 +1440,7 @@
     "limitations": [
       "TPMS sheets use the first-order distance |F|/|grad F| - t/2 (not an exact Euclidean SDF); accurate near the sheet.",
       "TPMS geometry is SDF-only; STL/glTF are produced by surface nets, STEP is not available.",
-      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "No exact B-Rep for this design: STL/glTF come from manifold dual contouring of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
@@ -1596,7 +1596,7 @@
     "limitations": [
       "TPMS sheets use the first-order distance |F|/|grad F| - t/2 (not an exact Euclidean SDF); accurate near the sheet.",
       "TPMS geometry is SDF-only; STL/glTF are produced by surface nets, STEP is not available.",
-      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "No exact B-Rep for this design: STL/glTF come from manifold dual contouring of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
@@ -1752,7 +1752,7 @@
     "limitations": [
       "TPMS sheets use the first-order distance |F|/|grad F| - t/2 (not an exact Euclidean SDF); accurate near the sheet.",
       "TPMS geometry is SDF-only; STL/glTF are produced by surface nets, STEP is not available.",
-      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "No exact B-Rep for this design: STL/glTF come from manifold dual contouring of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
@@ -1908,7 +1908,7 @@
     "limitations": [
       "TPMS sheets use the first-order distance |F|/|grad F| - t/2 (not an exact Euclidean SDF); accurate near the sheet.",
       "TPMS geometry is SDF-only; STL/glTF are produced by surface nets, STEP is not available.",
-      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "No exact B-Rep for this design: STL/glTF come from manifold dual contouring of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
@@ -2064,7 +2064,7 @@
     "limitations": [
       "TPMS sheets use the first-order distance |F|/|grad F| - t/2 (not an exact Euclidean SDF); accurate near the sheet.",
       "TPMS geometry is SDF-only; STL/glTF are produced by surface nets, STEP is not available.",
-      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "No exact B-Rep for this design: STL/glTF come from manifold dual contouring of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
@@ -2220,7 +2220,7 @@
     "limitations": [
       "TPMS sheets use the first-order distance |F|/|grad F| - t/2 (not an exact Euclidean SDF); accurate near the sheet.",
       "TPMS geometry is SDF-only; STL/glTF are produced by surface nets, STEP is not available.",
-      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "No exact B-Rep for this design: STL/glTF come from manifold dual contouring of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
@@ -2932,7 +2932,7 @@
     "repair_history": [],
     "limitations": [
       "No exact B-Rep plan for this family; geometry is SDF-only (mesh export, no STEP).",
-      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "No exact B-Rep for this design: STL/glTF come from manifold dual contouring of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
@@ -3072,7 +3072,7 @@
     "limitations": [
       "Smoothing: 3 blur pass(es) on the sampled field (approximates the upstream subdivision).",
       "No exact B-Rep plan for this family; geometry is SDF-only (mesh export, no STEP).",
-      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "No exact B-Rep for this design: STL/glTF come from manifold dual contouring of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
@@ -3214,7 +3214,7 @@
     "repair_history": [],
     "limitations": [
       "No exact B-Rep plan for this family; geometry is SDF-only (mesh export, no STEP).",
-      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "No exact B-Rep for this design: STL/glTF come from manifold dual contouring of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
@@ -3357,7 +3357,7 @@
     "limitations": [
       "Smoothing: 3 blur pass(es) on the sampled field (approximates the upstream subdivision).",
       "No exact B-Rep plan for this family; geometry is SDF-only (mesh export, no STEP).",
-      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "No exact B-Rep for this design: STL/glTF come from manifold dual contouring of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
@@ -4313,7 +4313,7 @@
     "limitations": [
       "Fusion geometry is SDF-only. Zoned fusion cuts each part with a half-space and unites them over an overlap band; the seam is a planar cut, not an exact B-Rep boolean.",
       "Fused designs use manifold dual contouring; a few pinches narrower than one voxel can still give non-manifold edges (under 0.1 % of the edges at 96 cells, see docs/NONMANIFOLD.md).",
-      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "No exact B-Rep for this design: STL/glTF come from manifold dual contouring of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
@@ -4555,7 +4555,7 @@
     "limitations": [
       "Fusion geometry is SDF-only. Zoned fusion cuts each part with a half-space and unites them over an overlap band; the seam is a planar cut, not an exact B-Rep boolean.",
       "Fused designs use manifold dual contouring; a few pinches narrower than one voxel can still give non-manifold edges (under 0.1 % of the edges at 96 cells, see docs/NONMANIFOLD.md).",
-      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "No exact B-Rep for this design: STL/glTF come from manifold dual contouring of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
@@ -4797,7 +4797,7 @@
     "limitations": [
       "Fusion geometry is SDF-only. Zoned fusion cuts each part with a half-space and unites them over an overlap band; the seam is a planar cut, not an exact B-Rep boolean.",
       "Fused designs use manifold dual contouring; a few pinches narrower than one voxel can still give non-manifold edges (under 0.1 % of the edges at 96 cells, see docs/NONMANIFOLD.md).",
-      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "No exact B-Rep for this design: STL/glTF come from manifold dual contouring of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
@@ -5038,7 +5038,7 @@
     "limitations": [
       "Fusion geometry is SDF-only. Zoned fusion cuts each part with a half-space and unites them over an overlap band; the seam is a planar cut, not an exact B-Rep boolean.",
       "Fused designs use manifold dual contouring; a few pinches narrower than one voxel can still give non-manifold edges (under 0.1 % of the edges at 96 cells, see docs/NONMANIFOLD.md).",
-      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "No exact B-Rep for this design: STL/glTF come from manifold dual contouring of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
@@ -5277,7 +5277,7 @@
     "limitations": [
       "Fusion geometry is SDF-only. Zoned fusion cuts each part with a half-space and unites them over an overlap band; the seam is a planar cut, not an exact B-Rep boolean.",
       "Fused designs use manifold dual contouring; a few pinches narrower than one voxel can still give non-manifold edges (under 0.1 % of the edges at 96 cells, see docs/NONMANIFOLD.md).",
-      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "No exact B-Rep for this design: STL/glTF come from manifold dual contouring of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
@@ -5516,7 +5516,7 @@
     "repair_history": [],
     "limitations": [
       "Coupled geometry is SDF-only (mesh export); the coupling is evaluated pointwise, not as a B-Rep.",
-      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "No exact B-Rep for this design: STL/glTF come from manifold dual contouring of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
@@ -5655,7 +5655,7 @@
     "repair_history": [],
     "limitations": [
       "Coupled geometry is SDF-only (mesh export); the coupling is evaluated pointwise, not as a B-Rep.",
-      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "No exact B-Rep for this design: STL/glTF come from manifold dual contouring of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
@@ -5795,7 +5795,7 @@
     "repair_history": [],
     "limitations": [
       "Coupled geometry is SDF-only (mesh export); the coupling is evaluated pointwise, not as a B-Rep.",
-      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "No exact B-Rep for this design: STL/glTF come from manifold dual contouring of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
@@ -5935,7 +5935,7 @@
     "repair_history": [],
     "limitations": [
       "Coupled geometry is SDF-only (mesh export); the coupling is evaluated pointwise, not as a B-Rep.",
-      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "No exact B-Rep for this design: STL/glTF come from manifold dual contouring of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
@@ -6073,7 +6073,7 @@
     "repair_history": [],
     "limitations": [
       "Coupled geometry is SDF-only (mesh export); the coupling is evaluated pointwise, not as a B-Rep.",
-      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "No exact B-Rep for this design: STL/glTF come from manifold dual contouring of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
       "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
