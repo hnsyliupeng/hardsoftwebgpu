@@ -6,6 +6,7 @@
 
 import type { TopologyBuild } from "../topology/index.ts";
 import { blurGaussianMm, removeFloatingComponents, sampleField, surfaceNets, type Grid } from "./grid.ts";
+import { dualContourManifold } from "./dualcontour.ts";
 
 /** Reference grid (cells per 20 mm envelope edge) that defines the smoothing scale in mm. */
 const SMOOTH_REF_CELLS = 256;
@@ -45,10 +46,15 @@ export async function buildGeometry(build: TopologyBuild, spec: DesignSpec): Pro
   grid = floating.grid;
   if (floating.removedComponents > 0)
     observations.push(`Removed ${floating.removedComponents} floating solid fragment(s) not connected to the main body (${floating.removedNodes} nodes, about ${floating.removedVolumeMm3.toFixed(3)} mm^3, clipped by the build envelope).`);
-  const sdfMesh = surfaceNets(grid);
+  // Fused designs use manifold dual contouring (src/geometry/dualcontour.ts): surface nets shares one vertex
+  // between two sheets that cross in one cell, which gives non-manifold edges at the union creases.
+  const useDc = spec.topology === "fusion";
+  const sdfMesh = useDc ? dualContourManifold(grid) : surfaceNets(grid);
   observations.push(
-    `SDF sampled on ${grid.nx}x${grid.ny}x${grid.nz} nodes (h = ${grid.h.toFixed(4)} mm); surface nets produced ${sdfMesh.indices.length / 3} triangles.`,
+    `SDF sampled on ${grid.nx}x${grid.ny}x${grid.nz} nodes (h = ${grid.h.toFixed(4)} mm); ${useDc ? "manifold dual contouring" : "surface nets"} produced ${sdfMesh.indices.length / 3} triangles.`,
   );
+  if (useDc)
+    limitations.push("Fused designs use manifold dual contouring; a few pinches narrower than one voxel can still give non-manifold edges (under 0.1 % of the edges at 96 cells, see docs/NONMANIFOLD.md).");
   let brep: BrepSolid | null = null;
   let kernelError: string | null = null;
   if (build.brep) {
