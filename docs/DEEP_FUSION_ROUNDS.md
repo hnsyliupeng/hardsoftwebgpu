@@ -110,3 +110,28 @@ Open design (`skin_mm = 0`). Results are in `examples/structure_gallery_r8_open_
 | 96 | 1785.015 | 1777.6 | 0.52 % | 0.11 % (vs 120) | 481,668 | 1 | 0.734 | PASS |
 | 192 | 1776.722 | 1777.6 | 0.04 % | 0.01 % (vs 240) | 1,963,680 | 1 | 0.734 | PASS |
 | 256 | 1775.331 | 1777.6 | 0.12 % | 0.00 % (vs 320) | 3,501,516 | 1 | 0.734 | PASS |
+
+## Round 9: interpenetrating phases gated by a gyroid (open, added 2026-10-20)
+
+R9 couples two structure families that share one box. A Schwarz D sheet (5 mm period, 0.5 mm wall) fills the
+side of a gyroid gate surface (8 mm period) where the gate is negative. A BCC strut lattice (4 mm cell,
+r = 0.4 mm) fills the side where it is positive. Each phase is clipped by the gate inside the field, using a rounded
+phase cut (smooth max) and a smooth union (0.3 mm blend). This is not a boolean of two finished designs.
+Code: `buildR9` in `src/topology/coupled.ts`; test: `tests/coupled_r9.test.ts`. Field-based (non-exact); open design (`skin_mm = 0`).
+Results are in `examples/structure_gallery_r9_open_96/`, `..._192/`, `..._256/`.
+
+| Cells | Volume (mm³) | MC (mm³) | Mesh vs MC | Convergence | Triangles | Components | Wall p5 (mm) | Result |
+|---|---|---|---|---|---|---|---|---|
+| 96 | 2076.313 | 2104.9 | 0.69 % | 0.68 % (vs 120) | 687,336 | 1 | 0.436 | PASS |
+| 192 | 2097.054 | 2104.9 | 0.27 % | 0.11 % (vs 240) | 2,794,824 | 1 | 0.407 | PASS |
+| 256 | 2099.035 | 2104.9 | 0.21 % | 0.07 % (vs 320) | 4,959,420 | 1 | 0.393 | **FAIL** (wall floor 0.4 mm) |
+
+Phase split (sampled on the box): sheet zone 50.7 % of the box with solid fraction 0.349; lattice zone 49.3 % with 0.169.
+
+**Status.** The 256 design fails the RepairHarness wall check: its 5th-percentile wall is 0.393 mm, below the 0.4 mm
+printability floor. The figure falls with resolution (0.436 → 0.407 → 0.393 mm), so it is not converging, and the
+thin spots are not yet located. The first version (hard phase cut) gave 0.30 mm at 192 cells. The rounded cut fixed 192
+but not 256. This round is therefore open: the 256 result is not accepted as printable.
+
+Next step, if it is pursued: locate the thin spots at 256 and test whether a larger phase-cut radius or a gate that keeps
+the sheet away from the cut removes them.

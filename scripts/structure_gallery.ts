@@ -176,7 +176,7 @@ const BASE_ENTRIES: Entry[] = [
 ];
 
 // ---- deep coupling (five rounds, src/topology/coupled.ts) -------------------------------------------
-function coupledSpec(round: "R1" | "R2" | "R3" | "R4" | "R5" | "R6" | "R7" | "R8", params: Record<string, number | string> = {}): DesignSpec {
+function coupledSpec(round: "R1" | "R2" | "R3" | "R4" | "R5" | "R6" | "R7" | "R8" | "R9", params: Record<string, number | string> = {}): DesignSpec {
   const s = mk(`coupled ${round}`);
   s.topology = "coupled";
   s.family = "coupled";
@@ -198,6 +198,7 @@ const COUPLED_ENTRIES: Entry[] = [
   { id: "deep_R6_morph", group: "coupled", title: "R6 morph: gyroid sheet core morphs radially into a BCC strut shell", prompt: "coupled R6: gyroid core morphing into bcc lattice shell", make: () => coupledSpec("R6") },
   { id: "deep_R7_grading", group: "coupled", title: "R7 grading: gyroid period grows from 3 to 7 mm with height", prompt: "coupled R7: gyroid period graded along z", make: () => coupledSpec("R7") },
   { id: "deep_R8_radius", group: "coupled", title: "R8 radius: BCC strut radius set by a gyroid field", prompt: "coupled R8: bcc strut radius driven by gyroid field", make: () => coupledSpec("R8") },
+  { id: "deep_R9_gated", group: "coupled", title: "R9 gated: Schwarz D sheet and BCC lattice interpenetrate, gated by a gyroid", prompt: "coupled R9: schwarz D sheet and bcc lattice gated by gyroid", make: () => coupledSpec("R9") },
 ];
 
 const DEEP_ENTRIES: Entry[] = [

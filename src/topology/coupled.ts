@@ -18,6 +18,8 @@
 //                   (single structure; not a cross-structure coupling).
 //   R8 radius     : a BCC strut lattice whose strut radius is set by a gyroid field (r = r0 + A tanh(g F)), so the struts
 //                   swell and thin with the sheet. Two structures coupled inside one field.
+//   R9 gated      : interpenetrating phases. A Schwarz D sheet occupies one side of a gyroid gate surface and a BCC
+//                   lattice the other side, joined by a smooth minimum. Two families gated by a third field.
 //
 // All fields are signed distances in millimetres on the box [0, L]^3 (negative inside the solid).
 
@@ -27,7 +29,7 @@ import type { LatticeType, TpmsType } from "../types.ts";
 import { buildBio, toMillimetres } from "../bio/families.ts";
 import { sampleField } from "../geometry/grid.ts";
 
-export type CoupledRound = "R1" | "R2" | "R3" | "R4" | "R5" | "R6" | "R7" | "R8";
+export type CoupledRound = "R1" | "R2" | "R3" | "R4" | "R5" | "R6" | "R7" | "R8" | "R9";
 
 export interface CoupledSpec {
   round: CoupledRound;
@@ -46,6 +48,7 @@ const ROUND_DEFAULTS: Record<CoupledRound, Record<string, number | string>> = {
   R6: { lattice: "bcc", lattice_cell_mm: 4, strut_radius_mm: 0.4, tpms_cell_mm: 5, tpms_wall_mm: 0.5, core_radius_mm: 5.5, morph_width_mm: 2, skin_mm: 0 },
   R7: { a_bottom_mm: 3, a_top_mm: 7, a_ref_mm: 5, wall_mm: 0.5, skin_mm: 0 },
   R8: { lattice: "bcc", lattice_cell_mm: 4, strut_radius_mm: 0.45, radius_amp_mm: 0.1, gyroid_gain: 1, tpms_cell_mm: 5, skin_mm: 0 },
+  R9: { lattice: "bcc", lattice_cell_mm: 4, strut_radius_mm: 0.4, sheet: "schwarz_d", sheet_cell_mm: 5, sheet_wall_mm: 0.5, gate_cell_mm: 8, blend_mm: 0.3, skin_mm: 0 },
 };
 
 export interface CoupledBuild {
@@ -427,6 +430,56 @@ function buildR8(L: number, p: Record<string, number | string>) {
   };
 }
 
+// ---- R9: interpenetrating phases gated by a gyroid -----------------------------------------
+
+function buildR9(L: number, p: Record<string, number | string>) {
+  const latType = String(p.lattice) as LatticeType;
+  const nL = Math.round(L / num(p, "lattice_cell_mm"));
+  const lat = strutLattice({ type: latType, cellSize: L / nL, cells: [nL, nL, nL], radius: num(p, "strut_radius_mm") });
+  const sheetType = String(p.sheet) as TpmsType;
+  const kS = (2 * Math.PI) / num(p, "sheet_cell_mm");
+  const tS = num(p, "sheet_wall_mm");
+  const kG = (2 * Math.PI) / num(p, "gate_cell_mm");
+  const k = num(p, "blend_mm");
+  // Gate: signed distance (mm, approximate) to the gyroid surface; gate < 0 selects the sheet side.
+  const gate = (x: number, y: number, z: number) => {
+    const [F, gx, gy, gz] = tpmsValueGrad("gyroid" as TpmsType, kG * x, kG * y, kG * z);
+    return F / (Math.hypot(gx, gy, gz) * kG + 1e-12);
+  };
+  const field = boxField(
+    L,
+    `smin( smax(sheet, gate), smax(${latType} lattice, -gate), ${k} ); sheet = ${sheetType} wall ${tS} mm; gate = gyroid cell ${num(p, "gate_cell_mm")} mm`,
+    (x, y, z) => {
+      const [F, gx, gy, gz] = tpmsValueGrad(sheetType, kS * x, kS * y, kS * z);
+      const sheet = Math.abs(F) / (Math.hypot(gx, gy, gz) * kS + 1e-12) - tS / 2;
+      const g = gate(x, y, z);
+      // Rounded phase cut: smooth max instead of a hard max, so the sheet and lattice do not meet in sharp creases.
+      const a = -smin(-sheet, -g, k);
+      const b = -smin(-lat.eval(x, y, z), g, k);
+      return Math.max(smin(a, b, k), boxDist(L, x, y, z));
+    },
+  );
+  const pts = samplePoints(L, 6000, 31);
+  let nA = 0, sA = 0, nB = 0, sB = 0;
+  for (const [x, y, z] of pts) {
+    const solid = field.eval(x, y, z) < 0 ? 1 : 0;
+    if (gate(x, y, z) < 0) { sA += solid; nA++; } else { sB += solid; nB++; }
+  }
+  return {
+    field,
+    description: `R9 gated phases: ${sheetType} sheet on one side of a gyroid gate (cell ${num(p, "gate_cell_mm")} mm), ${latType} lattice on the other, smooth join ${k} mm`,
+    metrics: {
+      sheet_zone_solid_fraction: nA ? +(sA / nA).toFixed(4) : 0,
+      lattice_zone_solid_fraction: nB ? +(sB / nB).toFixed(4) : 0,
+      sheet_zone_fraction: +(nA / pts.length).toFixed(4),
+      blend_mm: k,
+    },
+    observations: [
+      `Two phases interpenetrate: the ${sheetType} sheet fills the gate-negative labyrinth and the ${latType} lattice fills the gate-positive one; no planar seam.`,
+    ],
+  };
+}
+
 // ---- entry point ----------------------------------------------------------------------------
 
 export function buildCoupled(spec: CoupledSpec, L: number): CoupledBuild {
@@ -443,6 +496,7 @@ export function buildCoupled(spec: CoupledSpec, L: number): CoupledBuild {
     case "R6": r = buildR6(L, p); break;
     case "R7": r = buildR7(L, p); break;
     case "R8": r = buildR8(L, p); break;
+    case "R9": r = buildR9(L, p); break;
     default: throw new Error(`unknown coupled round ${spec.round}`);
   }
   // Clip to the build box (no feature extends beyond it), then unite the closed envelope skin.
