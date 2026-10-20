@@ -95,3 +95,18 @@ Open design (`skin_mm = 0`). Results are in `examples/structure_gallery_r7_open_
 Limits: a first version that warped x and y as well gave a wall of 0.31 mm (not printable under the 0.4 mm floor). That
 map is not conformal, so the distance estimate was wrong. The z-only warp replaces it. The front view projects -z, so
 z increases downward in `view_front.png`.
+
+## Round 8: strut radius set by a gyroid field (open, added 2026-10-19)
+
+R8 couples two structure families inside one field: a BCC strut lattice (4 mm cell) whose strut radius is
+r = 0.45 + 0.1 tanh(F), with F the gyroid value (5 mm period). Struts swell where the sheet is positive and thin where
+it is negative. Radius range 0.359 to 0.540 mm. Code: `buildR8` in `src/topology/coupled.ts`; test: `tests/coupled_r8.test.ts`.
+The radius correction is first order (exact for radius that varies slowly compared with the strut).
+
+Open design (`skin_mm = 0`). Results are in `examples/structure_gallery_r8_open_96/`, `..._192/`, `..._256/`.
+
+| Cells | Volume (mm³) | MC (mm³) | Mesh vs MC | Convergence | Triangles | Components | Wall p5 (mm) | Result |
+|---|---|---|---|---|---|---|---|---|
+| 96 | 1785.015 | 1777.6 | 0.52 % | 0.11 % (vs 120) | 481,668 | 1 | 0.734 | PASS |
+| 192 | 1776.722 | 1777.6 | 0.04 % | 0.01 % (vs 240) | 1,963,680 | 1 | 0.734 | PASS |
+| 256 | 1775.331 | 1777.6 | 0.12 % | 0.00 % (vs 320) | 3,501,516 | 1 | 0.734 | PASS |

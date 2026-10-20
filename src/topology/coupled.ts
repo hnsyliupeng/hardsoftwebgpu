@@ -16,6 +16,8 @@
 //   R7 grading    : a gyroid whose period along z grows with height (3 mm at the base to 7 mm at the top; x and y
 //                   period 5 mm) at constant wall thickness. Scale coupling by a one-dimensional coordinate warp
 //                   (single structure; not a cross-structure coupling).
+//   R8 radius     : a BCC strut lattice whose strut radius is set by a gyroid field (r = r0 + A tanh(g F)), so the struts
+//                   swell and thin with the sheet. Two structures coupled inside one field.
 //
 // All fields are signed distances in millimetres on the box [0, L]^3 (negative inside the solid).
 
@@ -25,7 +27,7 @@ import type { LatticeType, TpmsType } from "../types.ts";
 import { buildBio, toMillimetres } from "../bio/families.ts";
 import { sampleField } from "../geometry/grid.ts";
 
-export type CoupledRound = "R1" | "R2" | "R3" | "R4" | "R5" | "R6" | "R7";
+export type CoupledRound = "R1" | "R2" | "R3" | "R4" | "R5" | "R6" | "R7" | "R8";
 
 export interface CoupledSpec {
   round: CoupledRound;
@@ -43,6 +45,7 @@ const ROUND_DEFAULTS: Record<CoupledRound, Record<string, number | string>> = {
   R5: { foam_grid: 120, gyroid_cell_mm: 4, gyroid_wall_mm: 0.5, skin_mm: 1 },
   R6: { lattice: "bcc", lattice_cell_mm: 4, strut_radius_mm: 0.4, tpms_cell_mm: 5, tpms_wall_mm: 0.5, core_radius_mm: 5.5, morph_width_mm: 2, skin_mm: 0 },
   R7: { a_bottom_mm: 3, a_top_mm: 7, a_ref_mm: 5, wall_mm: 0.5, skin_mm: 0 },
+  R8: { lattice: "bcc", lattice_cell_mm: 4, strut_radius_mm: 0.45, radius_amp_mm: 0.1, gyroid_gain: 1, tpms_cell_mm: 5, skin_mm: 0 },
 };
 
 export interface CoupledBuild {
@@ -383,6 +386,47 @@ function buildR7(L: number, p: Record<string, number | string>) {
   };
 }
 
+// ---- R8: strut radius set by a gyroid field -------------------------------------------------
+
+function buildR8(L: number, p: Record<string, number | string>) {
+  const type = String(p.lattice) as LatticeType;
+  const nL = Math.round(L / num(p, "lattice_cell_mm"));
+  const r0 = num(p, "strut_radius_mm"), amp = num(p, "radius_amp_mm"), gain = num(p, "gyroid_gain");
+  const lat = strutLattice({ type, cellSize: L / nL, cells: [nL, nL, nL], radius: r0 });
+  const k = (2 * Math.PI) / num(p, "tpms_cell_mm");
+  // Local strut radius from the gyroid value F in [-1.5, 1.5]: r = r0 + amp tanh(gain F), in (r0 - amp, r0 + amp).
+  // The lattice distance is corrected by (r - r0); this is exact to first order in the radius variation.
+  const radiusAt = (x: number, y: number, z: number) => {
+    const [F] = tpmsValueGrad("gyroid" as TpmsType, k * x, k * y, k * z);
+    return r0 + amp * Math.tanh(gain * F);
+  };
+  const field = boxField(
+    L,
+    `${type} strut lattice, radius r0 + ${amp} tanh(${gain} gyroid) mm, r0 = ${r0} mm`,
+    (x, y, z) => Math.max(lat.eval(x, y, z) - (radiusAt(x, y, z) - r0), boxDist(L, x, y, z)),
+  );
+  const pts = samplePoints(L, 6000, 29);
+  let rMin = Infinity, rMax = -Infinity, rSum = 0, solid = 0;
+  for (const [x, y, z] of pts) {
+    const r = radiusAt(x, y, z);
+    rMin = Math.min(rMin, r); rMax = Math.max(rMax, r); rSum += r;
+    if (field.eval(x, y, z) < 0) solid++;
+  }
+  return {
+    field,
+    description: `R8 ${type} lattice with strut radius set by a gyroid field (${(r0 - amp).toFixed(3)}-${(r0 + amp).toFixed(3)} mm)`,
+    metrics: {
+      radius_min_mm: +rMin.toFixed(3),
+      radius_max_mm: +rMax.toFixed(3),
+      radius_mean_mm: +(rSum / pts.length).toFixed(3),
+      solid_fraction: +(solid / pts.length).toFixed(4),
+    },
+    observations: [
+      `Strut radius follows the gyroid value: thick where the sheet is positive, thin where it is negative. Both structures are in one field.`,
+    ],
+  };
+}
+
 // ---- entry point ----------------------------------------------------------------------------
 
 export function buildCoupled(spec: CoupledSpec, L: number): CoupledBuild {
@@ -398,6 +442,7 @@ export function buildCoupled(spec: CoupledSpec, L: number): CoupledBuild {
     case "R5": r = buildR5(L, p); break;
     case "R6": r = buildR6(L, p); break;
     case "R7": r = buildR7(L, p); break;
+    case "R8": r = buildR8(L, p); break;
     default: throw new Error(`unknown coupled round ${spec.round}`);
   }
   // Clip to the build box (no feature extends beyond it), then unite the closed envelope skin.
