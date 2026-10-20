@@ -43,6 +43,6 @@ mean strut radius 0.46 mm.
 - The wall figure is the 5th percentile of inward ray chords, the validator's rule for coupled designs. Not a certified manufacturing check.
 - The renders show stepped layers along the envelope faces. The slice test (`scripts/slice_test.ts`, 96 cells) shows that the
   faces are open: the solid fraction on each face plane is 0.49 to 0.51, against about 1.0 for a closed skin, and the mean over
-  z-planes is 0.573. The layers are structure cross-sections at the faces, not a skin. The 192 and 256 designs were not slice-tested.
+  z-planes is 0.573. The layers are structure cross-sections at the faces, not a skin. The slice test rebuilds the field from `design_spec` on a fixed grid, so 192 and 256 give the same values; this confirms the field, not the 192 and 256 meshes separately.
 - The gate is a first-order signed-distance estimate of the gyroid (F / |grad F|).
 - Renders are CPU rasterised preview images at 1600 px.

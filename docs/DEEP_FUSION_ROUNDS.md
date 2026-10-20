@@ -167,4 +167,4 @@ design value (0.5 mm sheet, 0.6 mm strut diameter). R9 is kept, with its 256 fai
 
 Solid fraction about 0.57 (porosity about 0.43). Slice test at 96 cells (`scripts/slice_test.ts`): face-plane solid fraction
 0.49 to 0.51 on all six faces (a closed skin would be about 1.0), so the faces are open. The stepped layers in the renders are
-structure cross-sections, not a skin. The 192 and 256 designs were not slice-tested.
+structure cross-sections, not a skin. The slice test rebuilds the field from `design_spec` on a fixed grid, so 192 and 256 give the same values; this confirms the field, not the 192 and 256 meshes separately.
