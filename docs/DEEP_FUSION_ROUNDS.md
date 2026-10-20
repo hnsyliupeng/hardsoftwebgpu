@@ -133,5 +133,12 @@ printability floor. The figure falls with resolution (0.436 → 0.407 → 0.393 
 thin spots are not yet located. The first version (hard phase cut) gave 0.30 mm at 192 cells. The rounded cut fixed 192
 but not 256. This round is therefore open: the 256 result is not accepted as printable.
 
-Next step, if it is pursued: locate the thin spots at 256 and test whether a larger phase-cut radius or a gate that keeps
-the sheet away from the cut removes them.
+**Diagnosis.** `scripts/r9_wall_diagnostic.ts` runs the validator's chord routine on surface samples. At 192 cells, 2294 of
+the 2513 chords below 0.4 mm (91 %) lie within 0.3 mm of the gate surface. These are acute wedges where the sheet or the lattice
+is cut by the gate at a shallow angle. A BCC lattice control gives 0.800 mm everywhere, so the method is not the cause.
+
+**Trial.** A larger phase-cut radius (blend 0.6 mm) at 256 gave wall p5 0.388 mm (worse) and changed the volume by about 4 %.
+It was reverted. The committed 0.3 mm result stands.
+
+Next step, if it is pursued: a morphological opening of the solid in the gate band (removes wedge tips thinner than the ball radius),
+or a redesign that does not cut the phases at a shallow angle. Neither is implemented.

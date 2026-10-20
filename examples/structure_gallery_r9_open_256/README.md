@@ -35,8 +35,15 @@ lattice zone (gate > 0) 49.3 %, with solid fraction 0.169.
 **Status: FAIL.** The 5th-percentile wall is 0.393 mm, below the 0.4 mm printability floor. The value falls with
 resolution (0.436 at 96, 0.407 at 192, 0.393 at 256), so it is not converging, and the thin spots are not located.
 The field still gives one watertight solid, and the mesh agrees with Monte Carlo to 0.21 %. This design is not
-accepted as printable. The fix is not yet found; options are a larger phase-cut radius, or a gate that
-keeps the sheet away from the cut.
+accepted as printable. The fix is not yet found. A larger phase-cut radius (0.6 mm) was tested and did not help (p5 0.388 mm).
+
+**Diagnosis (added 2026-10-20, `scripts/r9_wall_diagnostic.ts`).** The thin samples are at the gate interface. At 192
+cells, 2294 of the 2513 chords below 0.4 mm (91 %) lie within 0.3 mm of the gate surface. Where the sheet or the
+lattice is cut by the gate at a shallow angle, the solid forms an acute wedge, and a wedge tip stays thin unless the
+rounding radius is comparable to the wedge length. A BCC lattice control with the same routine gives 0.800 mm everywhere, so the
+method is not the cause.
+**Trial that did not work.** Raising the blend from 0.3 to 0.6 mm at 256 gave wall p5 0.388 mm (worse) and changed the
+volume by about 4 %. It was reverted; the committed 0.3 mm result stands.
 
 ## Limits
 
