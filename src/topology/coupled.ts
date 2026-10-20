@@ -29,7 +29,7 @@ import type { LatticeType, TpmsType } from "../types.ts";
 import { buildBio, toMillimetres } from "../bio/families.ts";
 import { sampleField } from "../geometry/grid.ts";
 
-export type CoupledRound = "R1" | "R2" | "R3" | "R4" | "R5" | "R6" | "R7" | "R8" | "R9";
+export type CoupledRound = "R1" | "R2" | "R3" | "R4" | "R5" | "R6" | "R7" | "R8" | "R9" | "R10";
 
 export interface CoupledSpec {
   round: CoupledRound;
@@ -49,6 +49,7 @@ const ROUND_DEFAULTS: Record<CoupledRound, Record<string, number | string>> = {
   R7: { a_bottom_mm: 3, a_top_mm: 7, a_ref_mm: 5, wall_mm: 0.5, skin_mm: 0 },
   R8: { lattice: "bcc", lattice_cell_mm: 4, strut_radius_mm: 0.45, radius_amp_mm: 0.1, gyroid_gain: 1, tpms_cell_mm: 5, skin_mm: 0 },
   R9: { lattice: "bcc", lattice_cell_mm: 4, strut_radius_mm: 0.4, sheet: "schwarz_d", sheet_cell_mm: 5, sheet_wall_mm: 0.5, gate_cell_mm: 8, blend_mm: 0.3, skin_mm: 0 },
+  R10: { lattice: "bcc", lattice_cell_mm: 4, strut_radius_mm: 0.4, radius_amp_mm: 0.1, sheet: "schwarz_d", sheet_cell_mm: 5, sheet_wall_mm: 0.7, sheet_amp_mm: 0.2, gate_cell_mm: 8, dominance_mm: 1, blend_mm: 0.2, skin_mm: 0 },
 };
 
 export interface CoupledBuild {
@@ -480,6 +481,67 @@ function buildR9(L: number, p: Record<string, number | string>) {
   };
 }
 
+// ---- R10: gated dominance (both phases everywhere, the gate sets which one is thick) --------
+
+function buildR10(L: number, p: Record<string, number | string>) {
+  const latType = String(p.lattice) as LatticeType;
+  const nL = Math.round(L / num(p, "lattice_cell_mm"));
+  const r0 = num(p, "strut_radius_mm"), ampL = num(p, "radius_amp_mm");
+  const lat = strutLattice({ type: latType, cellSize: L / nL, cells: [nL, nL, nL], radius: r0 });
+  const sheetType = String(p.sheet) as TpmsType;
+  const kS = (2 * Math.PI) / num(p, "sheet_cell_mm");
+  const t0 = num(p, "sheet_wall_mm"), ampS = num(p, "sheet_amp_mm");
+  const kG = (2 * Math.PI) / num(p, "gate_cell_mm");
+  const w = num(p, "dominance_mm"), k = num(p, "blend_mm");
+  const gate = (x: number, y: number, z: number) => {
+    const [F, gx, gy, gz] = tpmsValueGrad("gyroid" as TpmsType, kG * x, kG * y, kG * z);
+    return F / (Math.hypot(gx, gy, gz) * kG + 1e-12);
+  };
+  // Dominance d = tanh(g / w): +1 on the gate-positive side (lattice thick, sheet thin), -1 on the other (sheet thick).
+  // Both phases are present everywhere; the join is a smooth union, so no cut and no acute wedge is created.
+  const thickAt = (g: number) => t0 - ampS * Math.tanh(g / w);
+  const radiusAt = (g: number) => r0 + ampL * Math.tanh(g / w);
+  const field = boxField(
+    L,
+    `smin( ${sheetType} sheet (thickness ${t0} - ${ampS} tanh(g/${w})), ${latType} lattice (radius ${r0} + ${ampL} tanh(g/${w})), ${k} ); g = gyroid cell ${num(p, "gate_cell_mm")} mm`,
+    (x, y, z) => {
+      const [F, gx, gy, gz] = tpmsValueGrad(sheetType, kS * x, kS * y, kS * z);
+      const g = gate(x, y, z);
+      const sheet = Math.abs(F) / (Math.hypot(gx, gy, gz) * kS + 1e-12) - thickAt(g) / 2;
+      const lt = lat.eval(x, y, z) - (radiusAt(g) - r0);
+      return Math.max(smin(sheet, lt, k), boxDist(L, x, y, z));
+    },
+  );
+  const pts = samplePoints(L, 6000, 37);
+  let nA = 0, sA = 0, nB = 0, sB = 0, tA = 0, tB = 0, rA = 0, rB = 0;
+  let tMin = Infinity, rMin = Infinity;
+  for (const [x, y, z] of pts) {
+    const g = gate(x, y, z);
+    const solid = field.eval(x, y, z) < 0 ? 1 : 0;
+    const t = thickAt(g), r = radiusAt(g);
+    tMin = Math.min(tMin, t); rMin = Math.min(rMin, r);
+    if (g < 0) { sA += solid; nA++; tA += t; rA += r; } else { sB += solid; nB++; tB += t; rB += r; }
+  }
+  return {
+    field,
+    description: `R10 gated dominance: ${sheetType} sheet and ${latType} lattice both present; the gyroid gate (cell ${num(p, "gate_cell_mm")} mm) sets which is thick`,
+    metrics: {
+      sheet_zone_solid_fraction: nA ? +(sA / nA).toFixed(4) : 0,
+      lattice_zone_solid_fraction: nB ? +(sB / nB).toFixed(4) : 0,
+      sheet_zone_mean_thickness_mm: nA ? +(tA / nA).toFixed(3) : 0,
+      lattice_zone_mean_thickness_mm: nB ? +(tB / nB).toFixed(3) : 0,
+      sheet_zone_mean_strut_radius_mm: nA ? +(rA / nA).toFixed(3) : 0,
+      lattice_zone_mean_strut_radius_mm: nB ? +(rB / nB).toFixed(3) : 0,
+      min_sheet_thickness_mm: +tMin.toFixed(3),
+      min_strut_radius_mm: +rMin.toFixed(3),
+      sheet_zone_fraction: +(nA / pts.length).toFixed(4),
+    },
+    observations: [
+      `Both phases are present everywhere; the gate sets dominance. The sheet is thick where the gate is negative and the struts are thick where it is positive. No cut, so no acute wedges.`,
+    ],
+  };
+}
+
 // ---- entry point ----------------------------------------------------------------------------
 
 export function buildCoupled(spec: CoupledSpec, L: number): CoupledBuild {
@@ -497,6 +559,7 @@ export function buildCoupled(spec: CoupledSpec, L: number): CoupledBuild {
     case "R7": r = buildR7(L, p); break;
     case "R8": r = buildR8(L, p); break;
     case "R9": r = buildR9(L, p); break;
+    case "R10": r = buildR10(L, p); break;
     default: throw new Error(`unknown coupled round ${spec.round}`);
   }
   // Clip to the build box (no feature extends beyond it), then unite the closed envelope skin.

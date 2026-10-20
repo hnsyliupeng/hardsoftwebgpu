@@ -147,3 +147,23 @@ a 0.5 mm sheet, so the operator erodes the sheet wherever the samples miss it. T
 
 **Status.** R9 at 256 is not resolved. Remaining option: redesign so that the phases do not meet at shallow angles
 (a change to R9's concept). Not implemented.
+
+## Round 10: gated dominance, both phases present (open, added 2026-10-20)
+
+R10 places a Schwarz D sheet and a BCC strut lattice in the same field, and does not cut either one. A gyroid gate
+(8 mm) sets the dominance d = tanh(g / 1 mm). The sheet thickness is 0.7 − 0.2 d (0.5 to 0.9 mm), and the strut radius
+is 0.4 + 0.1 d (0.3 to 0.5 mm). The phases are joined by a smooth union (0.2 mm). Code: `buildR10` in `src/topology/coupled.ts`;
+test: `tests/coupled_r10.test.ts`. Field-based (non-exact); open design (`skin_mm = 0`).
+
+**Why R10 exists.** R9 cut each phase with the gate. That made acute solid wedges at the cut, and at 256 cells their wall was
+below the 0.4 mm floor. R10 has no cut: a union creates only concave creases, which are not thin, so the thinnest solid is the
+design value (0.5 mm sheet, 0.6 mm strut diameter). R9 is kept, with its 256 failure documented.
+
+| Cells | Volume (mm³) | MC (mm³) | Mesh vs MC | Convergence | Triangles | Components | Wall p5 (mm) | Result |
+|---|---|---|---|---|---|---|---|---|
+| 96 | 4565.762 | 4590.0 | 0.37 % | 0.15 % (vs 120) | 872,364 | 1 | 0.484 | PASS |
+| 192 | 4575.031 | 4590.0 | 0.28 % | 0.05 % (vs 240) | 3,548,052 | 1 | 0.484 | PASS |
+| 256 | 4576.911 | 4590.0 | 0.26 % | 0.03 % (vs 320) | 6,331,404 | 1 | 0.482 | PASS |
+
+Solid fraction about 0.57 (porosity about 0.43). Stepped layers are visible along the envelope faces in the renders; these are
+not yet checked with the slice test.

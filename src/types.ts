@@ -116,7 +116,7 @@ export interface DesignSpec {
   /** Deep coupling between structures (topology "coupled" only). See src/topology/coupled.ts. */
   /** Deep fusion parameters (topology "deep" only; see src/topology/deep.ts). */
   deep?: DeepSpec;
-  coupled?: { round: "R1" | "R2" | "R3" | "R4" | "R5" | "R6" | "R7" | "R8" | "R9"; params?: Record<string, number | string> };
+  coupled?: { round: "R1" | "R2" | "R3" | "R4" | "R5" | "R6" | "R7" | "R8" | "R9" | "R10"; params?: Record<string, number | string> };
   bio_motif: string;
   family: string;
   variant: string;
