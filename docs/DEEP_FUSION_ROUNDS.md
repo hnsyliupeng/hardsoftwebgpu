@@ -140,5 +140,10 @@ is cut by the gate at a shallow angle. A BCC lattice control gives 0.800 mm ever
 **Trial.** A larger phase-cut radius (blend 0.6 mm) at 256 gave wall p5 0.388 mm (worse) and changed the volume by about 4 %.
 It was reverted. The committed 0.3 mm result stands.
 
-Next step, if it is pursued: a morphological opening of the solid in the gate band (removes wedge tips thinner than the ball radius),
-or a redesign that does not cut the phases at a shallow angle. Neither is implemented.
+**Opening trial (rejected).** A band-limited morphological opening (cube half-width 0.2 mm, sampled at 0.2 mm, in the gate band
+|g| 0.3–0.6 mm) was run at 256. It removed far too much material: volume 1521.9 mm³ (was 2099.0), wall p5 0.122 mm,
+genus 12,912, 7,560 cavities, and a 91-minute run; the design.ts check timed out. The 0.2 mm sampling is too coarse for
+a 0.5 mm sheet, so the operator erodes the sheet wherever the samples miss it. The code was reverted; nothing is committed for it.
+
+**Status.** R9 at 256 is not resolved. Remaining option: redesign so that the phases do not meet at shallow angles
+(a change to R9's concept). Not implemented.
