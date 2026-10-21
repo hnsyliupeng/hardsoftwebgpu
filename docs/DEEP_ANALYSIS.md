@@ -77,6 +77,7 @@ Exact status at L = 20, cell 4 mm, r 0.4 mm (`examples/exact_lattices_L20/`):
 | Diamond | yes, 1427.399 mm³ | MC 1431.4 ± 5.6; 4 slivers of 0.078 mm³ removed |
 | Kelvin | yes, 1649.866 mm³ | MC 1643.0 ± 5.9 |
 | FBCC | **no** | `bad_alloc` in a 324-strut layer, also with half-cell layers |
+| R8 (deep: BCC with gyroid-set radius) | yes, 1775.615 mm³ | piecewise-linear radius per strut (ruled lofts); MC agrees within 1.5σ |
 | TPMS (gyroid, Schwarz P/D, Fischer–Koch S, Split P) | no | no exact route in this pipeline |
 
 The exact models do not yet cover the deep-fusion designs at all. The index still says that exact B-Rep and STEP are not
@@ -96,8 +97,10 @@ available for any R-round design.
 
 1. **Reframe the deep-fusion claim** in the final report: R9–R12 are graded couplings whose total volume is set by the
    mean parameter. Do not describe them as volume-changing fusion.
-2. **Exact models for deep designs.** The exact route covers six plain lattices. It has not been applied to any R-round design.
-   The first candidate is R10 (no cut, smooth union), since it has no wedge geometry at the gate.
+2. **Exact models for deep designs.** Correction: R10 is not a feasible exact target. It contains a Schwarz D TPMS sheet, and the
+   exact route has no representation for TPMS sheets. The feasible deep target is the strut-based R8 (BCC with gyroid-set
+   radius). R8 is now built as an exact B-Rep (`examples/exact_deep_L20/r8_radius_gyroid/`, 1775.615 mm³, field reference
+   1775.331 mm³). It is the only R-round with a strut-only geometry.
 3. **FBCC**: an exact model is missing. The next approach is not another SMLib variant. Either split the boolean further by
    node, or accept a field-based FBCC with a label.
 4. **R9 at 256** remains a failure. The rounds that followed avoided its cut, so it is recorded and not reopened.

@@ -1,0 +1,20 @@
+{
+  "mesh": "/home/user/exact_out/final/r8/r8_L20.mesh",
+  "size_px": 1600,
+  "supersample": 2,
+  "views": [
+    "iso",
+    "top",
+    "front",
+    "side"
+  ],
+  "input_triangles": 1453862,
+  "render_triangles": 1453862,
+  "decimated": false,
+  "render_ms": {
+    "iso": 2592,
+    "top": 3657,
+    "front": 3820,
+    "side": 3873
+  }
+}

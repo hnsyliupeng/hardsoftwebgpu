@@ -1,0 +1,24 @@
+{
+ "type": "R8: BCC strut radius from gyroid field (exact, piecewise-linear radius per strut)",
+ "kernel": "OpenCASCADE (CadQuery 2.8 / OCP 7.8)",
+ "size_mm": 20,
+ "cell_mm": 4,
+ "strut_radius_mm": "0.45 + 0.1*tanh(gyroid F), field-set",
+ "volume_mm3": 1775.6152,
+ "solids": 1,
+ "faces": 4646,
+ "is_valid": true,
+ "removed_slivers": [],
+ "min_solid_mm3": 1.0,
+ "mesh": {
+  "vertices": 725613,
+  "triangles": 1453862,
+  "volume_mesh_mm3": 1767.778,
+  "open_edges": 0,
+  "nonmanifold_edges": 0,
+  "tol_mm": 0.02,
+  "angular_rad": 0.2
+ },
+ "gyroid_cell_mm": 5,
+ "nsub_per_strut": 4
+}
