@@ -1,9 +1,10 @@
 // Void-channel check for R11: the validator chord routine applied to the complement field (-f) as well as the solid.
-// Usage: node --experimental-strip-types --no-warnings scripts/r11_void_check.ts [res=96]
+// Usage: node --experimental-strip-types --no-warnings scripts/r11_void_check.ts [res=96] [round=R11]
 import { buildCoupled } from "../src/topology/coupled.ts";
 import { rayWallThickness } from "../src/validation/thickness.ts";
 const L = 20, RES = Number(process.argv[2] ?? 96), h = L / RES;
-const solid = buildCoupled({ round: "R11" } as any, L).field;
+const round = process.argv[3] ?? "R11";
+const solid = buildCoupled({ round } as any, L).field;
 const void_ = { bounds: solid.bounds, eval: (x: number, y: number, z: number) => -solid.eval(x, y, z), expr: "complement" } as any;
 function surfacePts(field: any) {
   const pts: number[][] = [];
@@ -31,6 +32,6 @@ const q = (arr: number[], p: number) => arr[Math.floor(p * (arr.length - 1))];
 const sp = surfacePts(solid);
 const cs = chords(solid, sp);
 const cv = chords(void_, sp);
-console.log(`R11 res ${RES}: surface samples ${sp.length}`);
+console.log(`${round} res ${RES}: surface samples ${sp.length}`);
 console.log(`solid walls: p5 ${q(cs, 0.05).toFixed(3)} mm, median ${q(cs, 0.5).toFixed(3)} mm, min ${cs[0].toFixed(3)} mm`);
 console.log(`void channels: p5 ${q(cv, 0.05).toFixed(3)} mm, median ${q(cv, 0.5).toFixed(3)} mm, min ${cv[0].toFixed(3)} mm`);

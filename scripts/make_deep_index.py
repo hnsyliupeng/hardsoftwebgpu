@@ -16,6 +16,7 @@ ROUNDS = [
     ("R9", "r9", "gated interpenetration (cut)", "Schwarz D sheet and BCC lattice cut by a gyroid gate"),
     ("R10", "r10", "gated dominance (no cut)", "Schwarz D sheet and BCC lattice both present; gate sets thickness"),
     ("R11", "r11", "gate-set iso-level", "one gyroid whose iso-level is set by a gate field"),
+    ("R12", "r12", "one-sided gate-set iso-level", "one gyroid whose iso-level runs from 0 to 0.35 across a gate field"),
 ]
 RES = ["96", "192", "256"]
 

@@ -176,7 +176,7 @@ const BASE_ENTRIES: Entry[] = [
 ];
 
 // ---- deep coupling (five rounds, src/topology/coupled.ts) -------------------------------------------
-function coupledSpec(round: "R1" | "R2" | "R3" | "R4" | "R5" | "R6" | "R7" | "R8" | "R9" | "R10" | "R11", params: Record<string, number | string> = {}): DesignSpec {
+function coupledSpec(round: "R1" | "R2" | "R3" | "R4" | "R5" | "R6" | "R7" | "R8" | "R9" | "R10" | "R11" | "R12", params: Record<string, number | string> = {}): DesignSpec {
   const s = mk(`coupled ${round}`);
   s.topology = "coupled";
   s.family = "coupled";
@@ -201,6 +201,7 @@ const COUPLED_ENTRIES: Entry[] = [
   { id: "deep_R9_gated", group: "coupled", title: "R9 gated: Schwarz D sheet and BCC lattice interpenetrate, gated by a gyroid", prompt: "coupled R9: schwarz D sheet and bcc lattice gated by gyroid", make: () => coupledSpec("R9") },
   { id: "deep_R10_dominance", group: "coupled", title: "R10 gated dominance: sheet and BCC lattice both present, the gyroid gate sets which is thick", prompt: "coupled R10: sheet and bcc lattice both present, gyroid gate sets dominance", make: () => coupledSpec("R10") },
   { id: "deep_R11_level", group: "coupled", title: "R11 gate-set iso-level: one gyroid whose volume fraction is set by a gate field", prompt: "coupled R11: gyroid iso-level set by a gate field", make: () => coupledSpec("R11") },
+  { id: "deep_R12_onesided", group: "coupled", title: "R12 one-sided gate-set iso-level: asymmetric volume coupling", prompt: "coupled R12: one-sided gate-set iso-level, net volume coupling", make: () => coupledSpec("R12") },
 ];
 
 const DEEP_ENTRIES: Entry[] = [

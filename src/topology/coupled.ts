@@ -29,7 +29,7 @@ import type { LatticeType, TpmsType } from "../types.ts";
 import { buildBio, toMillimetres } from "../bio/families.ts";
 import { sampleField } from "../geometry/grid.ts";
 
-export type CoupledRound = "R1" | "R2" | "R3" | "R4" | "R5" | "R6" | "R7" | "R8" | "R9" | "R10" | "R11";
+export type CoupledRound = "R1" | "R2" | "R3" | "R4" | "R5" | "R6" | "R7" | "R8" | "R9" | "R10" | "R11" | "R12";
 
 export interface CoupledSpec {
   round: CoupledRound;
@@ -51,6 +51,7 @@ const ROUND_DEFAULTS: Record<CoupledRound, Record<string, number | string>> = {
   R9: { lattice: "bcc", lattice_cell_mm: 4, strut_radius_mm: 0.4, sheet: "schwarz_d", sheet_cell_mm: 5, sheet_wall_mm: 0.5, gate_cell_mm: 8, blend_mm: 0.3, skin_mm: 0 },
   R10: { lattice: "bcc", lattice_cell_mm: 4, strut_radius_mm: 0.4, radius_amp_mm: 0.1, sheet: "schwarz_d", sheet_cell_mm: 5, sheet_wall_mm: 0.7, sheet_amp_mm: 0.2, gate_cell_mm: 8, dominance_mm: 1, blend_mm: 0.2, skin_mm: 0 },
   R11: { gyroid_cell_mm: 5, level_c0: 0, level_amp: 0.35, gate_cell_mm: 8, level_width_mm: 1.5, skin_mm: 0 },
+  R12: { gyroid_cell_mm: 5, level_lo: 0, level_hi: 0.35, gate_cell_mm: 8, level_width_mm: 1.5, skin_mm: 0 },
 };
 
 export interface CoupledBuild {
@@ -589,6 +590,53 @@ function buildR11(L: number, p: Record<string, number | string>) {
   };
 }
 
+// ---- R12: one-sided gate-set iso-level (asymmetric, net volume coupling) --------------------
+
+function buildR12(L: number, p: Record<string, number | string>) {
+  const kT = (2 * Math.PI) / num(p, "gyroid_cell_mm");
+  const kG = (2 * Math.PI) / num(p, "gate_cell_mm");
+  const lo = num(p, "level_lo"), hi = num(p, "level_hi"), w = num(p, "level_width_mm");
+  const gate = (x: number, y: number, z: number) => {
+    const [F, gx, gy, gz] = tpmsValueGrad("gyroid" as TpmsType, kG * x, kG * y, kG * z);
+    return F / (Math.hypot(gx, gy, gz) * kG + 1e-12);
+  };
+  // One-sided response: the level runs from lo (gate far negative) to hi (gate far positive) and never crosses the
+  // symmetric point. Since the level is always >= lo, the solid is never below the lo-level solid, so the total
+  // volume shifts; it is not a redistribution about 50 %.
+  const levelAt = (g: number) => lo + (hi - lo) * 0.5 * (1 + Math.tanh(g / w));
+  const field = boxField(
+    L,
+    `gyroid one-sided iso-level c(g) = ${lo} + ${hi - lo} (1 + tanh(g/${w}))/2 (solid where F < c); g = gyroid cell ${num(p, "gate_cell_mm")} mm`,
+    (x, y, z) => {
+      const [F, gx, gy, gz] = tpmsValueGrad("gyroid" as TpmsType, kT * x, kT * y, kT * z);
+      const g = gate(x, y, z);
+      const d = (F - levelAt(g)) / (kT * Math.hypot(gx, gy, gz) + 1e-12);
+      return Math.max(d, boxDist(L, x, y, z));
+    },
+  );
+  const pts = samplePoints(L, 6000, 43);
+  let nA = 0, sA = 0, nB = 0, sB = 0;
+  for (const [x, y, z] of pts) {
+    const g = gate(x, y, z);
+    const solid = field.eval(x, y, z) < 0 ? 1 : 0;
+    if (g < 0) { sA += solid; nA++; } else { sB += solid; nB++; }
+  }
+  return {
+    field,
+    description: `R12 one-sided gate-set iso-level: gyroid solid where F < c(g), c from ${lo} to ${hi} (gate-negative side at ${lo}, gate-positive side at ${hi})`,
+    metrics: {
+      level_min: lo,
+      level_max: hi,
+      sheet_zone_solid_fraction: nA ? +(sA / nA).toFixed(4) : 0,
+      lattice_zone_solid_fraction: nB ? +(sB / nB).toFixed(4) : 0,
+      solid_fraction: +((sA + sB) / pts.length).toFixed(4),
+    },
+    observations: [
+      `The gate sets the local iso-level between ${lo} and ${hi}: a one-sided response, so the total solid shifts with the gate rather than redistributing about 50 %.`,
+    ],
+  };
+}
+
 // ---- entry point ----------------------------------------------------------------------------
 
 export function buildCoupled(spec: CoupledSpec, L: number): CoupledBuild {
@@ -608,6 +656,7 @@ export function buildCoupled(spec: CoupledSpec, L: number): CoupledBuild {
     case "R9": r = buildR9(L, p); break;
     case "R10": r = buildR10(L, p); break;
     case "R11": r = buildR11(L, p); break;
+    case "R12": r = buildR12(L, p); break;
     default: throw new Error(`unknown coupled round ${spec.round}`);
   }
   // Clip to the build box (no feature extends beyond it), then unite the closed envelope skin.

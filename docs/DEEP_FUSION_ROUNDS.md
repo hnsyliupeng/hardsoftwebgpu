@@ -191,3 +191,19 @@ sheet zone 44.3 % vs 49.9 %, lattice zone 55.8 % vs 49.7 %, but the whole-box so
 The gate is symmetric, so the net volume change is zero. Same finding as R10: a symmetric gate redistributes; it does not add volume.
 
 **Void channels (measured, `scripts/r11_void_check.ts`, 96 cells).** Void p5 2.06 mm, minimum 1.46 mm.
+
+## Round 12: one-sided gate-set iso-level (open, added 2026-10-20)
+
+R12 uses one gyroid whose iso-level runs from 0 to 0.35 across a gate field, c(g) = 0.35 (1 + tanh(g/1.5 mm)) / 2. The
+one-sided response gives a net volume change (55.6 % solid, against 49.9 % for the symmetric baseline). Code: `buildR12` in
+`src/topology/coupled.ts`; test: `tests/coupled_r12.test.ts`. Open design (`skin_mm = 0`).
+
+| Cells | Volume (mm³) | Volume fraction | MC vs mesh | Convergence | Triangles | Components | Wall p5 (mm) | Result |
+|---|---|---|---|---|---|---|---|---|
+| 96 | 4446.540 | 0.5558 | 0.34 % | 0.04 % (vs 120) | 412,560 | 1 | 1.264 | PASS |
+| 192 | 4449.979 | 0.5563 | 0.30 % | 0.01 % (vs 240) | 1,655,664 | 1 | 1.360 | PASS |
+| 256 | 4450.483 | 0.5563 | 0.29 % | 0.00 % (vs 320) | 2,946,864 | 1 | 1.399 | PASS |
+
+**Finding (`docs/R12_COUPLING_ANALYSIS.md`).** The whole-box total (55.6 %) is the same as a uniform level at the mean (55.6 %).
+The gate adds spatial grading (52.8 % and 58.4 % on the two sides), but no volume beyond the mean level. Void channels at 96 cells:
+p5 2.01 mm, minimum 1.44 mm (`docs/r12_void_check_output.txt`).

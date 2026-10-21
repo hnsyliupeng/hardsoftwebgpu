@@ -1,0 +1,4 @@
+N = 40000, box 20 mm
+whole box (n = 40000): R12 55.61 % | uniform mean 0.175 55.59 % | uniform zero 49.93 %
+gate-negative zone (g < 0) (n = 19846): R12 52.81 % | uniform mean 0.175 55.52 % | uniform zero 49.84 %
+gate-positive zone (g > 0) (n = 20154): R12 58.37 % | uniform mean 0.175 55.66 % | uniform zero 50.02 %

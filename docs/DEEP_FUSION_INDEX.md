@@ -28,8 +28,11 @@ dual contouring, one connected solid, watertight mesh. Wall = 5th percentile of 
 | R11 | gate-set iso-level | 96 | PASS | 3997.1 | 1.472 | 1 | 245 | 0 | 407,760 | none | `examples/structure_gallery_r11_open_96/deep_R11_level` |
 | R11 | gate-set iso-level | 192 | PASS | 3999.3 | 1.387 | 1 | 245 | 0 | 1,638,624 | none | `examples/structure_gallery_r11_open_192/deep_R11_level` |
 | R11 | gate-set iso-level | 256 | PASS | 3999.6 | 1.403 | 1 | 245 | 0 | 2,915,172 | none | `examples/structure_gallery_r11_open_256/deep_R11_level` |
+| R12 | one-sided gate-set iso-level | 96 | PASS | 4446.5 | 1.264 | 1 | 245 | 0 | 412,560 | none | `examples/structure_gallery_r12_open_96/deep_R12_onesided` |
+| R12 | one-sided gate-set iso-level | 192 | PASS | 4450.0 | 1.360 | 1 | 245 | 0 | 1,655,664 | none | `examples/structure_gallery_r12_open_192/deep_R12_onesided` |
+| R12 | one-sided gate-set iso-level | 256 | PASS | 4450.5 | 1.399 | 1 | 245 | 0 | 2,946,864 | none | `examples/structure_gallery_r12_open_256/deep_R12_onesided` |
 
-Totals: 17 PASS, 1 FAIL out of 18 records.
+Totals: 20 PASS, 1 FAIL out of 21 records.
 
 ## Round descriptions
 
@@ -39,6 +42,7 @@ Totals: 17 PASS, 1 FAIL out of 18 records.
 - **R9 (gated interpenetration (cut))**: Schwarz D sheet and BCC lattice cut by a gyroid gate.
 - **R10 (gated dominance (no cut))**: Schwarz D sheet and BCC lattice both present; gate sets thickness.
 - **R11 (gate-set iso-level)**: one gyroid whose iso-level is set by a gate field.
+- **R12 (one-sided gate-set iso-level)**: one gyroid whose iso-level runs from 0 to 0.35 across a gate field.
 
 ## Limits
 
