@@ -84,7 +84,7 @@ available for any R-round design.
 
 ## 5. Process and reproducibility risks
 
-- The sandbox was reset about 14 times in this session. Each reset discarded untracked and ignored files. The `artifacts/`
+- The sandbox was reset repeatedly (more than 20 recovery points are recorded under /home/user/recovery_local*). Each reset discarded untracked and ignored files. The `artifacts/`
   STEP and mesh files of the exact lattices were lost in the last reset. They can be rebuilt (about 3 min per type).
   The local OCCT venv was also lost. `scripts/python_env.sh` recreates it from `python/requirements.txt`.
 - A single OCCT boolean over the whole BCC L = 20 lattice used more than 3.8 GB and froze the machine. The layered build
