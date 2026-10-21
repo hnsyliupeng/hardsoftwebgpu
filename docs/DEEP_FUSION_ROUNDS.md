@@ -167,6 +167,8 @@ design value (0.5 mm sheet, 0.6 mm strut diameter). R9 is kept, with its 256 fai
 | 192 | 4575.031 | 4590.0 | 0.28 % | 0.05 % (vs 240) | 3,548,052 | 1 | 0.484 | PASS |
 | 256 | 4576.911 | 4590.0 | 0.26 % | 0.03 % (vs 320) | 6,331,404 | 1 | 0.482 | PASS |
 
-Solid fraction about 0.57 (porosity about 0.43). Slice test at 96 cells (`scripts/slice_test.ts`): face-plane solid fraction
+Solid fraction about 0.57 (porosity about 0.43).
+
+**Coupling analysis.** `docs/R10_COUPLING_ANALYSIS.md`: against a fixed-thickness control, the gate leaves the whole-box solid fraction unchanged (57.31 % vs 57.19 %) and moves about 3 points of solid from the lattice zone to the sheet zone. The dominance is partial, not a switch. Slice test at 96 cells (`scripts/slice_test.ts`): face-plane solid fraction
 0.49 to 0.51 on all six faces (a closed skin would be about 1.0), so the faces are open. The stepped layers in the renders are
 structure cross-sections, not a skin. The slice test rebuilds the field from `design_spec` on a fixed grid, so 192 and 256 give the same values; this confirms the field, not the 192 and 256 meshes separately.

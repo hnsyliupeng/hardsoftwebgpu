@@ -1,0 +1,8 @@
+N = 40000 points, box 20 mm, control = fixed-thickness union (amplitudes 0)
+whole box: R10 solid 57.31 %, control solid 57.19 %, status differs 6.80 %
+zone sheet (g < 0), n = 19902:
+  R10 solid 60.44 % | control solid 57.02 % | differs 6.35 %
+  sheet alone 52.97 % | lattice alone 14.35 %
+zone lattice (g > 0), n = 20098:
+  R10 solid 54.21 % | control solid 57.34 % | differs 7.25 %
+  sheet alone 40.48 % | lattice alone 21.72 %
