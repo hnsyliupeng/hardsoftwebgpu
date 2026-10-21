@@ -1,0 +1,3 @@
+R11 res 96: surface samples 26834
+solid walls: p5 1.512 mm, median 2.447 mm, min 0.507 mm
+void channels: p5 2.062 mm, median 2.535 mm, min 1.459 mm

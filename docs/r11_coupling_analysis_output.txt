@@ -1,0 +1,3 @@
+whole box: R11 50.05 % | fixed-level control 49.79 %
+sheet zone (g<0): R11 44.33 % | control 49.88 %
+lattice zone (g>0): R11 55.78 % | control 49.71 %

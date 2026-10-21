@@ -172,3 +172,22 @@ Solid fraction about 0.57 (porosity about 0.43).
 **Coupling analysis.** `docs/R10_COUPLING_ANALYSIS.md`: against a fixed-thickness control, the gate leaves the whole-box solid fraction unchanged (57.31 % vs 57.19 %) and moves about 3 points of solid from the lattice zone to the sheet zone. The dominance is partial, not a switch. Slice test at 96 cells (`scripts/slice_test.ts`): face-plane solid fraction
 0.49 to 0.51 on all six faces (a closed skin would be about 1.0), so the faces are open. The stepped layers in the renders are
 structure cross-sections, not a skin. The slice test rebuilds the field from `design_spec` on a fixed grid, so 192 and 256 give the same values; this confirms the field, not the 192 and 256 meshes separately.
+
+## Round 11: gate-set iso-level of one gyroid (open, added 2026-10-20)
+
+R11 couples one structure to a gate field through its iso-level: the solid is where F < c(g), with c(g) = 0.35 tanh(g / 1.5 mm).
+The gate sets the local volume fraction, from 44 % solid on one side to 56 % on the other. The level stays inside the gyroid's range,
+so the labyrinth stays connected and no acute wedge is cut (the R9 failure mode). Code: `buildR11` in `src/topology/coupled.ts`;
+test: `tests/coupled_r11.test.ts`. Field-based (non-exact); open design (`skin_mm = 0`).
+
+| Cells | Volume (mm³) | MC (mm³) | Mesh vs MC | Convergence | Triangles | Components | Wall p5 (mm) | Result |
+|---|---|---|---|---|---|---|---|---|
+| 96 | 3997.141 | 4012.3 | 0.35 % | 0.03 % (vs 120) | 407,760 | 1 | 1.472 | PASS |
+| 192 | 3999.347 | 4012.3 | 0.32 % | 0.01 % (vs 240) | 1,638,624 | 1 | 1.387 | PASS |
+| 256 | 3999.632 | 4012.3 | 0.31 % | 0.00 % (vs 320) | 2,915,172 | 1 | 1.403 | PASS |
+
+**Coupling analysis (measured, `docs/R11_COUPLING_ANALYSIS.md`).** Against a fixed-level control, the gate redistributes material:
+sheet zone 44.3 % vs 49.9 %, lattice zone 55.8 % vs 49.7 %, but the whole-box solid fraction is unchanged (50.05 % vs 49.79 %).
+The gate is symmetric, so the net volume change is zero. Same finding as R10: a symmetric gate redistributes; it does not add volume.
+
+**Void channels (measured, `scripts/r11_void_check.ts`, 96 cells).** Void p5 2.06 mm, minimum 1.46 mm.

@@ -15,6 +15,7 @@ ROUNDS = [
     ("R8", "r8", "radius from field", "BCC strut radius set by a gyroid field"),
     ("R9", "r9", "gated interpenetration (cut)", "Schwarz D sheet and BCC lattice cut by a gyroid gate"),
     ("R10", "r10", "gated dominance (no cut)", "Schwarz D sheet and BCC lattice both present; gate sets thickness"),
+    ("R11", "r11", "gate-set iso-level", "one gyroid whose iso-level is set by a gate field"),
 ]
 RES = ["96", "192", "256"]
 
@@ -91,6 +92,8 @@ def main():
         "  The field does not depend on mesh resolution, so the same values apply at 192 and 256 at the field level.",
         "- R9 at 256 fails the 0.4 mm wall floor. Its thin walls are acute wedges at the gate cut (see `docs/DEEP_FUSION_ROUNDS.md`).",
         "  The 0.6 mm blend and the morphological opening trials did not fix it and are recorded as rejected.",
+        "- R11 void channels were checked with `scripts/r11_void_check.ts` (complement chord routine, 96 cells): void p5 2.06 mm, minimum 1.46 mm.",
+        "- R10 and R11 redistribute material between gate zones but leave the whole-box solid fraction unchanged (symmetric gate); see the coupling analyses in `docs/`.",
         "- Exact B-Rep and STEP are not available for any of these designs.",
         "",
     ]

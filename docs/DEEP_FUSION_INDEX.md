@@ -25,8 +25,11 @@ dual contouring, one connected solid, watertight mesh. Wall = 5th percentile of 
 | R10 | gated dominance (no cut) | 96 | PASS | 4565.8 | 0.484 | 1 | 1707 | 45 | 872,364 | none | `examples/structure_gallery_r10_open_96/deep_R10_dominance` |
 | R10 | gated dominance (no cut) | 192 | PASS | 4575.0 | 0.484 | 1 | 1767 | 12 | 3,548,052 | none | `examples/structure_gallery_r10_open_192/deep_R10_dominance` |
 | R10 | gated dominance (no cut) | 256 | PASS | 4576.9 | 0.482 | 1 | 1572 | 0 | 6,331,404 | none | `examples/structure_gallery_r10_open_256/deep_R10_dominance` |
+| R11 | gate-set iso-level | 96 | PASS | 3997.1 | 1.472 | 1 | 245 | 0 | 407,760 | none | `examples/structure_gallery_r11_open_96/deep_R11_level` |
+| R11 | gate-set iso-level | 192 | PASS | 3999.3 | 1.387 | 1 | 245 | 0 | 1,638,624 | none | `examples/structure_gallery_r11_open_192/deep_R11_level` |
+| R11 | gate-set iso-level | 256 | PASS | 3999.6 | 1.403 | 1 | 245 | 0 | 2,915,172 | none | `examples/structure_gallery_r11_open_256/deep_R11_level` |
 
-Totals: 14 PASS, 1 FAIL out of 15 records.
+Totals: 17 PASS, 1 FAIL out of 18 records.
 
 ## Round descriptions
 
@@ -35,6 +38,7 @@ Totals: 14 PASS, 1 FAIL out of 15 records.
 - **R8 (radius from field)**: BCC strut radius set by a gyroid field.
 - **R9 (gated interpenetration (cut))**: Schwarz D sheet and BCC lattice cut by a gyroid gate.
 - **R10 (gated dominance (no cut))**: Schwarz D sheet and BCC lattice both present; gate sets thickness.
+- **R11 (gate-set iso-level)**: one gyroid whose iso-level is set by a gate field.
 
 ## Limits
 
@@ -43,4 +47,6 @@ Totals: 14 PASS, 1 FAIL out of 15 records.
   The field does not depend on mesh resolution, so the same values apply at 192 and 256 at the field level.
 - R9 at 256 fails the 0.4 mm wall floor. Its thin walls are acute wedges at the gate cut (see `docs/DEEP_FUSION_ROUNDS.md`).
   The 0.6 mm blend and the morphological opening trials did not fix it and are recorded as rejected.
+- R11 void channels were checked with `scripts/r11_void_check.ts` (complement chord routine, 96 cells): void p5 2.06 mm, minimum 1.46 mm.
+- R10 and R11 redistribute material between gate zones but leave the whole-box solid fraction unchanged (symmetric gate); see the coupling analyses in `docs/`.
 - Exact B-Rep and STEP are not available for any of these designs.

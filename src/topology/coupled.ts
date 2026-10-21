@@ -29,7 +29,7 @@ import type { LatticeType, TpmsType } from "../types.ts";
 import { buildBio, toMillimetres } from "../bio/families.ts";
 import { sampleField } from "../geometry/grid.ts";
 
-export type CoupledRound = "R1" | "R2" | "R3" | "R4" | "R5" | "R6" | "R7" | "R8" | "R9" | "R10";
+export type CoupledRound = "R1" | "R2" | "R3" | "R4" | "R5" | "R6" | "R7" | "R8" | "R9" | "R10" | "R11";
 
 export interface CoupledSpec {
   round: CoupledRound;
@@ -50,6 +50,7 @@ const ROUND_DEFAULTS: Record<CoupledRound, Record<string, number | string>> = {
   R8: { lattice: "bcc", lattice_cell_mm: 4, strut_radius_mm: 0.45, radius_amp_mm: 0.1, gyroid_gain: 1, tpms_cell_mm: 5, skin_mm: 0 },
   R9: { lattice: "bcc", lattice_cell_mm: 4, strut_radius_mm: 0.4, sheet: "schwarz_d", sheet_cell_mm: 5, sheet_wall_mm: 0.5, gate_cell_mm: 8, blend_mm: 0.3, skin_mm: 0 },
   R10: { lattice: "bcc", lattice_cell_mm: 4, strut_radius_mm: 0.4, radius_amp_mm: 0.1, sheet: "schwarz_d", sheet_cell_mm: 5, sheet_wall_mm: 0.7, sheet_amp_mm: 0.2, gate_cell_mm: 8, dominance_mm: 1, blend_mm: 0.2, skin_mm: 0 },
+  R11: { gyroid_cell_mm: 5, level_c0: 0, level_amp: 0.35, gate_cell_mm: 8, level_width_mm: 1.5, skin_mm: 0 },
 };
 
 export interface CoupledBuild {
@@ -542,6 +543,52 @@ function buildR10(L: number, p: Record<string, number | string>) {
   };
 }
 
+// ---- R11: gate-set iso-level of one gyroid (volume coupling) --------------------------------
+
+function buildR11(L: number, p: Record<string, number | string>) {
+  const kT = (2 * Math.PI) / num(p, "gyroid_cell_mm");
+  const kG = (2 * Math.PI) / num(p, "gate_cell_mm");
+  const c0 = num(p, "level_c0"), c1 = num(p, "level_amp"), w = num(p, "level_width_mm");
+  const gate = (x: number, y: number, z: number) => {
+    const [F, gx, gy, gz] = tpmsValueGrad("gyroid" as TpmsType, kG * x, kG * y, kG * z);
+    return F / (Math.hypot(gx, gy, gz) * kG + 1e-12);
+  };
+  // Solid where F < c(g): the iso-level sets the volume fraction locally. The level never reaches the
+  // gyroid extremes, so the labyrinth stays connected and no acute wedge is cut. dist ~ (F - c) / |grad F|, in mm.
+  const levelAt = (g: number) => c0 + c1 * Math.tanh(g / w);
+  const field = boxField(
+    L,
+    `gyroid iso-level c(g) = ${c0} + ${c1} tanh(g/${w}) (solid where F < c); g = gyroid cell ${num(p, "gate_cell_mm")} mm`,
+    (x, y, z) => {
+      const [F, gx, gy, gz] = tpmsValueGrad("gyroid" as TpmsType, kT * x, kT * y, kT * z);
+      const g = gate(x, y, z);
+      const d = (F - levelAt(g)) / (kT * Math.hypot(gx, gy, gz) + 1e-12);
+      return Math.max(d, boxDist(L, x, y, z));
+    },
+  );
+  const pts = samplePoints(L, 6000, 41);
+  let nA = 0, sA = 0, nB = 0, sB = 0;
+  for (const [x, y, z] of pts) {
+    const g = gate(x, y, z);
+    const solid = field.eval(x, y, z) < 0 ? 1 : 0;
+    if (g < 0) { sA += solid; nA++; } else { sB += solid; nB++; }
+  }
+  return {
+    field,
+    description: `R11 gate-set iso-level: gyroid solid where F < ${c0} + ${c1} tanh(g/${w}); level ${c0 - c1} to ${c0 + c1}`,
+    metrics: {
+      level_min: +(c0 - c1).toFixed(3),
+      level_max: +(c0 + c1).toFixed(3),
+      sheet_zone_solid_fraction: nA ? +(sA / nA).toFixed(4) : 0,
+      lattice_zone_solid_fraction: nB ? +(sB / nB).toFixed(4) : 0,
+      solid_fraction: +((sA + sB) / pts.length).toFixed(4),
+    },
+    observations: [
+      `The gate sets the local iso-level of one gyroid: the solid fraction changes with the gate, and the labyrinth stays connected because the level stays inside the gyroid's range.`,
+    ],
+  };
+}
+
 // ---- entry point ----------------------------------------------------------------------------
 
 export function buildCoupled(spec: CoupledSpec, L: number): CoupledBuild {
@@ -560,6 +607,7 @@ export function buildCoupled(spec: CoupledSpec, L: number): CoupledBuild {
     case "R8": r = buildR8(L, p); break;
     case "R9": r = buildR9(L, p); break;
     case "R10": r = buildR10(L, p); break;
+    case "R11": r = buildR11(L, p); break;
     default: throw new Error(`unknown coupled round ${spec.round}`);
   }
   // Clip to the build box (no feature extends beyond it), then unite the closed envelope skin.

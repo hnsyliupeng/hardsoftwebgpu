@@ -1,0 +1,143 @@
+[
+  {
+    "id": "deep_R11_level",
+    "group": "coupled",
+    "title": "R11 gate-set iso-level: one gyroid whose volume fraction is set by a gate field",
+    "prompt": "coupled R11: gyroid iso-level set by a gate field",
+    "pass": true,
+    "checks": [
+      {
+        "name": "harnesses_ok",
+        "pass": true,
+        "value": "all",
+        "rule": "all harnesses ok"
+      },
+      {
+        "name": "single_solid",
+        "pass": true,
+        "value": "1 component(s)",
+        "rule": "one connected solid"
+      },
+      {
+        "name": "volume_mc_agreement",
+        "pass": true,
+        "value": "mesh at 120 3998.2 vs MC 4012.3 mm3 (0.35 %)",
+        "rule": "<= 5 % (finer mesh)"
+      },
+      {
+        "name": "watertight",
+        "pass": true,
+        "value": "0 open edges",
+        "rule": "0 open edges"
+      },
+      {
+        "name": "resolution_convergence",
+        "pass": true,
+        "value": "96 px-grid 3997.1 vs 120 3998.2 mm3 (0.03 %)",
+        "rule": "<= 5 %"
+      },
+      {
+        "name": "design_ts_runs",
+        "pass": true,
+        "value": "exit 0",
+        "rule": "node design.ts exits 0"
+      }
+    ],
+    "topology": "coupled",
+    "variant": "R11",
+    "grid": {
+      "resolution": 96,
+      "resolution_convergence": 120
+    },
+    "metrics": {
+      "volume_mm3": 3997.141,
+      "volume_mc_mm3": 4012.32,
+      "surface_area_mm2": 6070.067,
+      "volume_fraction": 0.49964,
+      "porosity": 0.50036,
+      "components": 1,
+      "cavities": 0,
+      "genus_handles": 245,
+      "euler_characteristic": -244,
+      "min_wall_p5_mm": 1.4716,
+      "min_wall_median_mm": 2.4589,
+      "min_wall_excluded_near_faces": 1487,
+      "triangles": 407760,
+      "center_of_mass": [
+        9.9936,
+        9.9936,
+        9.9936
+      ]
+    },
+    "coupling_metrics": {
+      "level_min": -0.35,
+      "level_max": 0.35,
+      "sheet_zone_solid_fraction": 0.4558,
+      "lattice_zone_solid_fraction": 0.5597,
+      "solid_fraction": 0.5093
+    },
+    "harness_ok": {
+      "IntentHarness": true,
+      "TopologyHarness": true,
+      "GeometryHarness": true,
+      "ValidationHarness": true,
+      "RepairHarness": true
+    },
+    "repair_history": [],
+    "limitations": [
+      "Coupled geometry is SDF-only (mesh export); the coupling is evaluated pointwise, not as a B-Rep.",
+      "Fused designs use manifold dual contouring with vertex splitting at pinches; at the measured resolutions (96, 128) no non-manifold edges remain (docs/NONMANIFOLD.md). Other resolutions are not guaranteed to be free of pinches.",
+      "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
+      "SDF surface resolution is limited to h = 0.2083 mm (constraints.resolution = 96); features below ~2h are not resolved.",
+      "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
+      "Connectivity counts components of at least 27 grid nodes; smaller slivers are reported in observations and not repaired.",
+      "min_wall_thickness = 5th percentile of inward-ray chords (absolute minimum reported separately); entry/exit error about ±h/2 = ±0.104 mm; 0 sub-voxel chords discarded. Not a certified manufacturing check.",
+      "Repair is capped at 5 rounds and runs one parameter change per round (greedy, no search).",
+      "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
+    ],
+    "unknowns": [],
+    "design_spec": {
+      "topology": "coupled",
+      "bio_motif": "coupled:R11",
+      "family": "coupled",
+      "variant": "R11",
+      "parameters": {},
+      "heterogeneity_field": null,
+      "target_metrics": {
+        "connectivity": true
+      },
+      "constraints": {
+        "size_mm": 20,
+        "min_printable_wall_mm": 0.4,
+        "resolution": 96
+      },
+      "retrieval": {
+        "base_id": "cellular_generic",
+        "top_k": [
+          {
+            "id": "cellular_generic",
+            "score": 0
+          },
+          {
+            "id": "cellular_sandwich",
+            "score": 0
+          },
+          {
+            "id": "cellular_voronoi",
+            "score": 0
+          }
+        ]
+      },
+      "confidence": 0.25,
+      "unknowns": [],
+      "notes": [],
+      "coupled": {
+        "round": "R11",
+        "params": {
+          "skin_mm": 0
+        }
+      }
+    },
+    "timing_s": 17.8
+  }
+]
