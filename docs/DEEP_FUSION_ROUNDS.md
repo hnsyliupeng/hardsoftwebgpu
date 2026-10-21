@@ -58,7 +58,7 @@ Design status is `PASS` for all five rounds (single solid, watertight, MC, conve
 - The foam driver in R1 and R5 is a field scaled to about ±0.8 mm, not an exact distance field.
 - The fusion between rounds is a field operation (smooth minimum, masks, rotation, pore clipping). It is SDF-only, with no exact B-Rep boolean.
 - R4's lower zone (Kelvin) is visually hard to read in the cut-away view; the zone solid fraction (0.30) is the quantitative evidence that it is present.
-- The shallow baseline `fusion_gyroid_plus_helical` and the bio helical designs still show stepped plate edges in the 192 renders (see the gallery README). Not fixed in this round.
+- The shallow baseline `fusion_gyroid_plus_helical` is stale: it is marked `stale` in `examples/structure_gallery_256/gallery.json` and superseded by `fusion_gyroid_plus_bcc`. The bio helical designs still show stepped plate edges in the 192 renders (see the gallery README). Not fixed in this round.
 
 ## Round 6: sheet-to-strut morph (open, added 2026-10-19)
 

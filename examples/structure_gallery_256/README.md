@@ -116,3 +116,9 @@ The five deep designs (`topology: coupled`) were regenerated with manifold dual 
 | `deep_R3_twist` | 1419.638 | 1437.257 | +1.24 % | 1441.96 | 0.35 % | PASS |
 | `deep_R4_blend` | 3509.109 | 3507.187 | -0.05 % | 3521.52 | 0.44 % | PASS |
 | `deep_R5_hierarchy` | 6568.931 | 6563.376 | -0.08 % | 6559.84 | 0.07 % | PASS |
+
+## Stale entry: `fusion_gyroid_plus_helical`
+
+This entry is kept as a record and is marked `stale: true` in `gallery.json`. Its helical plate partner was replaced by an
+open BCC lattice partner (user decision, commit `5b1ac19`). The current fusion design is `fusion_gyroid_plus_bcc`, in
+`examples/structure_gallery_256_mixed_open/`. Its faces were 0.96 to 0.97 closed, which is why it was superseded.
