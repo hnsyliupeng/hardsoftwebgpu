@@ -12,6 +12,8 @@ Shared settings: 20 mm box, 1 mm envelope skin on every round, convergence at 24
 | R4 | Multi-material transition | Kelvin, gyroid and I-WP in three z-zones, joined by smooth minima (no planar seam) | 4844.5 | 0.606 | 1 | 556 | MC 0.15 %; conv 0.19 % | solid fraction per zone 0.3002 / 0.5225 / 0.4749; blend radius 1.5 mm |
 | R5 | Hierarchical infill | Gyroid sheet fills the pockets of a cellular foam | 7149.6 | 0.894 | 1 | 300 | MC 0.10 %; conv 0.08 % | pocket fill 37.2 %; solid fraction 0.824 |
 
+> Consolidated table of R6 to R10 at all resolutions, generated from the records: `docs/DEEP_FUSION_INDEX.md`.
+
 ## Per-round record
 
 Design status is `PASS` for all five rounds (single solid, watertight, MC, convergence, skin attached, `design.ts` runs). Full checks and the complete DesignState are in `examples/structure_gallery/<id>/design.json`.
