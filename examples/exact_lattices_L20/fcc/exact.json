@@ -1,0 +1,22 @@
+{
+ "type": "fcc",
+ "kernel": "OpenCASCADE (CadQuery 2.8 / OCP 7.8)",
+ "size_mm": 20,
+ "cell_mm": 4,
+ "strut_radius_mm": 0.4,
+ "volume_mm3": 1695.5653,
+ "solids": 1,
+ "faces": 2681,
+ "is_valid": true,
+ "removed_slivers": [],
+ "min_solid_mm3": 1.0,
+ "mesh": {
+  "vertices": 151388,
+  "triangles": 307312,
+  "volume_mesh_mm3": 1694.335,
+  "open_edges": 0,
+  "nonmanifold_edges": 0,
+  "tol_mm": 0.02,
+  "angular_rad": 0.2
+ }
+}

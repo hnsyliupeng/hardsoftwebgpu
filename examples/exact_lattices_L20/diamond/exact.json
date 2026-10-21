@@ -1,0 +1,35 @@
+{
+ "type": "diamond",
+ "kernel": "OpenCASCADE (CadQuery 2.8 / OCP 7.8)",
+ "size_mm": 20,
+ "cell_mm": 4,
+ "strut_radius_mm": 0.4,
+ "volume_mm3": 1427.3989,
+ "solids": 1,
+ "faces": 3138,
+ "is_valid": true,
+ "removed_slivers": [
+  {
+   "volume_mm3": 0.078384
+  },
+  {
+   "volume_mm3": 0.078384
+  },
+  {
+   "volume_mm3": 0.078384
+  },
+  {
+   "volume_mm3": 0.078384
+  }
+ ],
+ "min_solid_mm3": 1.0,
+ "mesh": {
+  "vertices": 201981,
+  "triangles": 407314,
+  "volume_mesh_mm3": 1426.322,
+  "open_edges": 0,
+  "nonmanifold_edges": 0,
+  "tol_mm": 0.02,
+  "angular_rad": 0.2
+ }
+}

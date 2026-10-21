@@ -63,3 +63,22 @@ Findings (BCC, cell 4, r 0.4):
 - Slab box with a large xy extent: both slabs build at L=8, then the final intersect with the exact box fails.
 - Slab box with exact xy faces: slab 0 builds, slab 1 fails (SLAB_FAIL k=1), in 1 min 17 s.
 Status: BCC L=8 with EXACT_SLABS=2 does not pass in any variant tried. Default path unchanged: SC L=8 = 42.515 mm³ re-verified after these edits.
+
+
+## Round 4 (OpenCASCADE via CadQuery, `python/exact/`) — current route
+The SMLib runs above fail for BCC/FCC/Diamond/Kelvin at L = 20. The repo already lists cadquery 2.8 (`python/requirements.txt`), so the same geometry was built in OpenCASCADE:
+
+- `scripts/export_lattice_patterns.ts` exports the unit-cell patterns of `src/topology/lattice.ts` to `python/exact/patterns.json`.
+- `python/exact/build_lattice.py`: struts are cylinders, nodes are spheres (radius 1.002 r). Struts are grouped by z-layer, each layer is fused in **one** boolean call, the layers are unioned, and the result is intersected with the envelope. Chunked fuses of compounds gave wrong solids (BCC L = 8 cell: 18 solids instead of 1). Single-call fuses are correct.
+- `python/exact/finalize.py`: drops floating slivers < 1 mm^3, re-exports, tessellates (welded) and checks open/non-manifold edges.
+- `scripts/render_exact.ts`: renders the mesh with the existing 1600 px cut-away renderer.
+
+Results at L = 20, cell 4, r 0.4 (all valid, one solid, 0 open / 0 non-manifold mesh edges):
+SC 663.473, BCC 1427.713, FCC 1695.565, BCCZ 1599.111, Diamond 1427.399 (4 slivers removed), Kelvin 1649.866 mm^3.
+
+Independent capsule Monte Carlo: BCC 1425.2 ± 3.1, Diamond 1431.4 ± 5.6, Kelvin 1643.0 ± 5.9 mm^3.
+
+Field values in the table above are lower because `strutLattice` only uses the 5 x 5 x 5 cell block (no struts from neighbouring cells).
+
+FBCC at L = 20: **failed** (`std::bad_alloc` in one layer fuse of 324 struts, also with half-cell layers). Not exact. Not retried further.
+Kelvin and BCC renders: `examples/exact_lattices_L20/`.

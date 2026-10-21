@@ -1,0 +1,22 @@
+{
+ "type": "bcc",
+ "kernel": "OpenCASCADE (CadQuery 2.8 / OCP 7.8)",
+ "size_mm": 20,
+ "cell_mm": 4,
+ "strut_radius_mm": 0.4,
+ "volume_mm3": 1427.7127,
+ "solids": 1,
+ "faces": 1216,
+ "is_valid": true,
+ "removed_slivers": [],
+ "min_solid_mm3": 1.0,
+ "mesh": {
+  "vertices": 103038,
+  "triangles": 208712,
+  "volume_mesh_mm3": 1426.682,
+  "open_edges": 0,
+  "nonmanifold_edges": 0,
+  "tol_mm": 0.02,
+  "angular_rad": 0.2
+ }
+}

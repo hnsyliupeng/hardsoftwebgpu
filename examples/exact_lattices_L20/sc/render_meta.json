@@ -1,0 +1,20 @@
+{
+  "mesh": "/home/user/exact_out/final/sc/sc_L20.mesh",
+  "size_px": 1600,
+  "supersample": 2,
+  "views": [
+    "iso",
+    "top",
+    "front",
+    "side"
+  ],
+  "input_triangles": 69912,
+  "render_triangles": 69912,
+  "decimated": false,
+  "render_ms": {
+    "iso": 5126,
+    "top": 2074,
+    "front": 2163,
+    "side": 2020
+  }
+}

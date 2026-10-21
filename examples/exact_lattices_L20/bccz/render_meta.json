@@ -1,0 +1,20 @@
+{
+  "mesh": "/home/user/exact_out/final/bccz/bccz_L20.mesh",
+  "size_px": 1600,
+  "supersample": 2,
+  "views": [
+    "iso",
+    "top",
+    "front",
+    "side"
+  ],
+  "input_triangles": 241662,
+  "render_triangles": 241662,
+  "decimated": false,
+  "render_ms": {
+    "iso": 5032,
+    "top": 20245,
+    "front": 19722,
+    "side": 21749
+  }
+}

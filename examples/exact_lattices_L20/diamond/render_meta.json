@@ -1,0 +1,20 @@
+{
+  "mesh": "/home/user/exact_out/final/diamond/diamond_L20.mesh",
+  "size_px": 1600,
+  "supersample": 2,
+  "views": [
+    "iso",
+    "top",
+    "front",
+    "side"
+  ],
+  "input_triangles": 407314,
+  "render_triangles": 407314,
+  "decimated": false,
+  "render_ms": {
+    "iso": 3704,
+    "top": 9695,
+    "front": 10578,
+    "side": 11397
+  }
+}

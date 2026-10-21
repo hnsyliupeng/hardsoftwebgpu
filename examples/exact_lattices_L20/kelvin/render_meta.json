@@ -1,0 +1,20 @@
+{
+  "mesh": "/home/user/exact_out/final/kelvin/kelvin_L20.mesh",
+  "size_px": 1600,
+  "supersample": 2,
+  "views": [
+    "iso",
+    "top",
+    "front",
+    "side"
+  ],
+  "input_triangles": 506400,
+  "render_triangles": 506400,
+  "decimated": false,
+  "render_ms": {
+    "iso": 3889,
+    "top": 5575,
+    "front": 5771,
+    "side": 5839
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "mesh": "/home/user/exact_out/final/fcc/fcc_L20.mesh",
+  "size_px": 1600,
+  "supersample": 2,
+  "views": [
+    "iso",
+    "top",
+    "front",
+    "side"
+  ],
+  "input_triangles": 307312,
+  "render_triangles": 307312,
+  "decimated": false,
+  "render_ms": {
+    "iso": 5853,
+    "top": 11385,
+    "front": 11842,
+    "side": 12284
+  }
+}
