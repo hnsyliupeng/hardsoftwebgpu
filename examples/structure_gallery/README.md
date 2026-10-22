@@ -35,6 +35,22 @@ Each folder holds `design.json` (DesignState, metrics, validation, repair_histor
 | `deep_R4_blend` R4 blend: Kelvin, gyroid and I-WP joined by smooth minima | [![deep_R4_blend](deep_R4_blend/screenshot.png)](deep_R4_blend/screenshot.png) | removed (closed skin) | 4844.5 | 1 | 556 | zone_low_solid_fraction=0.3002; zone_mid_solid_fraction=0.5225; zone_high_solid_fraction=0.4749; blend_radius_mm=1.5 | 6/6 | PASS |
 | `deep_R5_hierarchy` R5 hierarchy: gyroid infill in every foam pocket | [![deep_R5_hierarchy](deep_R5_hierarchy/screenshot.png)](deep_R5_hierarchy/screenshot.png) | removed (closed skin) | 7149.6 | 1 | 300 | pocket_fill_fraction=0.3718; solid_fraction=0.824 | 6/6 | PASS |
 
+## Open coupled rounds R6–R12 (skin-free; 96, 192 and 256 cells)
+
+These later coupled rounds are **not** in this folder. Each round has its own folder per resolution, with a README, `gallery.json`, and front/side/top views:
+
+| Round | Structure | 96 | 192 | 256 |
+|---|---|---|---|---|
+| R6 | gyroid core morphs into a BCC shell | `../structure_gallery_r6_open_96/` | `../structure_gallery_r6_open_192/` | `../structure_gallery_r6_open_256/` |
+| R7 | graded gyroid period | `../structure_gallery_r7_open_96/` | `../structure_gallery_r7_open_192/` | `../structure_gallery_r7_open_256/` |
+| R8 | BCC strut radius from a gyroid | `../structure_gallery_r8_open_96/` | `../structure_gallery_r8_open_192/` | `../structure_gallery_r8_open_256/` |
+| R9 | gated Schwarz D sheet + BCC | `../structure_gallery_r9_open_96/` | `../structure_gallery_r9_open_192/` | `../structure_gallery_r9_open_256/` |
+| R10 | gated dominance (sheet and BCC both present) | `../structure_gallery_r10_open_96/` | `../structure_gallery_r10_open_192/` | `../structure_gallery_r10_open_256/` |
+| R11 | gate-set iso-level of one gyroid | `../structure_gallery_r11_open_96/` | `../structure_gallery_r11_open_192/` | `../structure_gallery_r11_open_256/` |
+| R12 | one-sided gate-set iso-level | `../structure_gallery_r12_open_96/` | `../structure_gallery_r12_open_192/` | `../structure_gallery_r12_open_256/` |
+
+20 of 21 entries pass every check. All 21 are single-solid, watertight, and their MC volume agrees with the mesh volume. **Exception:** `deep_R9_gated` at 256 cells fails the RepairHarness check. Its minimum wall is 0.39 mm, below the 0.4 mm printability floor, which is the likely cause (the check's value field does not name it). The repair history is empty, because repair cannot change coupled-design parameters. This is recorded as a failure, not repaired. The renders are in each round's `deep_R*/screenshot.png` and `view_*.png`.
+
 ## Periodic lattices (with 1 mm envelope skin)
 
 | Design | Cut-away | Exterior (removed) | Volume (mm³) | Solid fraction | Components | Handles | Wall (mm) | Checks | Status |
