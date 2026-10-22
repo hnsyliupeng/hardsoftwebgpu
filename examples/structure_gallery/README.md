@@ -49,7 +49,7 @@ These later coupled rounds are **not** in this folder. Each round has its own fo
 | R11 | gate-set iso-level of one gyroid | `../structure_gallery_r11_open_96/` | `../structure_gallery_r11_open_192/` | `../structure_gallery_r11_open_256/` |
 | R12 | one-sided gate-set iso-level | `../structure_gallery_r12_open_96/` | `../structure_gallery_r12_open_192/` | `../structure_gallery_r12_open_256/` |
 
-20 of 21 entries pass every check. All 21 are single-solid, watertight, and their MC volume agrees with the mesh volume. **Exception:** `deep_R9_gated` at 256 cells fails the RepairHarness check. Its minimum wall is 0.39 mm, below the 0.4 mm printability floor, which is the likely cause (the check's value field does not name it). The repair history is empty, because repair cannot change coupled-design parameters. This is recorded as a failure, not repaired. The renders are in each round's `deep_R*/screenshot.png` and `view_*.png`.
+20 of 21 entries pass every check. All 21 are single-solid, watertight, and their MC volume agrees with the mesh volume. **Exception:** `deep_R9_gated` at 256 cells fails the RepairHarness check. Its minimum wall is 0.393 mm, below the 0.4 mm printability floor. The stored `unknowns` entry confirms this: "no automatic parameter for min wall 0.393 mm < floor 0.4 mm (coupled); needs user input or code-structure change". The repair step has no automatic move for coupled designs, so the repair history is empty. The design is recorded as failing and has not been changed. The renders are in each round's `deep_R*/screenshot.png` and `view_*.png`.
 
 ## Periodic lattices (with 1 mm envelope skin)
 
