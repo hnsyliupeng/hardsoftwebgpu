@@ -76,6 +76,8 @@ All 21 entries pass every check: single solid, watertight, and MC volume agreein
 
 ## Bioinspired base structures (Bioinspired123D families)
 
+> **Cellular entries do not reproduce upstream.** The upstream cellular codes (Fracture Cell plus wireframe) give 6–2143 mm³ across 20 seeds. The repo's cellular designs (Voronoi walls) are 5765–6451 mm³, 3–10× larger. See `docs/BIOINSPIRED_VALIDATION.md`. Helical and tubular entries are compared with upstream in the same document.
+
 | Design | Cut-away | Exterior (removed) | Volume (mm³) | Solid fraction | Components | Handles | Wall (mm) | Checks | Status |
 |---|---|---|---|---|---|---|---|---|---|
 | `bio_helical_generic` Helical plies (Bouligand) | [![bio_helical_generic](bio_helical_generic/screenshot.png)](bio_helical_generic/screenshot.png) | removed (closed skin) | 7165.9 | 0.896 | 1 | 0 | n/a | 6/6 | PASS |

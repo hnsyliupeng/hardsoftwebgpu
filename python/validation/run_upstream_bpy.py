@@ -34,9 +34,14 @@ def envelope_intersect_volume(envelope_loc, envelope_size):
     env.name = "__envelope__"
     total = 0.0
     meshes = [o for o in bpy.context.scene.objects if o.type == "MESH" and o is not env]
+    depsgraph = bpy.context.evaluated_depsgraph_get()
     for ob in meshes:
-        dup = ob.copy()
-        dup.data = ob.data.copy()
+        # Use the evaluated mesh (all modifiers applied: wireframe, subdivision, boolean, ...), not the base mesh.
+        # Copying the object and applying only the clip modifier would skip modifiers that come before it.
+        ev = ob.evaluated_get(depsgraph)
+        me = bpy.data.meshes.new_from_object(ev)
+        dup = bpy.data.objects.new("__measure__", me)
+        dup.matrix_world = ob.matrix_world.copy()
         bpy.context.collection.objects.link(dup)
         mod = dup.modifiers.new(name="clip", type="BOOLEAN")
         mod.operation = "INTERSECT"
@@ -73,6 +78,9 @@ def main():
         params[k] = float(v) if "." in v else int(v)
     seed = params.pop("seed", 42)
     random.seed(seed)
+    # Blender C-side RNG used by Fracture Cell (mathutils.noise.random_unit_vector); Python random does not reach it
+    import mathutils.noise as _mn
+    _mn.seed_set(seed)
     code = load_template(checkout, base_id).format(**params)
     call_fixed = False
     if base_id == "tubular_generic" and "create_tubules(tubule_count)" in code:

@@ -136,7 +136,7 @@ def main():
     out = {"method": "Monte Carlo over the 20 mm build cube (1 unit = 10 mm), N=%d per evaluation" % N,
            "sources": ["data/raw/biodataset_basecodes.csv (upstream Blender code)",
                        "examples/structure_gallery/bio_*/design.json (recorded volumes, SDF grid)"],
-           "entries": {}, "not_reproducible": {}}
+           "entries": {}, "notes": {}}
     helical = [("bio_helical_generic", "plate"), ("bio_helical_rectfibers", "rect"),
                ("bio_helical_cylinfibers", "cyl")]
     for name, kind in helical:
@@ -177,13 +177,11 @@ def main():
             "recorded_gallery_volume_mm3": round(rec, 1),
             "recorded_vs_upstream_pct": round(100 * (rec - ref["volume_mm3"]) / ref["volume_mm3"], 2),
         }
-    out["not_reproducible"] = {
-        "bio_cellular_generic": "Blender Fracture Cell with random particle seeds: the upstream run cannot be repeated outside Blender.",
-        "bio_cellular_sandwich": "same as cellular_generic (random Voronoi from Blender).",
-        "bio_cellular_voronoi": "same as cellular_generic (random Voronoi from Blender).",
-        "bio_cellular_vorosand": "same as cellular_generic (random Voronoi from Blender).",
-        "bio_helical_noise": "upstream uses random.uniform without a seed; only a distribution can be compared.",
-        "bio_tubular_noise": "upstream uses random.uniform without a seed; only a distribution can be compared.",
+    out["notes"] = {
+        "bio_cellular_generic": "Fracture Cell (blender/blender-addons object_fracture_cell) in Blender: run in docs/bio_upstream_bpy.jsonl, 20 seeds, seeded via random.seed and mathutils.noise.seed_set. The repo's cellular designs use their own Voronoi RNG, so only distributions are compared.",
+        "bio_cellular_sandwich": "same as cellular_generic (upstream run in docs/bio_upstream_bpy.jsonl).",
+        "bio_cellular_voronoi": "same as cellular_generic (upstream run in docs/bio_upstream_bpy.jsonl).",
+        "bio_cellular_vorosand": "same as cellular_generic (upstream run in docs/bio_upstream_bpy.jsonl).",
     }
     print(json.dumps(out, indent=1))
 

@@ -16,13 +16,13 @@ This replaces the routing-only check in `docs/BIOINSPIRED_COMPARISON.md` for the
 | `tubular_layers` | 7640.4 | 7638.1 | −0.03 % (Blender 32-sided cylinders) |
 | `helical_noise` (3 seeds) | 6699 / 6751 / 6731 | 7168.4 (one draw) | consistent in distribution, see below |
 | `tubular_noise` | 7001.1 | 6994.7 | identical volume for any noise (holes do not overlap or clip) |
-| `cellular_*` (4 designs) | not run | 5765–6451 | add-on missing, see below |
+| `cellular_*` (4 designs, 20 seeds each) | 6–2143 mm³ (median 152–2001) | 5765–6451 | **does not match**: repo is 3–10× upstream, see below |
 
 The repo's helical plate and fibre conventions are documented deviations from upstream (below). The tubular base codes agree with upstream to within Blender's cylinder faceting.
 
 ## Method
 
-- **Upstream run.** `python/validation/run_upstream_bpy.py` fills the template placeholders with `str.format`, seeds Python's `random` with the seed, executes the code unchanged in headless `bpy`, and intersects the resulting mesh with the build envelope (`[-1,1]^2 × [0,2]` for the helical plies, `[-1,1]^3` for the tubular cube; 1 unit = 10 mm). Volume is the divergence-theorem sum over the clipped faces. Driver: `python/validation/run_upstream_all.sh`. Output: `docs/bio_upstream_bpy.jsonl`.
+- **Upstream run.** `python/validation/run_upstream_bpy.py` fills the template placeholders with `str.format`, seeds Python's `random` and `mathutils.noise` with the seed, executes the code unchanged in headless `bpy`, and intersects the evaluated mesh (all modifiers applied) with the build envelope (`[-1,1]^2 × [0,2]` for the helical plies, `[-1,1]^3` for the tubular cube; 1 unit = 10 mm). Volume is the divergence-theorem sum over the clipped faces. Driver: `python/validation/run_upstream_all.sh`. Output: `docs/bio_upstream_bpy.jsonl`.
 - **Independent reference.** `python/validation/bio_reference.py` evaluates the same arithmetic in numpy (Monte Carlo, N = 2·10⁶, one-sigma errors). It has an `upstream` and a `repo` convention. Output: `docs/bio_validation.json`.
 - **Repo values.** `examples/structure_gallery/bio_*/design.json`, `metrics.volume`, 192-cell SDF mesh.
 
@@ -79,9 +79,24 @@ The old 192-cell cylinder record had 9 plies, while its own unknowns said the st
 - `helical_noise`: the upstream template draws `random.uniform(−noise, noise)` per ply, with no seed in the code. The runner seeds Python's `random` (seeds 1, 2, 3), giving 6699, 6751 and 6731 mm³. The expected volume with ±5° rotation noise is 7121 mm³, with standard deviation 28 mm³ per draw (`python/validation/helical_noise_check.py`, exact per-ply clip areas, 3000 draws). That is −0.56 % from the noise-free 7161 mm³ on the same grid. The upstream draws agree with this. The repo's recorded design (seed 42, a different random stream) is 7168.4 mm³, about 1.7 standard deviations above the expected value. That is plausible for one draw, but it is not the same realisation as upstream.
 - `tubular_noise`: the hole positions move by up to ±0.07 units. Holes do not overlap and stay inside the cube, so the volume does not depend on the noise. Blender gives 7001.14 mm³ for seed 1, the same as `tubular_generic`. The repo's recorded `tubular_noise` is also unchanged from `tubular_generic`.
 
-## Not run: cellular base codes
+## Cellular base codes (run; do not match the repo)
 
-The four cellular base codes use Blender's Fracture Cell operator, which the upstream code calls as `bpy.ops.object.add_fracture_cell_objects`. The `bpy` 5.0.1 wheel does not contain the add-on: the run fails with "Add-on not loaded: object_fracture_cell" and "Calling operator ... could not be found". The record is in `docs/bio_upstream_bpy.jsonl` (status `not run`). Running them would need a Blender build that ships the add-on. The upstream random Voronoi also needs fixed seeds before realisations can be compared. The repo's cellular designs therefore cannot be compared with upstream geometry at present.
+The four cellular base codes use Blender's Fracture Cell operator (`bpy.ops.object.add_fracture_cell_objects`) plus a wireframe modifier (strut thickness 0.2). The `bpy` 5.0.1 wheel does not contain the add-on, so it was copied from the `blender/blender-addons` GitHub mirror (version 0.2) into `/home/user/bpy_addons`.
+
+Upstream results, 20 seeds each, same parameters as the gallery (`thickness=0.2`, plus `smoothlevel=3` for voronoi and vorosand, `size=0.2` for sandwich and vorosand). Volumes in mm³, from `docs/bio_upstream_bpy.jsonl`:
+
+| Base code | min | median | max | mean | sd | Repo recorded |
+|---|---|---|---|---|---|---|
+| `cellular_generic` | 5.9 | 151.6 | 1506.7 | 301.9 | 457.2 | 5765.4 |
+| `cellular_voronoi` | 433.0 | 529.6 | 702.6 | 536.9 | 73.2 | 5775.1 |
+| `cellular_sandwich` | 1603.3 | 1702.9 | 1997.1 | 1709.0 | 88.1 | 6435.5 |
+| `cellular_vorosand` | 1854.3 | 2000.5 | 2142.7 | 1998.6 | 61.5 | 6450.8 |
+
+The repo's cellular designs are 3–10× larger than any upstream realisation. This is a real geometric difference. The upstream geometry is a thin strut network from a fractured cube; the repo's designs are solid Voronoi walls with their own thickness definition. The measurement path is the same one that matches the helical and tubular codes exactly, so the mismatch is not a measurement artefact.
+
+Randomness: the Fracture Cell noise uses Blender's C-side RNG. `run_upstream_bpy.py` seeds it with `mathutils.noise.seed_set`, which makes runs reproducible. Checked: seed 1 gives 190.51 mm³ in two separate processes.
+
+Bug found and fixed in this round: the first version measured the base mesh and applied only the envelope clip, so the wireframe and subdivision modifiers were skipped. The first cellular numbers (up to about 5000 mm³) came from that bug. After the fix, all non-cellular rows are unchanged.
 
 ## Decision (2026-10-22)
 
@@ -98,4 +113,8 @@ The two options that were considered were: keep (chosen), or revert the fibre fa
 bash python/validation/run_upstream_all.sh /tmp/refs/Bioinspired123D > docs/bio_upstream_bpy.jsonl
 ```
 
-The Blender run needs `bpy` installed for Python 3.11 (`/home/user/venv_bpy`, `pip install bpy`). Its missing shared libraries (libXrender, libXi, libXfixes, libICE, libSM, libxkbcommon, and GLX/EGL symbols) were covered by no-op stub libraries built with `gcc` in `/home/user/bpy_stubs`. The stubs are not called in these runs: they exist only so that the module loads without a display or GPU.
+The Fracture Cell add-on is found through `BLENDER_USER_SCRIPTS=/home/user/bpy_addons` (set inside `run_upstream_all.sh`).
+
+The Blender run needs `bpy` 5.0.1 for Python 3.11 in `/home/user/venv_bpy` (`pip install bpy==5.0.1`). Its missing shared libraries (libXrender, libXi, libXfixes, libICE, libSM, libxkbcommon, GLX/EGL/GL and optional GPU libraries) are covered by no-op stub libraries built from the undefined symbols of bpy's own shared libraries: `python/validation/build_bpy_stubs.py /home/user/venv_bpy/lib/python3.11/site-packages`.
+
+Fracture Cell add-on (not in the wheel): `git clone --depth 1 --filter=blob:none --sparse https://github.com/blender/blender-addons.git`, then `git sparse-checkout set object_fracture_cell`, then copy `object_fracture_cell/` to `/home/user/bpy_addons/addons/`. The stubs are not called in these runs; they only let the module load without a display or GPU.

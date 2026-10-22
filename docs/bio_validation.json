@@ -150,12 +150,10 @@
    "recorded_vs_upstream_pct": -0.0
   }
  },
- "not_reproducible": {
-  "bio_cellular_generic": "Blender Fracture Cell with random particle seeds: the upstream run cannot be repeated outside Blender.",
-  "bio_cellular_sandwich": "same as cellular_generic (random Voronoi from Blender).",
-  "bio_cellular_voronoi": "same as cellular_generic (random Voronoi from Blender).",
-  "bio_cellular_vorosand": "same as cellular_generic (random Voronoi from Blender).",
-  "bio_helical_noise": "upstream uses random.uniform without a seed; only a distribution can be compared.",
-  "bio_tubular_noise": "upstream uses random.uniform without a seed; only a distribution can be compared."
+ "notes": {
+  "bio_cellular_generic": "Fracture Cell (blender/blender-addons object_fracture_cell) in Blender: run in docs/bio_upstream_bpy.jsonl, 20 seeds, seeded via random.seed and mathutils.noise.seed_set. The repo's cellular designs use their own Voronoi RNG, so only distributions are compared.",
+  "bio_cellular_sandwich": "same as cellular_generic (upstream run in docs/bio_upstream_bpy.jsonl).",
+  "bio_cellular_voronoi": "same as cellular_generic (upstream run in docs/bio_upstream_bpy.jsonl).",
+  "bio_cellular_vorosand": "same as cellular_generic (upstream run in docs/bio_upstream_bpy.jsonl)."
  }
 }
