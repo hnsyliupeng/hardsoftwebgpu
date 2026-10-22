@@ -82,3 +82,13 @@ Field values in the table above are lower because `strutLattice` only uses the 5
 
 FBCC at L = 20: **failed** (`std::bad_alloc` in one layer fuse of 324 struts, also with half-cell layers). Not exact. Not retried further.
 Kelvin and BCC renders: `examples/exact_lattices_L20/`.
+
+### Deep design R8 (exact, `python/exact/build_r8.py`)
+BCC strut lattice whose strut radius is set by a gyroid field. Each strut is a ruled loft through radius samples (nsub = 4).
+Result 1775.615 mm³ (valid, one solid, watertight mesh). Monte Carlo: frustum model 1791 ± 11, field definition 1783 ± 11.
+Render and metrics: `examples/exact_deep_L20/r8_radius_gyroid/`.
+A first version with one cone per sub-segment lost lattice silently (two pieces, 1613.5 mm³): coincident caps. Do not use coincident sub-cones.
+
+### Not attempted: R3 (twisted BCC)
+R3 is a point map of the lattice by a z-dependent rotation, so its struts are curved tubes, not straight cylinders. An exact model needs
+~1,700 swept tubes along curved paths. That is a different build from the straight-strut route and is not started.
