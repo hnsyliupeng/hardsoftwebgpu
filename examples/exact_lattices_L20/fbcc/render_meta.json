@@ -1,0 +1,20 @@
+{
+  "mesh": "/home/user/exact_out/final/fbcc/fbcc_L20.mesh",
+  "size_px": 1600,
+  "supersample": 2,
+  "views": [
+    "iso",
+    "top",
+    "front",
+    "side"
+  ],
+  "input_triangles": 540462,
+  "render_triangles": 540462,
+  "decimated": false,
+  "render_ms": {
+    "iso": 6631,
+    "top": 16073,
+    "front": 17441,
+    "side": 18297
+  }
+}

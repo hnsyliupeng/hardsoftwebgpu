@@ -1,0 +1,32 @@
+{
+ "type": "fbcc",
+ "kernel": "OpenCASCADE (CadQuery 2.8 / OCP 7.8)",
+ "size_mm": 20,
+ "cell_mm": 4,
+ "strut_radius_mm": 0.4,
+ "volume_mm3": 2956.6036,
+ "solids": 1,
+ "faces": 3881,
+ "is_valid": true,
+ "removed_slivers": [],
+ "min_solid_mm3": 1.0,
+ "mesh": {
+  "vertices": 265853,
+  "triangles": 540462,
+  "volume_mesh_mm3": 2954.097,
+  "open_edges": 0,
+  "nonmanifold_edges": 0,
+  "tol_mm": 0.02,
+  "angular_rad": 0.2
+ },
+ "mode": "cells (python/exact/build_lattice.py MODE=cells, fuzzy 1e-4 mm, sequential per-cell fuse)",
+ "capsule_mc": {
+  "N": 200000,
+  "estimate_mm3": 2966.92,
+  "sigma_mm3": 8.641,
+  "diff_vs_brep_sigma": 1.19
+ },
+ "struts": 4572,
+ "nodes_block_spheres": "one sphere per strut end per block (duplicates across blocks allowed)",
+ "mesh_volume_vs_brep_pct": -0.085
+}

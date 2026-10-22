@@ -76,7 +76,7 @@ Exact status at L = 20, cell 4 mm, r 0.4 mm (`examples/exact_lattices_L20/`):
 | BCCZ | yes, 1599.111 mm³ | no independent MC run |
 | Diamond | yes, 1427.399 mm³ | MC 1431.4 ± 5.6; 4 slivers of 0.078 mm³ removed |
 | Kelvin | yes, 1649.866 mm³ | MC 1643.0 ± 5.9 |
-| FBCC | **no** | `bad_alloc` in a 324-strut layer, also with half-cell layers |
+| FBCC | yes, 2956.604 mm³ | per-cell build with fuzzy fuse; MC 2966.9 ± 8.6 (1.2σ) |
 | R8 (deep: BCC with gyroid-set radius) | yes, 1775.615 mm³ | piecewise-linear radius per strut (ruled lofts); MC agrees within 1.5σ |
 | TPMS (gyroid, Schwarz P/D, Fischer–Koch S, Split P) | no | no exact route in this pipeline |
 
@@ -101,8 +101,7 @@ available for any R-round design.
    exact route has no representation for TPMS sheets. The feasible deep target is the strut-based R8 (BCC with gyroid-set
    radius). R8 is now built as an exact B-Rep (`examples/exact_deep_L20/r8_radius_gyroid/`, 1775.615 mm³, field reference
    1775.331 mm³). It is the only R-round with a strut-only geometry.
-3. **FBCC**: an exact model is missing. The next approach is not another SMLib variant. Either split the boolean further by
-   node, or accept a field-based FBCC with a label.
+3. **FBCC**: now exact (`examples/exact_lattices_L20/fbcc/`). The fix was a per-cell build, not an SMLib variant (see `docs/EXACT_LATTICES.md`).
 4. **R9 at 256** remains a failure. The rounds that followed avoided its cut, so it is recorded and not reopened.
 5. **Helical plate teeth, skin removal at 256, the six boolean shallow-fusion entries, cross-domain and non-bio routing**: still open,
    as listed in the session notes. Each needs a decision or a larger piece of work; none has been resolved by these results.

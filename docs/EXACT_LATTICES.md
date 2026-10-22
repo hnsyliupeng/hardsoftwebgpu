@@ -80,7 +80,7 @@ Independent capsule Monte Carlo: BCC 1425.2 ± 3.1, Diamond 1431.4 ± 5.6, Kelvi
 
 Field values in the table above are lower because `strutLattice` only uses the 5 x 5 x 5 cell block (no struts from neighbouring cells).
 
-FBCC at L = 20: **failed** (`std::bad_alloc` in one layer fuse of 324 struts, also with half-cell layers). Not exact. Not retried further.
+FBCC at L = 20: **exact now** (2956.604 mm³, 1 solid, valid, mesh 0 open / 0 non-manifold, MC 2966.9 ± 8.6). The layer fuse ran out of memory (`std::bad_alloc`). The fix is a per-cell build (`MODE=cells` in `python/exact/build_lattice.py`): each strut and node sphere goes to one cell, cells are fused one item at a time with fuzzy 1e-4 mm (without it, pieces were dropped), then layers are unioned. Details: `examples/exact_lattices_L20/fbcc/README.md`.
 Kelvin and BCC renders: `examples/exact_lattices_L20/`.
 
 ### Deep design R8 (exact, `python/exact/build_r8.py`)

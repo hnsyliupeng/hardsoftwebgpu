@@ -87,6 +87,82 @@ def fuse_all(solids):
     return items[0].fuse(*items[1:])
 
 
+FUZZY = 1e-4   # mm. Without it, sequential fuses of cylinders and spheres silently dropped pieces
+               # (BCC block: 13 solids instead of 1). A single multi-argument fuse over ~85 FBCC tools
+               # exhausted 3.4 GB, so the cell-block mode fuses one item at a time with this tolerance.
+
+
+def fuse_seq(solids):
+    items = list(solids)
+    acc = items[0]
+    for it in items[1:]:
+        acc = acc.fuse(it, tol=FUZZY)
+    return acc
+
+
+def build_cells(kind: str, L: float, cell: float, r: float, step: str | None = None, log=print):
+    """Cell-block variant (used for FBCC, which runs out of memory in one z-layer fuse).
+
+    Each strut belongs to the cell that contains its midpoint; each node sphere belongs to the cell
+    that contains the node (clamped to the envelope). So every sphere is built once and no two blocks
+    share a coincident spherical face. Blocks are fused within a z-layer, layers are unioned, and the
+    result is intersected with the envelope once.
+    """
+    t0 = time.perf_counter()
+    segs = struts(kind, L, cell, r)
+    n = int(round(L / cell))
+    env = cq.Solid.makeBox(L, L, L, pnt=cq.Vector(0, 0, 0))
+
+    def cell_of(p):
+        return tuple(min(max(math.floor(p[c] / cell), 0), n - 1) for c in range(3))
+
+    blocks: dict[tuple, dict] = {}
+    for p0, p1 in segs:
+        mid = [(p0[c] + p1[c]) / 2 for c in range(3)]
+        bl = blocks.setdefault(cell_of(mid), {"s": [], "n": {}})
+        bl["s"].append((p0, p1))
+        # every strut end gets a sphere in the block that holds the strut, so its flat end caps lie
+        # inside a sphere of the same fuse (coincident caps across blocks crashed OCCT, see notes).
+        for p in (p0, p1):
+            bl["n"][_key(p)] = p
+    for p0, p1 in segs:
+        for p in (p0, p1):
+            blocks.setdefault(cell_of(p), {"s": [], "n": {}})["n"][_key(p)] = p
+    log(f"struts {len(segs)} blocks {len(blocks)}")
+    cores = {}
+    for idx in sorted(blocks):
+        bl = blocks[idx]
+        tools = []
+        for p0, p1 in bl["s"]:
+            v = cq.Vector(*[p1[c] - p0[c] for c in range(3)])
+            tools.append(cq.Solid.makeCylinder(r, v.Length, cq.Vector(*p0), v.normalized()))
+        for p in bl["n"].values():
+            tools.append(cq.Solid.makeSphere(r * SPHERE_SCALE, cq.Vector(*p), cq.Vector(0, 0, 1), -90, 90, 360))
+        cores[idx] = fuse_seq(tools)
+    log(f"  blocks fused t={time.perf_counter() - t0:.1f}s")
+    layers: dict[int, list] = {}
+    for idx, sh in cores.items():
+        layers.setdefault(idx[2], []).append(sh)
+    layer_shapes = []
+    for k in sorted(layers):
+        layer_shapes.append(fuse_seq(layers[k]))
+        log(f"  layer {k}: blocks {len(layers[k])} t={time.perf_counter() - t0:.1f}s")
+    union = fuse_seq(layer_shapes)
+    log(f"  union: solids {len(union.Solids())} vol {union.Volume():.3f} valid {union.isValid()}")
+    solid = union.intersect(env)
+    res = {
+        "type": kind, "L_mm": L, "cell_mm": cell, "radius_mm": r, "mode": "cells",
+        "struts": len(segs), "blocks": len(blocks), "layers": len(layers),
+        "volume_mm3": round(solid.Volume(), 4), "is_valid": solid.isValid(),
+        "solids": len(solid.Solids()), "faces": len(solid.Faces()),
+        "build_s": round(time.perf_counter() - t0, 1),
+    }
+    if step:
+        cq.exporters.export(cq.Workplane().add(solid), step)
+        res["step"] = step
+    return solid, res
+
+
 def build(kind: str, L: float, cell: float, r: float, step: str | None = None, log=print):
     t0 = time.perf_counter()
     segs = struts(kind, L, cell, r)
@@ -137,6 +213,7 @@ def build(kind: str, L: float, cell: float, r: float, step: str | None = None, l
 if __name__ == "__main__":
     kind, L, cell, r = sys.argv[1], float(sys.argv[2]), float(sys.argv[3]), float(sys.argv[4])
     prefix = sys.argv[5] if len(sys.argv) > 5 else None
-    _, res = build(kind, L, cell, r, step=(prefix + ".step") if prefix else None,
-                   log=lambda m: print(m, file=sys.stderr, flush=True))
+    fn = build_cells if os.environ.get("MODE") == "cells" else build
+    _, res = fn(kind, L, cell, r, step=(prefix + ".step") if prefix else None,
+                log=lambda m: print(m, file=sys.stderr, flush=True))
     print(json.dumps(res, indent=1))
