@@ -1,6 +1,6 @@
 # Structure gallery
 
-> **Resolution set: 192 cells per axis (0.104 mm voxels).** This folder holds the 192-cell run (commit `5befa7f`).
+> **Resolution set: 192 cells per axis (0.104 mm voxels).** This folder holds the 192-cell run (commit `5befa7f`). **Exception:** `bio_helical_rectfibers` and `bio_helical_cylinfibers` were regenerated with the current fibre code (commit `aff94f9`: fibres reach the envelope corners). The old records predated that change; the cylinder record also had 9 plies while its own unknowns said "default 10 used", so it now has 10 plies. The other 34 designs are unchanged. These two folders also carry `view_top`, `view_front` and `view_side` renders from the current script; the other folders do not have them yet. The 96 and 256 sets already used the current fibre code.
 > It has closed exterior skins. Their exterior views were removed (the closed-skin rule); the cut-away views are kept. The 96-cell set is in `examples/structure_gallery_96/`,
 > the open 256-cell set is in `examples/structure_gallery_256/`, and the mixed open set is in `examples/structure_gallery_256_mixed_open/`.
 > The sets are kept separate and are not merged.
@@ -63,8 +63,8 @@ Each folder holds `design.json` (DesignState, metrics, validation, repair_histor
 | Design | Cut-away | Exterior (removed) | Volume (mm³) | Solid fraction | Components | Handles | Wall (mm) | Checks | Status |
 |---|---|---|---|---|---|---|---|---|---|
 | `bio_helical_generic` Helical plies (Bouligand) | [![bio_helical_generic](bio_helical_generic/screenshot.png)](bio_helical_generic/screenshot.png) | removed (closed skin) | 7165.9 | 0.896 | 1 | 0 | n/a | 6/6 | PASS |
-| `bio_helical_rectfibers` Helical rectangular fibres | [![bio_helical_rectfibers](bio_helical_rectfibers/screenshot.png)](bio_helical_rectfibers/screenshot.png) | removed (closed skin) | 6581.9 | 0.823 | 1 | 4 | n/a | 6/6 | PASS |
-| `bio_helical_cylinfibers` Helical cylindrical fibres | [![bio_helical_cylinfibers](bio_helical_cylinfibers/screenshot.png)](bio_helical_cylinfibers/screenshot.png) | removed (closed skin) | 5548.4 | 0.694 | 1 | 428 | n/a | 6/6 | PASS |
+| `bio_helical_rectfibers` Helical rectangular fibres | [![bio_helical_rectfibers](bio_helical_rectfibers/screenshot.png)](bio_helical_rectfibers/screenshot.png) | removed (open) | 7733.8 | 0.967 | 1 | 22 | n/a | 6/6 | PASS |
+| `bio_helical_cylinfibers` Helical cylindrical fibres | [![bio_helical_cylinfibers](bio_helical_cylinfibers/screenshot.png)](bio_helical_cylinfibers/screenshot.png) | removed (open) | 6275.4 | 0.784 | 1 | 834 | n/a | 6/6 | PASS |
 | `bio_helical_noise` Helical plies with rotation noise | [![bio_helical_noise](bio_helical_noise/screenshot.png)](bio_helical_noise/screenshot.png) | removed (closed skin) | 7168.4 | 0.896 | 1 | 0 | n/a | 6/6 | PASS |
 | `bio_cellular_generic` Cellular foam (Voronoi) | [![bio_cellular_generic](bio_cellular_generic/screenshot.png)](bio_cellular_generic/screenshot.png) | removed (closed skin) | 5765.4 | 0.721 | 1 | 12 | n/a | 6/6 | PASS |
 | `bio_cellular_voronoi` Cellular Voronoi, smoothed | [![bio_cellular_voronoi](bio_cellular_voronoi/screenshot.png)](bio_cellular_voronoi/screenshot.png) | removed (closed skin) | 5775.1 | 0.722 | 1 | 7 | n/a | 6/6 | PASS |

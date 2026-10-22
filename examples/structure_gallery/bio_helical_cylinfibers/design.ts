@@ -11,12 +11,13 @@ import type { DesignSpec } from "../../../src/types.ts";
 const size_mm = 20;
 const resolution = 192;
 const min_printable_wall_mm = 0.4;
-const parameters = {"num_plies":9,"rotation":10,"seed":42} as const;
+const parameters = {"num_plies":10,"rotation":10,"seed":42} as const;
 const heterogeneity_field = null;
 
 // ---- Design specification (IntentHarness output, with the constants above applied) ----------
 const spec: DesignSpec = {
   topology: "helical",
+  
   
   
   bio_motif: "helical_cylinfibers",

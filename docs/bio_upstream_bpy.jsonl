@@ -1,0 +1,11 @@
+{"id": "helical_generic", "params": {"num_plies": 10, "rotation": 10}, "seed": 42, "call_fixed": false, "clipped_volume_mm3": 6765.92, "objects": 11}
+{"id": "helical_rectfibers", "params": {"num_plies": 10, "rotation": 10}, "seed": 42, "call_fixed": false, "clipped_volume_mm3": 6221.92, "objects": 91}
+{"id": "helical_cylinfibers", "params": {"num_plies": 10, "rotation": 10}, "seed": 42, "call_fixed": false, "clipped_volume_mm3": 5283.48, "objects": 101}
+{"id": "tubular_generic", "params": {"num_tubules": 16}, "seed": 42, "call_fixed": true, "clipped_volume_mm3": 7001.14, "objects": 2}
+{"id": "tubular_shapesize", "params": {"num_tubules": 16, "ellipticity": 1.5, "radius": 0.1}, "seed": 42, "call_fixed": false, "clipped_volume_mm3": 6501.71, "objects": 2}
+{"id": "tubular_layers", "params": {"num_tubules": 16, "thickness": 0.04}, "seed": 42, "call_fixed": false, "clipped_volume_mm3": 7640.41, "objects": 3}
+{"id": "helical_noise", "params": {"num_plies": 10, "rotation": 10, "noise": 5}, "seed": 1, "call_fixed": false, "clipped_volume_mm3": 6698.99, "objects": 11}
+{"id": "helical_noise", "params": {"num_plies": 10, "rotation": 10, "noise": 5}, "seed": 2, "call_fixed": false, "clipped_volume_mm3": 6751.42, "objects": 11}
+{"id": "helical_noise", "params": {"num_plies": 10, "rotation": 10, "noise": 5}, "seed": 3, "call_fixed": false, "clipped_volume_mm3": 6730.83, "objects": 11}
+{"id": "tubular_noise", "params": {"num_tubules": 16, "noise": 0.07}, "seed": 1, "call_fixed": false, "clipped_volume_mm3": 7001.14, "objects": 2}
+{"id": "cellular_generic", "status": "not run", "reason": "object_fracture_cell add-on missing from bpy 5.0.1"}

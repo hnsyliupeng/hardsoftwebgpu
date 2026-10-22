@@ -19,6 +19,7 @@ const spec: DesignSpec = {
   topology: "helical",
   
   
+  
   bio_motif: "helical_rectfibers",
   family: "helical",
   variant: "helical_rectfibers",

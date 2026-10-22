@@ -5,6 +5,8 @@ Reproduce: `node --experimental-strip-types --no-warnings scripts/compare_bioins
 
 ## Base codes
 
+Validation status per base code: `docs/BIOINSPIRED_VALIDATION.md`.
+
 | | Upstream | Implemented here |
 |---|---|---|
 | Base codes | 12 (helical 4, cellular 4, tubular 4) | 12, same IDs |
@@ -24,4 +26,4 @@ Before the fix, 266/270 were correct. The 4 misses were prompts about "struts" (
 ## Not covered
 
 - Cross-domain prompts are not turned into fusions. The upstream wording is ambiguous ("with cellular sandwich layers on top and bottom" versus "each ply is cellular"), so this needs an explicit spec, which the gallery already provides.
-- Geometric agreement with the upstream Blender output has not been measured. The upstream benchmark only gives prompts, not reference meshes.
+- Geometric agreement: measured for 8 of 12 base codes by running the upstream code in headless Blender (`bpy` 5.0.1). Matched for the tubular and plain-plate cases, and the helical families differ from upstream by documented conventions. Cellular base codes were not run (Fracture Cell add-on missing). Details: `docs/BIOINSPIRED_VALIDATION.md` and `docs/BIOINSPIRED_GEOMETRY.md`.

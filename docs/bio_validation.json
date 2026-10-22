@@ -1,0 +1,161 @@
+{
+ "method": "Monte Carlo over the 20 mm build cube (1 unit = 10 mm), N=2000000 per evaluation",
+ "sources": [
+  "data/raw/biodataset_basecodes.csv (upstream Blender code)",
+  "examples/structure_gallery/bio_*/design.json (recorded volumes, SDF grid)"
+ ],
+ "entries": {
+  "bio_helical_generic": {
+   "params": {
+    "num_plies": 10,
+    "rotation_deg": 10.0
+   },
+   "upstream_convention": {
+    "volume_mm3": 6764.47,
+    "sigma_mm3": 2.04
+   },
+   "repo_convention": {
+    "volume_mm3": 7165.27,
+    "sigma_mm3": 1.73
+   },
+   "decomposition": null,
+   "recorded_gallery_volume_mm3": 7165.9,
+   "recorded_vs_repo_pct": 0.01,
+   "upstream_vs_repo_pct": -5.59
+  },
+  "bio_helical_rectfibers": {
+   "params": {
+    "num_plies": 10,
+    "rotation_deg": 10.0
+   },
+   "upstream_convention": {
+    "volume_mm3": 6221.06,
+    "sigma_mm3": 2.35
+   },
+   "repo_convention": {
+    "volume_mm3": 7615.35,
+    "sigma_mm3": 1.21
+   },
+   "decomposition": [
+    {
+     "step": "upstream arithmetic",
+     "volume_mm3": 6221.06,
+     "sigma_mm3": 2.35
+    },
+    {
+     "step": "+ ply centring (i+1/2)t",
+     "volume_mm3": 6579.95,
+     "sigma_mm3": 2.16
+    },
+    {
+     "step": "+ fibre grid extended beyond plate",
+     "volume_mm3": 7217.37,
+     "sigma_mm3": 1.68
+    },
+    {
+     "step": "+ fibre half-length sqrt(2)",
+     "volume_mm3": 7615.35,
+     "sigma_mm3": 1.21
+    }
+   ],
+   "recorded_gallery_volume_mm3": 7733.8,
+   "recorded_vs_repo_pct": 1.55,
+   "upstream_vs_repo_pct": -18.31
+  },
+  "bio_helical_cylinfibers": {
+   "params": {
+    "num_plies": 10,
+    "rotation_deg": 10.0
+   },
+   "upstream_convention": {
+    "volume_mm3": 5317.02,
+    "sigma_mm3": 2.67
+   },
+   "repo_convention": {
+    "volume_mm3": 6283.15,
+    "sigma_mm3": 2.32
+   },
+   "decomposition": [
+    {
+     "step": "upstream arithmetic",
+     "volume_mm3": 5317.02,
+     "sigma_mm3": 2.67
+    },
+    {
+     "step": "+ ply centring (i+1/2)t",
+     "volume_mm3": 5632.4,
+     "sigma_mm3": 2.58
+    },
+    {
+     "step": "+ fibre grid extended beyond plate",
+     "volume_mm3": 5956.02,
+     "sigma_mm3": 2.47
+    },
+    {
+     "step": "+ fibre half-length sqrt(2)",
+     "volume_mm3": 6283.15,
+     "sigma_mm3": 2.32
+    }
+   ],
+   "recorded_gallery_volume_mm3": 6275.4,
+   "recorded_vs_repo_pct": -0.12,
+   "upstream_vs_repo_pct": -15.38
+  },
+  "bio_tubular_generic": {
+   "params": {
+    "num_tubules": 16
+   },
+   "upstream_convention": {
+    "volume_mm3": 6996.68,
+    "sigma_mm3": 1.87
+   },
+   "repo_convention": {
+    "volume_mm3": 6996.68,
+    "sigma_mm3": 1.87
+   },
+   "recorded_gallery_volume_mm3": 6994.7,
+   "recorded_vs_upstream_pct": -0.03
+  },
+  "bio_tubular_shapesize": {
+   "params": {
+    "num_tubules": 16,
+    "ellipticity": 1.5,
+    "radius": 0.1
+   },
+   "upstream_convention": {
+    "volume_mm3": 6493.0,
+    "sigma_mm3": 2.21
+   },
+   "repo_convention": {
+    "volume_mm3": 6493.0,
+    "sigma_mm3": 2.21
+   },
+   "recorded_gallery_volume_mm3": 6492.0,
+   "recorded_vs_upstream_pct": -0.01
+  },
+  "bio_tubular_layers": {
+   "params": {
+    "num_tubules": 16,
+    "thickness": 0.04
+   },
+   "upstream_convention": {
+    "volume_mm3": 7638.4,
+    "sigma_mm3": 1.18
+   },
+   "repo_convention": {
+    "volume_mm3": 7638.4,
+    "sigma_mm3": 1.18
+   },
+   "recorded_gallery_volume_mm3": 7638.1,
+   "recorded_vs_upstream_pct": -0.0
+  }
+ },
+ "not_reproducible": {
+  "bio_cellular_generic": "Blender Fracture Cell with random particle seeds: the upstream run cannot be repeated outside Blender.",
+  "bio_cellular_sandwich": "same as cellular_generic (random Voronoi from Blender).",
+  "bio_cellular_voronoi": "same as cellular_generic (random Voronoi from Blender).",
+  "bio_cellular_vorosand": "same as cellular_generic (random Voronoi from Blender).",
+  "bio_helical_noise": "upstream uses random.uniform without a seed; only a distribution can be compared.",
+  "bio_tubular_noise": "upstream uses random.uniform without a seed; only a distribution can be compared."
+ }
+}
