@@ -12,7 +12,7 @@ Common parameters: 20 mm cube envelope, cell 4 mm, strut radius 0.4 mm, complete
 | BCCZ | `bccz/` | 1599.111 | 1 | yes | 0 / 0 | 1591.781 |
 | Diamond | `diamond/` | 1427.399 | 1 | yes | 0 / 0 | 1411.032 |
 | Kelvin | `kelvin/` | 1649.866 | 1 | yes | 0 / 0 | 1569.58 |
-| FBCC | `fbcc/` | 2956.604 | 1 | yes | 0 / 0 | not in the field block table |
+| FBCC | `fbcc/` | 2956.604 | 1 | yes | 0 / 0 | 2967.602 (older 256-grid record) |
 
 The field values are lower because the field evaluates only the 5 x 5 x 5 cell block, so struts that enter the box from neighbouring cells are missing. The exact models include them. Independent capsule Monte Carlo agrees with the exact volumes: BCC 1425.2 ± 3.1, Diamond 1431.4 ± 5.6, Kelvin 1643.0 ± 5.9 mm^3.
 

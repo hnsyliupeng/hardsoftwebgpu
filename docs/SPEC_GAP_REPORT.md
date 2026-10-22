@@ -14,7 +14,7 @@ Date: 2026-10-16. Branch: arena/fd777792-hardsoftwebgpu. Measured on `b50b6a5`.
 | Export | STL, STEP (via smlibwasm), USD(Z) partial | `src/export/` |
 | WebGPU viewer | Present, WebGPU -> WebGL2 -> CPU fallback | `web/viewer.ts`, `web/main.ts` |
 | Density gradient / torsion / twist | Partial (heterogeneity field, twist in deep.ts) | `src/topology/heterogeneous.ts`, `deep.ts` |
-| Exact B-Rep (SMLib) | SC exact at 20 mm (663.433 mm3). BCC, FCC, FBCC, BCCZ, Kelvin fail or unverified at 20 mm | `src/geometry/exact_lattice.ts`, `docs/exact_lattice_status.json` |
+| Exact B-Rep (OpenCASCADE via CadQuery) | Exact at 20 mm: SC, BCC, FCC, BCCZ, diamond, Kelvin, FBCC (7 types), and the deep design R8. TPMS not exact. | `python/exact/`, `examples/exact_lattices_L20/`, `docs/exact_lattice_status.json` |
 
 ## What is missing (spec section)
 
@@ -38,7 +38,7 @@ Date: 2026-10-16. Branch: arena/fd777792-hardsoftwebgpu. Measured on `b50b6a5`.
 
 ## Blocking issue for "all lattices and TPMS exact"
 
-Exact SMLib B-Rep is robust only for SC at 20 mm. The kernel rejects fuse operations for BCC at 20 mm, FCC and FBCC at 8 mm, and Kelvin at 8 mm. Tried: per-line offsets, radius and end-cap jitter, sphere radius and rotation, fuse order shuffles. TPMS has no closed-form B-Rep and would need NURBS approximation or a high-resolution mesh.
+The earlier SMLib route was robust only for SC at 20 mm (its failures and jitter tests are in `docs/EXACT_LATTICES.md`). The OpenCASCADE route builds the seven plain types at 20 mm; FBCC needed a per-cell build with a fuzzy fuse tolerance. TPMS has no closed-form B-Rep and would need NURBS approximation or a high-resolution mesh.
 
 ## Proposed phasing
 

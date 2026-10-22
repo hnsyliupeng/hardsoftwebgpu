@@ -1,52 +1,147 @@
 {
-  "module": "src/geometry/exact_lattice.ts",
-  "script": "scripts/exact_lattice.ts",
-  "kernel": "@classcad/smlibwasm 0.2.3 (SMLib)",
-  "parameters": {"size_mm": 20, "cell_mm": 4, "strut_radius_mm": 0.4, "tessellation_tol_mm": 0.02},
-  "types": {
-    "sc": {
-      "status": "exact at L=20",
-      "mode": "lines",
-      "brep_volume_mm3": 663.433,
-      "mesh_volume_mm3": 661.157,
-      "mesh_triangles": "see script output",
-      "pieces": 108,
-      "bool_time_ms": 34806,
-      "reference": {"marching_cubes_mm3": 664, "field_256_mm3": 671.758, "field_320_mm3": 672.765},
-      "note": "Within 0.1% of the MC reference. The field at 256 is about 1.2% high."
-    },
-    "diamond": {
-      "status": "exact at L=8 only; L=20 not yet run",
-      "mode": "bonds",
-      "brep_volume_mm3_L8": 89.985,
-      "field_256_reference_L20_mm3": 1411.032
-    },
-    "bcc": {
-      "status": "exact at L=8 only; FAILS at L=20 (kernel non-manifold fuse)",
-      "mode": "lines",
-      "brep_volume_mm3_L8": 91.375,
-      "tried": ["eps 0.01", "eps 0.02"],
-      "field_256_reference_L20_mm3": 1416.194
-    },
-    "bccz": {
-      "status": "exact at L=8 only; L=20 not run",
-      "mode": "lines",
-      "brep_volume_mm3_L8": 102.295,
-      "field_256_reference_L20_mm3": 1591.781
-    },
-    "fcc": {"status": "FAILS at L=8 (kernel fuse). Not exact.", "mode": "lines", "field_256_reference_L20_mm3": 1704.208, "tried": ["eps 0.01", "eps 0.03", "eps 0.06 (intersect fails)", "radius jitter"]},
-    "fbcc": {"status": "FAILS at L=8 (kernel fuse). Not exact.", "mode": "lines", "field_256_reference_L20_mm3": 2967.602},
-    "kelvin": {"status": "FAILS at L=8 (kernel fuse; single cell works). Not exact.", "mode": "bonds", "field_256_reference_L20_mm3": 1569.58, "tried": ["sphere radius 1.002/1.01/1.05 r", "sphere rotations", "radius jitter", "end-cap jitter", "node jitter 0.002 mm", "fuse-order shuffles"]}
+ "module": "python/exact/build_lattice.py, python/exact/build_r8.py",
+ "generated_by": "scripts/make_exact_status.py",
+ "kernel": "OpenCASCADE (CadQuery 2.8 / OCP 7.8)",
+ "parameters": {
+  "size_mm": 20,
+  "cell_mm": 4,
+  "strut_radius_mm": 0.4,
+  "tessellation_tol_mm": 0.02
+ },
+ "types": {
+  "bcc": {
+   "status": "exact at L=20",
+   "kernel": "OpenCASCADE (CadQuery 2.8 / OCP 7.8)",
+   "brep_volume_mm3": 1427.7127,
+   "solids": 1,
+   "is_valid": true,
+   "faces": 1216,
+   "mesh_volume_mm3": 1426.682,
+   "mesh_open_edges": 0,
+   "mesh_nonmanifold_edges": 0,
+   "removed_slivers": [],
+   "record": "examples/exact_lattices_L20/bcc/exact.json",
+   "field_5x5x5_block_mm3": 1416.194
   },
-  "failure_causes_found": [
-    "Collinear struts that meet end to end: coaxial end faces coincide, kernel rejects. Fixed by one long cylinder per line (lines mode).",
-    "Three or more struts through one point: triple-point degeneracy. Fixed by a per-line offset of 0.01 mm in the normal plane.",
-    "Sphere radius equal to strut radius: tangent contact. Fixed with 1.002 r.",
-    "Sphere pole aligned with a strut axis: the fuse returned an empty solid. Fixed by rotating the sphere."
-  ],
-  "open_issues": [
-    "BCC/FCC/FBCC/BCCZ at 20 mm fail or are unverified; the kernel boolean is not robust at this strut count.",
-    "Kelvin and FCC fail at 8 mm.",
-    "Exact renders are not yet produced for the gallery; all gallery images still come from the SDF path."
-  ]
+  "bccz": {
+   "status": "exact at L=20",
+   "kernel": "OpenCASCADE (CadQuery 2.8 / OCP 7.8)",
+   "brep_volume_mm3": 1599.1113,
+   "solids": 1,
+   "is_valid": true,
+   "faces": 1296,
+   "mesh_volume_mm3": 1598.055,
+   "mesh_open_edges": 0,
+   "mesh_nonmanifold_edges": 0,
+   "removed_slivers": [],
+   "record": "examples/exact_lattices_L20/bccz/exact.json",
+   "field_5x5x5_block_mm3": 1591.781
+  },
+  "diamond": {
+   "status": "exact at L=20",
+   "kernel": "OpenCASCADE (CadQuery 2.8 / OCP 7.8)",
+   "brep_volume_mm3": 1427.3989,
+   "solids": 1,
+   "is_valid": true,
+   "faces": 3138,
+   "mesh_volume_mm3": 1426.322,
+   "mesh_open_edges": 0,
+   "mesh_nonmanifold_edges": 0,
+   "removed_slivers": [
+    {
+     "volume_mm3": 0.078384
+    },
+    {
+     "volume_mm3": 0.078384
+    },
+    {
+     "volume_mm3": 0.078384
+    },
+    {
+     "volume_mm3": 0.078384
+    }
+   ],
+   "record": "examples/exact_lattices_L20/diamond/exact.json",
+   "field_5x5x5_block_mm3": 1411.032
+  },
+  "fbcc": {
+   "status": "exact at L=20",
+   "kernel": "OpenCASCADE (CadQuery 2.8 / OCP 7.8)",
+   "brep_volume_mm3": 2956.6036,
+   "solids": 1,
+   "is_valid": true,
+   "faces": 3881,
+   "mesh_volume_mm3": 2954.097,
+   "mesh_open_edges": 0,
+   "mesh_nonmanifold_edges": 0,
+   "removed_slivers": [],
+   "record": "examples/exact_lattices_L20/fbcc/exact.json",
+   "build_mode": "cells (python/exact/build_lattice.py MODE=cells, fuzzy 1e-4 mm, sequential per-cell fuse)",
+   "capsule_mc": {
+    "N": 200000,
+    "estimate_mm3": 2966.92,
+    "sigma_mm3": 8.641,
+    "diff_vs_brep_sigma": 1.19
+   },
+   "field_5x5x5_block_mm3": 2967.602
+  },
+  "fcc": {
+   "status": "exact at L=20",
+   "kernel": "OpenCASCADE (CadQuery 2.8 / OCP 7.8)",
+   "brep_volume_mm3": 1695.5653,
+   "solids": 1,
+   "is_valid": true,
+   "faces": 2681,
+   "mesh_volume_mm3": 1694.335,
+   "mesh_open_edges": 0,
+   "mesh_nonmanifold_edges": 0,
+   "removed_slivers": [],
+   "record": "examples/exact_lattices_L20/fcc/exact.json",
+   "field_5x5x5_block_mm3": 1704.208
+  },
+  "kelvin": {
+   "status": "exact at L=20",
+   "kernel": "OpenCASCADE (CadQuery 2.8 / OCP 7.8)",
+   "brep_volume_mm3": 1649.8656,
+   "solids": 1,
+   "is_valid": true,
+   "faces": 3450,
+   "mesh_volume_mm3": 1648.47,
+   "mesh_open_edges": 0,
+   "mesh_nonmanifold_edges": 0,
+   "removed_slivers": [],
+   "record": "examples/exact_lattices_L20/kelvin/exact.json",
+   "field_5x5x5_block_mm3": 1569.58
+  },
+  "sc": {
+   "status": "exact at L=20",
+   "kernel": "OpenCASCADE (CadQuery 2.8 / OCP 7.8)",
+   "brep_volume_mm3": 663.4726,
+   "solids": 1,
+   "is_valid": true,
+   "faces": 606,
+   "mesh_volume_mm3": 663.008,
+   "mesh_open_edges": 0,
+   "mesh_nonmanifold_edges": 0,
+   "removed_slivers": [],
+   "record": "examples/exact_lattices_L20/sc/exact.json",
+   "field_5x5x5_block_mm3": 671.758
+  }
+ },
+ "deep": {
+  "r8_radius_gyroid": {
+   "status": "exact at L=20",
+   "kernel": "OpenCASCADE (CadQuery 2.8 / OCP 7.8)",
+   "brep_volume_mm3": 1775.6152,
+   "solids": 1,
+   "is_valid": true,
+   "faces": 4646,
+   "mesh_volume_mm3": 1767.778,
+   "mesh_open_edges": 0,
+   "mesh_nonmanifold_edges": 0,
+   "removed_slivers": [],
+   "record": "examples/exact_deep_L20/r8_radius_gyroid/exact.json"
+  }
+ },
+ "superseded": "The earlier SMLib (@classcad/smlibwasm) records and their failure notes are in docs/EXACT_LATTICES.md."
 }
