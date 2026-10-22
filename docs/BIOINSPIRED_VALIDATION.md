@@ -32,7 +32,7 @@ Routing is a separate check, in `docs/BIOINSPIRED_COMPARISON.md`: 270 of 270 sin
 
 ## Open items
 
-1. Keep or revert the fibre-family extension (`aff94f9`), which adds 18–24 % over upstream. Decision needed from the user.
+1. Keep or revert the fibre-family extension (`aff94f9`), which adds 18–24 % over upstream. The user was asked; no answer was given. The repo convention is kept as the default, and it is documented as a deliberate departure. Reverting, or keeping both as labelled variants, is a user choice.
 2. Cellular base codes: not run. Needs a Blender build with the add-on, and fixed seeds for a realisation-level comparison.
 3. The repo's helical noise design is one random draw. It is not the upstream realisation.
 
