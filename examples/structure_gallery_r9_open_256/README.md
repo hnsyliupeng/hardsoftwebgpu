@@ -1,10 +1,17 @@
 # R9 gated phases (open, 256 cells)
 
 New coupled round **R9** (`src/topology/coupled.ts`, `buildR9`): two structure families interpenetrate inside one
-field, gated by a third. A Schwarz D sheet (5 mm period, 0.5 mm wall) fills the side of a gyroid gate surface
+field, gated by a third. A Schwarz D sheet (5 mm period, **0.6 mm wall at this resolution**; the default is 0.5 mm) fills the side of a gyroid gate surface
 (8 mm period) where the gate is negative. A BCC strut lattice (4 mm cell, r = 0.4 mm) fills the side where it is
 positive. The two are joined by a rounded phase cut (smooth max) and a smooth union (0.3 mm blend), so there is no planar seam.
 This is not a boolean of two finished designs: each phase is clipped by the gate inside the field.
+
+**Printability fix (2026-10-22).** At 0.5 mm the design failed the 0.4 mm printability floor: min wall 0.393 mm, recorded as
+a failure with no automatic repair (coupled designs have none). The sheet wall was raised to 0.6 mm for this resolution only.
+Results: min wall 0.443 mm (about 0.04 mm above the floor, larger than the ±0.039 mm entry/exit error), 1 solid, watertight,
+volume 2345.8 mm³ (was 2099.0 mm³, +11.8 %), genus 1163 (was 1181). The 0.55 mm trial gave 0.426 mm (too close to the floor,
+inside the error). The 96 and 192 cell R9 entries keep the 0.5 mm default, since they already pass; their sheet is therefore
+thinner than this 256 cell entry. Probe: `scripts/r9_thickness_probe.ts`.
 
 Folder: `deep_R9_gated/` (`design.json`, `design.ts`, `screenshot.png` isometric, `view_top.png`, `view_front.png`,
 `view_side.png`). The design is open: no closed envelope skin (`skin_mm = 0`).

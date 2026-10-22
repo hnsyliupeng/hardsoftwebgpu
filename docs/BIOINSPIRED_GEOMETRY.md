@@ -83,14 +83,11 @@ The old 192-cell cylinder record had 9 plies, while its own unknowns said the st
 
 The four cellular base codes use Blender's Fracture Cell operator, which the upstream code calls as `bpy.ops.object.add_fracture_cell_objects`. The `bpy` 5.0.1 wheel does not contain the add-on: the run fails with "Add-on not loaded: object_fracture_cell" and "Calling operator ... could not be found". The record is in `docs/bio_upstream_bpy.jsonl` (status `not run`). Running them would need a Blender build that ships the add-on. The upstream random Voronoi also needs fixed seeds before realisations can be compared. The repo's cellular designs therefore cannot be compared with upstream geometry at present.
 
-## Decision needed
+## Decision (2026-10-22)
 
-The repo convention is a complete fibre lattice. The upstream arithmetic has notched corners. The choice is:
+The user chose to keep the repo convention (option 1 below). The fibre families stay 18–24 % above upstream. This is a documented, deliberate departure. No code change.
 
-1. **Keep** the repo convention (current). The fibre families are 18–24 % denser than upstream. This is documented here as a deliberate departure.
-2. **Revert** the fibre families to the upstream arithmetic (notched corners, about 15–20 % less volume), and keep the repo convention as an option.
-
-Either is a change in `src/bio/families.ts` plus regeneration of the fibre designs in each set. Option 1 needs no code change.
+The two options that were considered were: keep (chosen), or revert the fibre families to the upstream arithmetic (about 15–20 % less volume, a change in `src/bio/families.ts` plus regeneration of the fibre designs in each set).
 
 ## Reproduce
 
