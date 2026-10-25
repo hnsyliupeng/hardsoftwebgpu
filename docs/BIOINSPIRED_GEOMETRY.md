@@ -92,7 +92,7 @@ Upstream results, 20 seeds each, same parameters as the gallery (`thickness=0.2`
 | `cellular_sandwich` | 1603.3 | 1702.9 | 1997.1 | 1709.0 | 88.1 | 6435.5 |
 | `cellular_vorosand` | 1854.3 | 2000.5 | 2142.7 | 1998.6 | 61.5 | 6450.8 |
 
-The repo's cellular designs are 3–10× larger than any upstream realisation. This is a real geometric difference. The upstream geometry is a thin strut network from a fractured cube; the repo's designs are solid Voronoi walls with their own thickness definition. The measurement path is the same one that matches the helical and tubular codes exactly, so the mismatch is not a measurement artefact.
+The repo's cellular designs are 3–10× larger than any upstream realisation. This is a real geometric difference. The upstream geometry is a thin strut network from a fractured cube; the repo's designs are solid Voronoi walls with their own thickness definition. Decision (2026-10-22): the user chose to keep the repo model and label it as a repo-specific Voronoi wall model. The geometry is unchanged. The measurement path is the same one that matches the helical and tubular codes exactly, so the mismatch is not a measurement artefact.
 
 Randomness: the Fracture Cell noise uses Blender's C-side RNG. `run_upstream_bpy.py` seeds it with `mathutils.noise.seed_set`, which makes runs reproducible. Checked: seed 1 gives 190.51 mm³ in two separate processes.
 

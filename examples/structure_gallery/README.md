@@ -76,7 +76,7 @@ All 21 entries pass every check: single solid, watertight, and MC volume agreein
 
 ## Bioinspired base structures (Bioinspired123D families)
 
-> **Cellular entries do not reproduce upstream.** The upstream cellular codes (Fracture Cell plus wireframe) give 6–2143 mm³ across 20 seeds. The repo's cellular designs (Voronoi walls) are 5765–6451 mm³, 3–10× larger. See `docs/BIOINSPIRED_VALIDATION.md`. Helical and tubular entries are compared with upstream in the same document.
+> **Cellular entries are a repo-specific Voronoi wall model, not Bioinspired123D geometry.** The upstream cellular codes (Fracture Cell cube plus wireframe, strut thickness 0.2) give 6–2143 mm³ across 20 seeds; the four entries below are 5765–6451 mm³, 3–10× larger. The geometry is unchanged; it is labelled, not replaced (decision 2026-10-22). See `docs/BIOINSPIRED_VALIDATION.md`.
 
 | Design | Cut-away | Exterior (removed) | Volume (mm³) | Solid fraction | Components | Handles | Wall (mm) | Checks | Status |
 |---|---|---|---|---|---|---|---|---|---|
@@ -84,10 +84,10 @@ All 21 entries pass every check: single solid, watertight, and MC volume agreein
 | `bio_helical_rectfibers` Helical rectangular fibres | [![bio_helical_rectfibers](bio_helical_rectfibers/screenshot.png)](bio_helical_rectfibers/screenshot.png) | removed (open) | 7733.8 | 0.967 | 1 | 22 | n/a | 6/6 | PASS |
 | `bio_helical_cylinfibers` Helical cylindrical fibres | [![bio_helical_cylinfibers](bio_helical_cylinfibers/screenshot.png)](bio_helical_cylinfibers/screenshot.png) | removed (open) | 6275.4 | 0.784 | 1 | 834 | n/a | 6/6 | PASS |
 | `bio_helical_noise` Helical plies with rotation noise | [![bio_helical_noise](bio_helical_noise/screenshot.png)](bio_helical_noise/screenshot.png) | removed (closed skin) | 7168.4 | 0.896 | 1 | 0 | n/a | 6/6 | PASS |
-| `bio_cellular_generic` Cellular foam (Voronoi) | [![bio_cellular_generic](bio_cellular_generic/screenshot.png)](bio_cellular_generic/screenshot.png) | removed (closed skin) | 5765.4 | 0.721 | 1 | 12 | n/a | 6/6 | PASS |
-| `bio_cellular_voronoi` Cellular Voronoi, smoothed | [![bio_cellular_voronoi](bio_cellular_voronoi/screenshot.png)](bio_cellular_voronoi/screenshot.png) | removed (closed skin) | 5775.1 | 0.722 | 1 | 7 | n/a | 6/6 | PASS |
-| `bio_cellular_sandwich` Cellular sandwich | [![bio_cellular_sandwich](bio_cellular_sandwich/screenshot.png)](bio_cellular_sandwich/screenshot.png) | removed (closed skin) | 6435.5 | 0.804 | 1 | 9 | n/a | 6/6 | PASS |
-| `bio_cellular_vorosand` Cellular Voronoi sandwich, smoothed | [![bio_cellular_vorosand](bio_cellular_vorosand/screenshot.png)](bio_cellular_vorosand/screenshot.png) | removed (closed skin) | 6450.8 | 0.806 | 1 | 5 | n/a | 6/6 | PASS |
+| `bio_cellular_generic` Cellular foam (repo Voronoi wall model; not Bioinspired123D geometry) | [![bio_cellular_generic](bio_cellular_generic/screenshot.png)](bio_cellular_generic/screenshot.png) | removed (closed skin) | 5765.4 | 0.721 | 1 | 12 | n/a | 6/6 | PASS |
+| `bio_cellular_voronoi` Cellular Voronoi, smoothed (repo Voronoi wall model; not Bioinspired123D geometry) | [![bio_cellular_voronoi](bio_cellular_voronoi/screenshot.png)](bio_cellular_voronoi/screenshot.png) | removed (closed skin) | 5775.1 | 0.722 | 1 | 7 | n/a | 6/6 | PASS |
+| `bio_cellular_sandwich` Cellular sandwich (repo Voronoi wall model; not Bioinspired123D geometry) | [![bio_cellular_sandwich](bio_cellular_sandwich/screenshot.png)](bio_cellular_sandwich/screenshot.png) | removed (closed skin) | 6435.5 | 0.804 | 1 | 9 | n/a | 6/6 | PASS |
+| `bio_cellular_vorosand` Cellular Voronoi sandwich, smoothed (repo Voronoi wall model; not Bioinspired123D geometry) | [![bio_cellular_vorosand](bio_cellular_vorosand/screenshot.png)](bio_cellular_vorosand/screenshot.png) | removed (closed skin) | 6450.8 | 0.806 | 1 | 5 | n/a | 6/6 | PASS |
 | `bio_tubular_generic` Tubular (16 tubules) | [![bio_tubular_generic](bio_tubular_generic/screenshot.png)](bio_tubular_generic/screenshot.png) | removed (closed skin) | 6994.7 | 0.874 | 1 | 16 | n/a | 6/6 | PASS |
 | `bio_tubular_shapesize` Tubular, elliptical section | [![bio_tubular_shapesize](bio_tubular_shapesize/screenshot.png)](bio_tubular_shapesize/screenshot.png) | removed (closed skin) | 6492.0 | 0.811 | 1 | 16 | n/a | 6/6 | PASS |
 | `bio_tubular_layers` Tubular with cortical layers | [![bio_tubular_layers](bio_tubular_layers/screenshot.png)](bio_tubular_layers/screenshot.png) | removed (closed skin) | 7638.1 | 0.955 | 1 | 16 | n/a | 6/6 | PASS |
