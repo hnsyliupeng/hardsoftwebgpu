@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "nodes": [
+    { "id": "lat", "kind": "field", "source": { "type": "sc", "cellSize": 4, "cells": 5, "radius": 0.4 } },
+    { "id": "surf", "kind": "transform", "transform": { "op": "surface_project", "surface": "sphere", "radius": 16, "theta0": 1.0 } },
+    { "id": "out", "kind": "structure", "name": "sc_sphere_shell" }
+  ],
+  "edges": [
+    { "from": "lat", "to": "surf" },
+    { "from": "surf", "to": "out" }
+  ]
+}

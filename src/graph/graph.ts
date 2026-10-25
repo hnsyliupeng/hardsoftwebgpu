@@ -18,6 +18,8 @@ import { strutLattice, tpmsShell } from "../topology/lattice.ts";
 import { compileExpr, checkExpr } from "./expr.ts";
 import { fractalField } from "./fractal.ts";
 import { buildHarmonicDisk, type HarmonicDisk } from "./harmonic.ts";
+import { surfaceMap, surfaceError, type SurfaceSpec } from "./surface.ts";
+type V3 = [number, number, number];
 
 export type Vec3 = [number, number, number];
 
@@ -49,6 +51,10 @@ export type TransformSpec =
   // The domain is a rectangle `box` (n x n cells) or an ellipse `ellipse` (n rings; a disk when the semi-axes are equal).
   // Points outside the disk are clipped (max with |p| - R).
   | { op: "harmonic_disk"; radius: number; box?: { min: [number, number]; max: [number, number] }; ellipse?: { centre: [number, number]; semi: [number, number] }; n?: number }
+  // Projection of the source volume onto a parametric surface (C1, closed form). x, y are arc lengths on the surface,
+  // z is the offset along the normal. See surface.ts for the formulas and the Lipschitz bound.
+  | { op: "surface_project"; surface: "sphere"; radius: number; phi0?: number; theta0: number }
+  | { op: "surface_project"; surface: "torus"; major: number; minor: number; u0?: number; v0: number }
   | { op: "shear"; a: number; b: number; c: number }
   | { op: "gradient"; axis: "x" | "y" | "z"; slope: number; centre: number }
   // Offset-type density functions (B3): f' = f - g(x). g is a scalar field of the point.
@@ -144,6 +150,11 @@ function checkTransform(n: GraphNode & { kind: "transform" }, issues: GraphIssue
       need(isNum(t.r0) && (t.r0 as number) > 0, "conformal_log: r0 must be > 0");
       need(isNum(t.scale) && (t.scale as number) > 0, "conformal_log: scale must be > 0");
       break;
+    case "surface_project": {
+      const e = surfaceError(t as unknown as SurfaceSpec);
+      need(e === null, `surface_project: ${e}`);
+      break;
+    }
     case "harmonic_disk": {
       need(isNum(t.radius) && (t.radius as number) > 0, "harmonic_disk: radius must be > 0");
       const okPt = (q: unknown) => Array.isArray(q) && q.length === 2 && q.every((v) => isNum(v));
@@ -356,6 +367,8 @@ function inverseMap(t: TransformSpec): ((p: Vec3) => Vec3) | null {
       const m = mobiusMaps(t);
       return m.inverse;
     }
+    case "surface_project":
+      return surfaceMap(t as unknown as SurfaceSpec).inverse;
     case "harmonic_disk": {
       // Points outside the disk are projected onto it (the compiled field clips them away).
       const H = harmonicOf(t);
@@ -475,6 +488,10 @@ function transformBounds(b: Bounds, t: TransformSpec): Bounds {
   }
   if (t.op === "harmonic_disk") {
     return { min: [-t.radius, -t.radius, b.min[2]], max: [t.radius, t.radius, b.max[2]] } as Bounds;
+  }
+  if (t.op === "surface_project") {
+    const sb = surfaceMap(t as unknown as SurfaceSpec).bounds({ min: b.min as V3, max: b.max as V3 });
+    return { min: sb.min, max: sb.max } as Bounds;
   }
   if (t.op === "mobius") {
     // The image of a box under a Möbius map is bounded by circular arcs. Sample its boundary densely and
@@ -641,6 +658,8 @@ function forwardMap(t: TransformSpec, p: Vec3): Vec3 {
       return conformalLog(t).forward(p);
     case "mobius":
       return mobiusMaps(t).forward(p);
+    case "surface_project":
+      return surfaceMap(t as unknown as SurfaceSpec).forward(p);
     case "harmonic_disk": {
       const q = harmonicOf(t).forward([p[0], p[1]]);
       return [q[0], q[1], p[2]];
@@ -758,6 +777,20 @@ export function compileGraph(g: StructureGraph, structureId: string): Field {
           return inner.eval(q[0], q[1], q[2]) / lambda;
         },
         expr: `(${inner.expr}) o conformal_log(r0=${t.r0}, s=${t.scale}) / ${lambda.toFixed(4)}`,
+      };
+      continue;
+    }
+    if (t.op === "surface_project") {
+      // Normalise by lambda = max(1, sup of the inverse Jacobian rows) over the source box (exact for these maps).
+      const m = surfaceMap(t as unknown as SurfaceSpec);
+      const lambda = m.lambda({ min: inner.bounds.min as V3, max: inner.bounds.max as V3 });
+      field = {
+        bounds: b,
+        eval: (x, y, z) => {
+          const q = inv([x, y, z]);
+          return inner.eval(q[0], q[1], q[2]) / lambda;
+        },
+        expr: `(${inner.expr}) o surface_project(${t.surface}) / ${lambda.toFixed(4)}`,
       };
       continue;
     }

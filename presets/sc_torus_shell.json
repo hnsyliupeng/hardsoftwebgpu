@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "nodes": [
+    { "id": "lat", "kind": "field", "source": { "type": "sc", "cellSize": 4, "cells": 5, "radius": 0.4 } },
+    { "id": "surf", "kind": "transform", "transform": { "op": "surface_project", "surface": "torus", "major": 40, "minor": 10, "v0": -1.0 } },
+    { "id": "out", "kind": "structure", "name": "sc_torus_shell" }
+  ],
+  "edges": [
+    { "from": "lat", "to": "surf" },
+    { "from": "surf", "to": "out" }
+  ]
+}

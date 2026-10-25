@@ -111,3 +111,18 @@ so the source spacing is kept; `res` is the source resolution.
 - Numbers: 908.9 mm³ at res_transformed 336 vs Monte Carlo 911.6 mm³ (−0.30 %), 0 components removed.
 - Render: `sc_harmonic_ellipse_{iso,top}.png` at res 240. Field-based (non-exact). The top view shows a swirl with cut faces at the disk edge.
 - Tests: `tests/harmonic.test.ts`.
+
+## 14. `sc_sphere_shell` — lattice projected onto a sphere patch
+- Chain: SC lattice (cell 4 mm, 5 cells, r 0.4, source [0, 20]³) → surface projection onto a sphere of radius 16 mm (x = arc length in φ, y = arc length in θ from θ0 = 1.0, z = normal offset, so the shell is 20 mm thick).
+- Shows: the sphere case of the surface projection. λ = 1.2852 (exact).
+- Numbers: 1724.2 mm³ mesh (res_transformed 515) vs weighted Monte Carlo 1720.0 mm³ (+0.24 %), 0 components removed.
+- Render: `sc_sphere_shell_{iso,top}.png` at res 240. Field-based (non-exact).
+- Tests: `tests/surface.test.ts`.
+
+## 15. `sc_torus_shell` — lattice projected onto a torus patch
+- Chain: SC lattice → surface projection onto a torus with major radius 40 mm and minor radius 10 mm (v0 = −1.0; the shell runs from tube radius 10 to 30 mm).
+- Shows: the torus case of the surface projection. The outer side of the torus, so λ = 1 (exact).
+- Numbers: 1935.3 mm³ mesh (res_transformed 618) vs weighted Monte Carlo 1932.5 mm³ (+0.14 %), 0 components removed.
+- Render: `sc_torus_shell_{iso,top}.png` at res 240. Field-based (non-exact).
+- Tests: `tests/surface.test.ts`.
+

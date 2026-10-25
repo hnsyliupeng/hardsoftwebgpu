@@ -34,7 +34,7 @@ Not yet implemented from B3: user expression nodes (needs a safe, sandboxed expr
 - Not volume preserving: the Jacobian is (R+t)/R, so outer material is stretched tangentially and struts thicken with radius. This is a property of wrapping, not an error; a constant strut diameter would need a per-strut radius correction (not done).
 - Tests: the source sphere's zero set maps onto the cylinder (forward/inverse consistency); 1-Lipschitz inside the domain (R = 20, sphere radius 5).
 - Preset `presets/sc_cylinder_wrap.json`: SC lattice (cell 4, 5 cells, r 0.4) wrapped on R = 6, a curved sector of about 190°. At graph_check res 96 (spacing-matched to 250): volume 1547.3 mm³ vs flat source 609.0 mm³ (ratio 2.54, close to the mean Jacobian 2.67 over t ∈ [0, 20]), 0 floating components. Render: `examples/graph_presets/sc_cylinder_wrap_iso.png`.
-- Not done from C1: general surface projection. Implemented conformal and harmonic maps: log-polar (below), Möbius (next section), and the discrete harmonic map of a rectangle or an ellipse onto a disk (section after that).
+- Not done from C1: surface projection onto arbitrary parametric surfaces (only the sphere and the torus are implemented, see the surface section). Implemented conformal and harmonic maps: log-polar (below), Möbius, and the discrete harmonic map of a rectangle or an ellipse onto a disk.
 - Render: `examples/graph_presets/sc_cylinder_wrap_{iso,top}.png` (res 96, 57,696 triangles). Thin struts show some aliasing where they are narrow relative to the grid spacing.
 
 ## Conformal log-polar map (C1, second op)
@@ -78,6 +78,17 @@ Not yet implemented from B3: user expression nodes (needs a safe, sandboxed expr
 - Volume (MC over the disk, z ∈ [0, 20]): 430.5 mm³. Mesh: 417.3 mm³ at res 160 (res_transformed 224); 430.4 mm³ at res 320 (res_transformed 448), which agrees with MC to 0.03 %. The earlier 3 % gap was resolution, because the map compresses the lattice in places.
 - Source-box choice: box [0, 20]² (lattice fills the disk) gave 980.6 mm³ at res_transformed 224 against MC 1015.7, about 3.5 % low, the same kind of gap as the larger box at that resolution. It was not run at high resolution, so it is not verified. The preset uses the larger box, which was verified at res_transformed 448.
 - Render: `examples/graph_presets/sc_harmonic_disk_{iso,top}.png` at res 448 (2.13 M triangles). Field-based (non-exact). The visible outline is the image of the lattice's own [0, 20]² cut faces, not the disk: the lattice does not reach the circle, so the disk clip is not visible in this preset.
+
+## Surface projection: sphere and torus (C1, closed form)
+Source (x, y, z): x and y are arc lengths on the surface, z is the offset along the normal (`src/graph/surface.ts`).
+- Sphere: `{ "op": "surface_project", "surface": "sphere", "radius": R, "phi0": φ0 (optional, default 0), "theta0": θ0 }`. φ = φ0 + x/R, θ = θ0 + y/R, r = R + z. P = r (sin θ cos φ, sin θ sin φ, cos θ). Requires 0 < θ0 and θ0 + y_max/R < π (checked at compile).
+- Torus: `{ "op": "surface_project", "surface": "torus", "major": Rm, "minor": Rt, "u0": u0 (optional), "v0": v0 }`. u = u0 + x/Rm, v = v0 + y/Rt, r = Rt + z. P = ((Rm + r cos v) cos u, (Rm + r cos v) sin u, r sin v). Requires Rm + r cos v > 0 over the patch (checked).
+- Inverse: analytic. x and y are wrapped into the window [0, 2πR) (or (−π Rt, π Rt] for v), so the seam at x = 0 is the box face. Points outside the patch map outside the source box, where the lattice is empty.
+- Lipschitz: the Jacobian rows of the inverse are orthogonal, so the operator norm is the largest row norm. Sphere: max(R/(r sin θ), R/r). Torus: max(Rm/ρ, Rt/r) with ρ = Rm + r cos v. The sup is attained at the corners of the (y, z) box, and the grid includes them, so λ = max(1, sup) is exact. Sphere preset λ = 1.2852 (checked against finite differences: operator norm max 1.2725). Torus inner test case λ > 1 (Rm 50, Rt 10, v0 1.2) is covered by a finite-difference test.
+- Tests: `tests/surface.test.ts` (7): round trip, points on the offset surface, λ against finite differences, identity field(F(forward s)) = inner(s)/λ, 1-Lipschitz on the image, validation and patch limits, presets.
+- Presets: `presets/sc_sphere_shell.json` (R 16, θ0 1.0; the 20 mm lattice becomes a 20 mm thick shell patch about 72° by 72°) and `presets/sc_torus_shell.json` (Rm 40, Rt 10, v0 −1.0; a torus patch with r from 10 to 30).
+- Volume: source-lattice Monte Carlo weighted by the volume element (sphere r² sin θ / R², torus rr·r / (Rm·Rt)): sphere 1720.0 mm³, torus 1932.5 mm³. Mesh at res 240 (res_transformed 515 sphere, 618 torus): 1724.2 mm³ (+0.24 %) and 1935.3 mm³ (+0.14 %), 0 components removed.
+- Renders: `examples/graph_presets/sc_{sphere,torus}_shell_{iso,top}.png` at res 240. Field-based (non-exact). Top views show the patch: the sphere as a fan of radial and concentric struts, the torus as a curved tube patch. Some thin struts in the compressed regions are aliased at this resolution.
 
 ## Hierarchical (multi-scale) SC source (C2, partial)
 `{ "type": "hierarchical_sc", cellSize, cells, radius, levels (1..4), divisor (2 or 3) }`.
