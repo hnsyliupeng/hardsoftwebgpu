@@ -34,7 +34,7 @@ Not yet implemented from B3: user expression nodes (needs a safe, sandboxed expr
 - Not volume preserving: the Jacobian is (R+t)/R, so outer material is stretched tangentially and struts thicken with radius. This is a property of wrapping, not an error; a constant strut diameter would need a per-strut radius correction (not done).
 - Tests: the source sphere's zero set maps onto the cylinder (forward/inverse consistency); 1-Lipschitz inside the domain (R = 20, sphere radius 5).
 - Preset `presets/sc_cylinder_wrap.json`: SC lattice (cell 4, 5 cells, r 0.4) wrapped on R = 6, a curved sector of about 190°. At graph_check res 96 (spacing-matched to 250): volume 1547.3 mm³ vs flat source 609.0 mm³ (ratio 2.54, close to the mean Jacobian 2.67 over t ∈ [0, 20]), 0 floating components. Render: `examples/graph_presets/sc_cylinder_wrap_iso.png`.
-- Not done from C1: harmonic (general) conformal mapping on an arbitrary parameter plane; general surface projection. The log-polar conformal map below is the one conformal case implemented.
+- Not done from C1: harmonic (general) conformal mapping on an arbitrary parameter plane (discrete harmonic map); general surface projection. Implemented conformal maps: log-polar (below) and the Möbius map (next section).
 - Render: `examples/graph_presets/sc_cylinder_wrap_{iso,top}.png` (res 96, 57,696 triangles). Thin struts show some aliasing where they are narrow relative to the grid spacing.
 
 ## Conformal log-polar map (C1, second op)
@@ -46,6 +46,19 @@ Not yet implemented from B3: user expression nodes (needs a safe, sandboxed expr
 - Preset `presets/sc_conformal_log.json`: SC (cell 4 mm, 5 cells, r 0.4) on the source box [0, 20]³ with r0 = 16, s = 20. The world image is a fan about 87 mm across.
 - Volume check: the transformed/source ratio falls with resolution: 2.63 (res 48), 2.23 (72), 2.16 (96), 2.09 (128). It is predicted as the mean of (|w|/s)² over x ∈ [0, 20], which is 2.044. The ratio is still converging at the resolutions run, and the source volume is itself resolution-dependent (381.8, 547.4, 609.0, 643.3 mm³). At res 128 the transformed volume is 1344.0 mm³ with 0 floating components.
 - Render: `examples/graph_presets/sc_conformal_log_{iso,top}.png` at res 128 (32,616 triangles). The res 96 render (12,844 triangles) was too aliased near the axis to inspect, so it was replaced.
+
+## Möbius map (C1, closed-form conformal)
+`{ "op": "mobius", "a": [re, im], "b": [re, im], "c": [re, im], "d": [re, im] }`: source (x, y, z) with s = x + i·y maps to w = (a·s + b)/(c·s + d), z unchanged. Inverse: s = (d·w − b)/(a − c·w).
+- Requirements: a·d − b·c ≠ 0 (checked), and the source box must not contain the pole −d/c (checked at compile time; the image would be unbounded).
+- Conformal: |D forward| = |det|/|c·s + d|², |D inverse| = |det|/|a − c·w|². The 3D map is conformal in xy and the identity in z.
+- Lipschitz normalisation: Λ = max(1, 1.01 · sup over the image of |D inverse|). The sup is taken over the sampled image boundary (400 samples per edge). It is attained on the boundary because the pole a/c of the inverse lies outside the image and log|a − c·w| is harmonic. The 1 % margin covers sampling error.
+- Bounds: the image boundary is sampled densely and padded by 1 % of its size.
+- Tests: `tests/mobius.test.ts` (8): Jacobian (conformal, finite differences), inverse identity, zero set and scaled interior value on a sphere source, Λ against a dense grid, 1-Lipschitz, bounds, validation (det = 0 and non-finite rejected), pole-in-box rejected, shipped preset compiles.
+- Preset `presets/sc_mobius.json`: SC (cell 4, 5 cells, r 0.4) on [0, 20]³ with a = 1, b = 0, c = −0.02 + 0.01i, d = 1. The pole is at (40, 20), outside the box, so the far corner is stretched by about 25 in area.
+- Volume check: graph_check at res 128 gives 3579.8 mm³ transformed vs 643.3 mm³ source (ratio 5.56). A Monte Carlo estimate of ∫ (material indicator) · |f'|² over the source box gives 3553 mm³ (0.75 % from the transformed mesh). The unweighted mean of |f'|² (5.31) gives 3414 mm³, so the weighting by material matters.
+- Render: `examples/graph_presets/sc_mobius_{iso,top}.png` at res 457 (1.35 M triangles, the spacing-matched resolution). Field-based (non-exact).
+- Not done: the Möbius map is only the closed-form subset of conformal maps. General harmonic maps on arbitrary parameter planes still need a discrete solver.
+- Repair note: `conformal_log` used Λ = sup|D inverse| without the z-direction norm. It now uses max(1, sup). The shipped preset has Λ = 1.6, so its output is unchanged.
 
 ## Hierarchical (multi-scale) SC source (C2, partial)
 `{ "type": "hierarchical_sc", cellSize, cells, radius, levels (1..4), divisor (2 or 3) }`.

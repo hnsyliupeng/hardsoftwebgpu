@@ -41,6 +41,9 @@ export type TransformSpec =
   // Conformal log-polar map (C1): w = r0 * exp((x + i y) / scale). Angle-preserving; the local scale is |w|/scale.
   // The source y-extent must stay inside (-pi*scale, pi*scale] so the angle does not wrap.
   | { op: "conformal_log"; r0: number; scale: number }
+  // Möbius map of the xy plane (C1, closed form): s = x + i y -> w = (a s + b) / (c s + d); z unchanged.
+  // Conformal. Coefficients are complex numbers [re, im]. The source box must not contain the pole -d/c.
+  | { op: "mobius"; a: [number, number]; b: [number, number]; c: [number, number]; d: [number, number] }
   | { op: "shear"; a: number; b: number; c: number }
   | { op: "gradient"; axis: "x" | "y" | "z"; slope: number; centre: number }
   // Offset-type density functions (B3): f' = f - g(x). g is a scalar field of the point.
@@ -136,6 +139,15 @@ function checkTransform(n: GraphNode & { kind: "transform" }, issues: GraphIssue
       need(isNum(t.r0) && (t.r0 as number) > 0, "conformal_log: r0 must be > 0");
       need(isNum(t.scale) && (t.scale as number) > 0, "conformal_log: scale must be > 0");
       break;
+    case "mobius": {
+      const cs = [t.a, t.b, t.c, t.d];
+      need(cs.every((z) => Array.isArray(z) && z.length === 2 && z.every((v) => isNum(v))), "mobius: a, b, c, d must be complex numbers [re, im]");
+      if (cs.every((z) => Array.isArray(z) && z.length === 2 && z.every((v) => isNum(v)))) {
+        const det = cdetOf(t as MobiusSpec);
+        need(Math.hypot(det[0], det[1]) > 1e-9, "mobius: a*d - b*c must be non-zero");
+      }
+      break;
+    }
     case "wrap":
       need(isNum(t.radius) && (t.radius as number) > 0, "wrap: radius must be > 0");
       need(isNum(t.phase), "wrap: phase must be a number (radians)");
@@ -314,6 +326,10 @@ function inverseMap(t: TransformSpec): ((p: Vec3) => Vec3) | null {
       return (p) => [p[0] / t.factors[0], p[1] / t.factors[1], p[2] / t.factors[2]];
     case "conformal_log":
       return conformalLog(t).inverse;
+    case "mobius": {
+      const m = mobiusMaps(t);
+      return m.inverse;
+    }
     case "wrap":
       return (p) => {
         const r = Math.hypot(p[0], p[1]);
@@ -421,6 +437,17 @@ function transformBounds(b: Bounds, t: TransformSpec): Bounds {
     const R = t.r0 * Math.exp(b.max[0] / t.scale);
     return { min: [-R, -R, b.min[2]], max: [R, R, b.max[2]] } as Bounds;
   }
+  if (t.op === "mobius") {
+    // The image of a box under a Möbius map is bounded by circular arcs. Sample its boundary densely and
+    // pad by 1 % of the image size. Throws if the pole -d/c lies in the source box (the image is unbounded).
+    const m = mobiusMaps(t);
+    if (m.poleInside(b)) throw new Error("mobius: the source box contains the pole -d/c; the image is unbounded");
+    const pts = m.imageBoundary(b);
+    const min: Vec3 = [Infinity, Infinity, b.min[2]], max: Vec3 = [-Infinity, -Infinity, b.max[2]];
+    for (const q of pts) for (let a = 0; a < 2; a++) { min[a] = Math.min(min[a], q[a]); max[a] = Math.max(max[a], q[a]); }
+    for (let a = 0; a < 2; a++) { const pad = 0.01 * (max[a] - min[a]); min[a] -= pad; max[a] += pad; }
+    return { min, max } as Bounds;
+  }
   if (t.op === "wrap") {
     const rOut = t.radius + Math.max(Math.abs(b.min[1]), Math.abs(b.max[1]));
     return { min: [-rOut, -rOut, b.min[2]], max: [rOut, rOut, b.max[2]] } as Bounds;
@@ -458,6 +485,83 @@ export function conformalLog(t: { r0: number; scale: number }): { forward: (p: V
   };
 }
 
+/** Complex number as [re, im]. */
+type Cx = [number, number];
+export type MobiusSpec = { a: Cx; b: Cx; c: Cx; d: Cx };
+
+function cmul(p: Cx, q: Cx): Cx { return [p[0] * q[0] - p[1] * q[1], p[0] * q[1] + p[1] * q[0]]; }
+function cadd(p: Cx, q: Cx): Cx { return [p[0] + q[0], p[1] + q[1]]; }
+function csub(p: Cx, q: Cx): Cx { return [p[0] - q[0], p[1] - q[1]]; }
+function cdiv(p: Cx, q: Cx): Cx {
+  const den = q[0] * q[0] + q[1] * q[1];
+  return [(p[0] * q[0] + p[1] * q[1]) / den, (p[1] * q[0] - p[0] * q[1]) / den];
+}
+function cdetOf(t: MobiusSpec): Cx { return csub(cmul(t.a, t.d), cmul(t.b, t.c)); }
+function fmtC(z: Cx): string { return `${z[0]}${z[1] >= 0 ? "+" : ""}${z[1]}i`; }
+
+/** Boundary samples per edge of the source box when bounding a Möbius image. */
+const MOBIUS_EDGE_SAMPLES = 400;
+/** Safety factor on the sampled supremum of |D inverse| (the samples are finite; 1 % keeps the bound conservative). */
+const MOBIUS_SAFETY = 1.01;
+
+/**
+ * Möbius map w = (a s + b)/(c s + d) of the xy plane (s = x + i y), z unchanged, with its inverse.
+ * Conformal: |D forward| = |det| / |c s + d|^2 and |D inverse| = |det| / |a - c w|^2, det = a d - b c.
+ */
+export function mobiusMaps(t: MobiusSpec): {
+  forward: (p: Vec3) => Vec3;
+  inverse: (p: Vec3) => Vec3;
+  poleInside: (b: Bounds) => boolean;
+  imageBoundary: (b: Bounds) => Cx[];
+  lambda: (b: Bounds) => number;
+} {
+  const { a, b, c, d } = t;
+  const det = cdetOf(t);
+  const cZero = c[0] === 0 && c[1] === 0;
+  const pole: Cx = cZero ? [NaN, NaN] : cdiv([-d[0], -d[1]], c);
+  const toW = (s: Cx): Cx => cdiv(cadd(cmul(a, s), b), cadd(cmul(c, s), d));
+  const toS = (w: Cx): Cx => cdiv(csub(cmul(d, w), b), csub(a, cmul(c, w)));
+  /** Boundary of the source box in the xy plane, sampled. */
+  const edgeSamples = (bx: Bounds): Cx[] => {
+    const [x0, y0] = bx.min, [x1, y1] = bx.max;
+    const out: Cx[] = [];
+    const n = MOBIUS_EDGE_SAMPLES;
+    for (let i = 0; i <= n; i++) {
+      const u = i / n;
+      const x = x0 + (x1 - x0) * u, y = y0 + (y1 - y0) * u;
+      out.push([x, y0], [x, y1], [x0, y], [x1, y]);
+    }
+    return out;
+  };
+  return {
+    forward: (p) => {
+      const w = toW([p[0], p[1]]);
+      return [w[0], w[1], p[2]];
+    },
+    inverse: (p) => {
+      const s = toS([p[0], p[1]]);
+      return [s[0], s[1], p[2]];
+    },
+    poleInside: (bx) => {
+      if (cZero) return false;
+      return pole[0] >= bx.min[0] && pole[0] <= bx.max[0] && pole[1] >= bx.min[1] && pole[1] <= bx.max[1];
+    },
+    imageBoundary: (bx) => edgeSamples(bx).map((s) => toW(s)),
+    lambda: (bx) => {
+      // sup over the image boundary of |det| / |a - c w|^2. The sup over the image is attained on its boundary:
+      // the pole a/c of the inverse is not in the image, and log|a - c w| is harmonic.
+      let sup = 0;
+      for (const s of edgeSamples(bx)) {
+        const w = toW(s);
+        const den = csub(a, cmul(c, w));
+        const v = Math.hypot(det[0], det[1]) / (den[0] * den[0] + den[1] * den[1]);
+        if (v > sup) sup = v;
+      }
+      return Math.max(1, MOBIUS_SAFETY * sup);
+    },
+  };
+}
+
 /** Angle wrapped into (-pi, pi]. */
 function wrapAngle(a: number): number {
   let x = a % (2 * Math.PI);
@@ -483,6 +587,8 @@ function forwardMap(t: TransformSpec, p: Vec3): Vec3 {
       return [p[0] * t.factors[0], p[1] * t.factors[1], p[2] * t.factors[2]];
     case "conformal_log":
       return conformalLog(t).forward(p);
+    case "mobius":
+      return mobiusMaps(t).forward(p);
     case "wrap": {
       const phi = t.phase + (p[0] - t.s0) / t.radius, rr = t.radius + p[1];
       return [rr * Math.cos(phi), rr * Math.sin(phi), p[2]];
@@ -585,8 +691,10 @@ export function compileGraph(g: StructureGraph, structureId: string): Field {
       // Conformal: the inverse Jacobian has norm scale/|w|, largest at the smallest radius in the source box.
       // Lambda = sup |D inverse| = scale / (r0 * exp(x_min / scale)). Dividing by it keeps the field 1-Lipschitz,
       // and the zero set is unchanged.
+      // The z direction has norm 1, so the full normaliser is max(1, sup |D inverse|). Without the max a sup
+      // below 1 would make the z gradient exceed 1 (not 1-Lipschitz).
       const xMin = (inner.bounds as { min: number[] }).min[0];
-      const lambda = t.scale / (t.r0 * Math.exp(xMin / t.scale));
+      const lambda = Math.max(1, t.scale / (t.r0 * Math.exp(xMin / t.scale)));
       field = {
         bounds: b,
         eval: (x, y, z) => {
@@ -594,6 +702,22 @@ export function compileGraph(g: StructureGraph, structureId: string): Field {
           return inner.eval(q[0], q[1], q[2]) / lambda;
         },
         expr: `(${inner.expr}) o conformal_log(r0=${t.r0}, s=${t.scale}) / ${lambda.toFixed(4)}`,
+      };
+      continue;
+    }
+    if (t.op === "mobius") {
+      // Conformal: |D inverse| = |det| / |a - c w| in the image plane (the z direction has norm 1). The sup over the
+      // image of the source box is attained on its boundary, because a/c (the pole of the inverse) lies outside
+      // the image and log|a - c w| is harmonic. lambda = max(1, sup) keeps the field 1-Lipschitz on the image.
+      const m = mobiusMaps(t);
+      const lambda = m.lambda(inner.bounds);
+      field = {
+        bounds: b,
+        eval: (x, y, z) => {
+          const q = inv([x, y, z]);
+          return inner.eval(q[0], q[1], q[2]) / lambda;
+        },
+        expr: `(${inner.expr}) o mobius(a=${fmtC(t.a)}, b=${fmtC(t.b)}, c=${fmtC(t.c)}, d=${fmtC(t.d)}) / ${lambda.toFixed(4)}`,
       };
       continue;
     }

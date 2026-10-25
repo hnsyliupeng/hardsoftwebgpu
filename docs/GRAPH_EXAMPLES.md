@@ -88,4 +88,12 @@ so the source spacing is kept; `res` is the source resolution.
 
 - No exact B-Rep, STEP, or GLB for any of them. Exact lattice work is tracked in `docs/EXACT_LATTICES.md`.
 - No closed outer skin (by the no-skin rule). Clip is the only boundary operation.
-- No lattice tiling of the fractal, and no general (harmonic) conformal mapping (C1). The log-polar map is implemented; see `docs/STRUCTURE_GRAPH.md`.
+- No lattice tiling of the fractal, and no general (harmonic) conformal mapping (C1). The closed-form Möbius map is in section 11.
+ The log-polar map is implemented; see `docs/STRUCTURE_GRAPH.md`.
+
+## 11. `sc_mobius` — lattice under a Möbius map
+- Chain: SC lattice (cell 4 mm, 5 cells, r 0.4, source box [0, 20]³) → Möbius map w = (a·s + b)/(c·s + d) = s/((−0.02 + 0.01i)·s + 1) with s = x + i·y (a = 1, b = 0, c = −0.02 + 0.01i, d = 1), z unchanged.
+- Shows: a second conformal case of C1 with a pole outside the box. The far corner is stretched by about 25 in area; the field is 1-Lipschitz (Λ normalisation over the image boundary).
+- Numbers: graph_check at res 128 gives 3579.8 mm³ transformed vs 643.3 mm³ source. The Jacobian-weighted Monte Carlo estimate is 3553 mm³.
+- Render: `sc_mobius_{iso,top}.png` at res 457. Field-based (non-exact).
+- Tests: `tests/mobius.test.ts`.

@@ -21,6 +21,7 @@ with `scripts/render_graph.ts <preset> <res> examples/graph_presets`.
 | `sc_cylinder_wrap` | SC, cell 4 mm, r 0.4, 5 cells | wrap onto cylinder R = 6 | 250 (spacing-matched from 96) | 1547.3 | 0 | Source 609.0. Volume ratio 2.54 ≈ mean Jacobian (R+t)/R; struts thicken outward |
 | `fractal_tiled_d2` | Fractal cube (size 24, depth 2, r0 0.8, ratio 0.7) tiled 2×2×2 (extent 48 mm) | fractal tiling | 240 | 4476.8 (320: 4533.1, still rising ~1 %/step) | 0 | Not converged to 1 %; extrapolated ~4.6–4.7 k. Field-based; top view shows 4×4 cells |
 | `sc_conformal_log` | SC, cell 4 mm, r 0.4, 5 cells, box [0,20]³ | conformal log-polar map, r0 = 16, s = 20 | 128 (graph_check 128 → 557) | 1344.0 (source 643.3 at 128) | 0 | Angle-preserving fan. Ratio 2.09 at res 128, still converging to the mean Jacobian 2.044 (2.63 at res 48). Field-based; renders at res 128 |
+| `sc_mobius` | SC, cell 4 mm, r 0.4, 5 cells, box [0,20]³ | Möbius map w = s/((−0.02+0.01i)s+1), s = x+iy, z unchanged | 128 (graph_check 128 → 457 for render) | 3579.8 (source 643.3 at 128) | 0 | Conformal. Pole at (40, 20) outside the box; far corner stretched about 25× in area. Jacobian-weighted MC gives 3553 mm³. Field-based; renders at res 457 |
 
 ## Resolution and convergence
 - `res` is the number of grid cells over the largest bounding dimension. Transforms that enlarge the
