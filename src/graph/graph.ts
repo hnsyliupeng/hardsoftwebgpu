@@ -17,6 +17,7 @@ import type { Bounds, Field } from "../topology/fields.ts";
 import { strutLattice, tpmsShell } from "../topology/lattice.ts";
 import { compileExpr, checkExpr } from "./expr.ts";
 import { fractalField } from "./fractal.ts";
+import { buildHarmonicDisk, type HarmonicDisk } from "./harmonic.ts";
 
 export type Vec3 = [number, number, number];
 
@@ -44,6 +45,9 @@ export type TransformSpec =
   // Möbius map of the xy plane (C1, closed form): s = x + i y -> w = (a s + b) / (c s + d); z unchanged.
   // Conformal. Coefficients are complex numbers [re, im]. The source box must not contain the pole -d/c.
   | { op: "mobius"; a: [number, number]; b: [number, number]; c: [number, number]; d: [number, number] }
+  // Discrete harmonic map of the source rectangle `box` (xy) onto the disk of radius `radius` (C1, general
+  // parameter plane, piecewise linear with n x n cells). Points outside the disk are clipped (max with |p| - R).
+  | { op: "harmonic_disk"; radius: number; box: { min: [number, number]; max: [number, number] }; n?: number }
   | { op: "shear"; a: number; b: number; c: number }
   | { op: "gradient"; axis: "x" | "y" | "z"; slope: number; centre: number }
   // Offset-type density functions (B3): f' = f - g(x). g is a scalar field of the point.
@@ -139,6 +143,18 @@ function checkTransform(n: GraphNode & { kind: "transform" }, issues: GraphIssue
       need(isNum(t.r0) && (t.r0 as number) > 0, "conformal_log: r0 must be > 0");
       need(isNum(t.scale) && (t.scale as number) > 0, "conformal_log: scale must be > 0");
       break;
+    case "harmonic_disk": {
+      need(isNum(t.radius) && (t.radius as number) > 0, "harmonic_disk: radius must be > 0");
+      const bx = t.box as { min?: unknown; max?: unknown } | undefined;
+      const okPt = (q: unknown) => Array.isArray(q) && q.length === 2 && q.every((v) => isNum(v));
+      need(!!bx && okPt(bx.min) && okPt(bx.max), "harmonic_disk: box must have min and max as [x, y]");
+      if (bx && okPt(bx.min) && okPt(bx.max)) {
+        const mn = bx.min as number[], mx = bx.max as number[];
+        need(mx[0] > mn[0] && mx[1] > mn[1], "harmonic_disk: box max must exceed min on both axes");
+      }
+      need(t.n === undefined || (Number.isInteger(t.n) && (t.n as number) >= 3 && (t.n as number) <= 80), "harmonic_disk: n must be an integer 3..80");
+      break;
+    }
     case "mobius": {
       const cs = [t.a, t.b, t.c, t.d];
       need(cs.every((z) => Array.isArray(z) && z.length === 2 && z.every((v) => isNum(v))), "mobius: a, b, c, d must be complex numbers [re, im]");
@@ -330,6 +346,16 @@ function inverseMap(t: TransformSpec): ((p: Vec3) => Vec3) | null {
       const m = mobiusMaps(t);
       return m.inverse;
     }
+    case "harmonic_disk": {
+      // Points outside the disk are projected onto it (the compiled field clips them away).
+      const H = harmonicOf(t);
+      return (p) => {
+        const r = Math.hypot(p[0], p[1]);
+        const sc = r > t.radius ? t.radius / r : 1;
+        const q = H.inverse([p[0] * sc, p[1] * sc]);
+        return [q[0], q[1], p[2]];
+      };
+    }
     case "wrap":
       return (p) => {
         const r = Math.hypot(p[0], p[1]);
@@ -437,6 +463,9 @@ function transformBounds(b: Bounds, t: TransformSpec): Bounds {
     const R = t.r0 * Math.exp(b.max[0] / t.scale);
     return { min: [-R, -R, b.min[2]], max: [R, R, b.max[2]] } as Bounds;
   }
+  if (t.op === "harmonic_disk") {
+    return { min: [-t.radius, -t.radius, b.min[2]], max: [t.radius, t.radius, b.max[2]] } as Bounds;
+  }
   if (t.op === "mobius") {
     // The image of a box under a Möbius map is bounded by circular arcs. Sample its boundary densely and
     // pad by 1 % of the image size. Throws if the pole -d/c lies in the source box (the image is unbounded).
@@ -483,6 +512,19 @@ export function conformalLog(t: { r0: number; scale: number }): { forward: (p: V
     },
     inverse: (p) => [s * Math.log(Math.hypot(p[0], p[1]) / r0), s * Math.atan2(p[1], p[0]), p[2]],
   };
+}
+
+const harmonicCache = new Map<string, HarmonicDisk>();
+/** The discrete harmonic map for a transform spec (cached by its parameters). */
+function harmonicOf(t: { radius: number; box: { min: [number, number]; max: [number, number] }; n?: number }): HarmonicDisk {
+  const n = t.n ?? 24;
+  const key = JSON.stringify([t.radius, t.box.min, t.box.max, n]);
+  let h = harmonicCache.get(key);
+  if (!h) {
+    h = buildHarmonicDisk({ radius: t.radius, box: t.box, n });
+    harmonicCache.set(key, h);
+  }
+  return h;
 }
 
 /** Complex number as [re, im]. */
@@ -589,6 +631,10 @@ function forwardMap(t: TransformSpec, p: Vec3): Vec3 {
       return conformalLog(t).forward(p);
     case "mobius":
       return mobiusMaps(t).forward(p);
+    case "harmonic_disk": {
+      const q = harmonicOf(t).forward([p[0], p[1]]);
+      return [q[0], q[1], p[2]];
+    }
     case "wrap": {
       const phi = t.phase + (p[0] - t.s0) / t.radius, rr = t.radius + p[1];
       return [rr * Math.cos(phi), rr * Math.sin(phi), p[2]];
@@ -702,6 +748,25 @@ export function compileGraph(g: StructureGraph, structureId: string): Field {
           return inner.eval(q[0], q[1], q[2]) / lambda;
         },
         expr: `(${inner.expr}) o conformal_log(r0=${t.r0}, s=${t.scale}) / ${lambda.toFixed(4)}`,
+      };
+      continue;
+    }
+    if (t.op === "harmonic_disk") {
+      // Lipschitz: the inverse is piecewise affine with constant lambda on the disk, the source field is taken as
+      // 1-Lipschitz, the projection onto the disk is 1-Lipschitz, and max of 1-Lipschitz functions is 1-Lipschitz.
+      // The clip max(., |p| - R) makes the structure end on the disk (a cut face, not a closed skin).
+      const H = harmonicOf(t);
+      const R = t.radius;
+      field = {
+        bounds: b,
+        eval: (x, y, z) => {
+          const r = Math.hypot(x, y);
+          const sc = r > R ? R / r : 1;
+          const q = H.inverse([x * sc, y * sc]);
+          const v = inner.eval(q[0], q[1], z) / H.lambda;
+          return Math.max(v, r - R);
+        },
+        expr: `max((${inner.expr}) o harmonic_disk(R=${R}, n=${H.n}) / ${H.lambda.toFixed(4)}, |p|-${R})`,
       };
       continue;
     }

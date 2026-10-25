@@ -88,7 +88,7 @@ so the source spacing is kept; `res` is the source resolution.
 
 - No exact B-Rep, STEP, or GLB for any of them. Exact lattice work is tracked in `docs/EXACT_LATTICES.md`.
 - No closed outer skin (by the no-skin rule). Clip is the only boundary operation.
-- No lattice tiling of the fractal, and no general (harmonic) conformal mapping (C1). The closed-form Möbius map is in section 11.
+- No lattice tiling of the fractal. The closed-form Möbius map is in section 11; the discrete harmonic map of a rectangle to a disk is in section 12.
  The log-polar map is implemented; see `docs/STRUCTURE_GRAPH.md`.
 
 ## 11. `sc_mobius` — lattice under a Möbius map
@@ -97,3 +97,10 @@ so the source spacing is kept; `res` is the source resolution.
 - Numbers: graph_check at res 128 gives 3579.8 mm³ transformed vs 643.3 mm³ source. The Jacobian-weighted Monte Carlo estimate is 3553 mm³.
 - Render: `sc_mobius_{iso,top}.png` at res 457. Field-based (non-exact).
 - Tests: `tests/mobius.test.ts`.
+
+## 12. `sc_harmonic_disk` — lattice under a discrete harmonic map of a rectangle onto a disk
+- Chain: SC lattice (cell 4 mm, 5 cells, r 0.4, source [0, 20]³) → harmonic map of the rectangle [−6, 26]² onto a disk of radius 14 mm (n = 24 cells per side). Clipped to the disk.
+- Shows: the general-parameter-plane case of C1 (rectangle to disk, discrete harmonic, piecewise linear). The map is not conformal; the field is 1-Lipschitz with the exact λ = 31.5.
+- Numbers: 430.4 mm³ at res_transformed 448 vs Monte Carlo 430.5 mm³.
+- Render: `sc_harmonic_disk_{iso,top}.png` at res 448. Field-based (non-exact). The visible outline is the lattice's [0, 20]² cut faces mapped by the harmonic map; the disk itself is not visible.
+- Tests: `tests/harmonic.test.ts`.

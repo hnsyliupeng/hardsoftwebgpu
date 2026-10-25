@@ -22,6 +22,7 @@ with `scripts/render_graph.ts <preset> <res> examples/graph_presets`.
 | `fractal_tiled_d2` | Fractal cube (size 24, depth 2, r0 0.8, ratio 0.7) tiled 2×2×2 (extent 48 mm) | fractal tiling | 240 | 4476.8 (320: 4533.1, still rising ~1 %/step) | 0 | Not converged to 1 %; extrapolated ~4.6–4.7 k. Field-based; top view shows 4×4 cells |
 | `sc_conformal_log` | SC, cell 4 mm, r 0.4, 5 cells, box [0,20]³ | conformal log-polar map, r0 = 16, s = 20 | 128 (graph_check 128 → 557) | 1344.0 (source 643.3 at 128) | 0 | Angle-preserving fan. Ratio 2.09 at res 128, still converging to the mean Jacobian 2.044 (2.63 at res 48). Field-based; renders at res 128 |
 | `sc_mobius` | SC, cell 4 mm, r 0.4, 5 cells, box [0,20]³ | Möbius map w = s/((−0.02+0.01i)s+1), s = x+iy, z unchanged | 128 (graph_check 128 → 457 for render) | 3579.8 (source 643.3 at 128) | 0 | Conformal. Pole at (40, 20) outside the box; far corner stretched about 25× in area. Jacobian-weighted MC gives 3553 mm³. Field-based; renders at res 457 |
+| `sc_harmonic_disk` | SC, cell 4 mm, r 0.4, 5 cells, source box [0,20]³ | discrete harmonic map of the rectangle [−6,26]² onto a disk, R = 14, n = 24, clipped to the disk | 448 (graph_check 320 → 448) | 430.4 (MC 430.5) | 0 | Not conformal. λ = 31.5 (exact, piecewise affine). Outline is the image of the lattice's own [0,20]² cut faces; the disk clip is not visible here. Field-based; renders at res 448 |
 
 ## Resolution and convergence
 - `res` is the number of grid cells over the largest bounding dimension. Transforms that enlarge the

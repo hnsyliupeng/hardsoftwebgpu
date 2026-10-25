@@ -34,7 +34,7 @@ Not yet implemented from B3: user expression nodes (needs a safe, sandboxed expr
 - Not volume preserving: the Jacobian is (R+t)/R, so outer material is stretched tangentially and struts thicken with radius. This is a property of wrapping, not an error; a constant strut diameter would need a per-strut radius correction (not done).
 - Tests: the source sphere's zero set maps onto the cylinder (forward/inverse consistency); 1-Lipschitz inside the domain (R = 20, sphere radius 5).
 - Preset `presets/sc_cylinder_wrap.json`: SC lattice (cell 4, 5 cells, r 0.4) wrapped on R = 6, a curved sector of about 190°. At graph_check res 96 (spacing-matched to 250): volume 1547.3 mm³ vs flat source 609.0 mm³ (ratio 2.54, close to the mean Jacobian 2.67 over t ∈ [0, 20]), 0 floating components. Render: `examples/graph_presets/sc_cylinder_wrap_iso.png`.
-- Not done from C1: harmonic (general) conformal mapping on an arbitrary parameter plane (discrete harmonic map); general surface projection. Implemented conformal maps: log-polar (below) and the Möbius map (next section).
+- Not done from C1: general surface projection. Implemented conformal and harmonic maps: log-polar (below), Möbius (next section), and the discrete harmonic map of a rectangle onto a disk (section after that).
 - Render: `examples/graph_presets/sc_cylinder_wrap_{iso,top}.png` (res 96, 57,696 triangles). Thin struts show some aliasing where they are narrow relative to the grid spacing.
 
 ## Conformal log-polar map (C1, second op)
@@ -59,6 +59,20 @@ Not yet implemented from B3: user expression nodes (needs a safe, sandboxed expr
 - Render: `examples/graph_presets/sc_mobius_{iso,top}.png` at res 457 (1.35 M triangles, the spacing-matched resolution). Field-based (non-exact).
 - Not done: the Möbius map is only the closed-form subset of conformal maps. General harmonic maps on arbitrary parameter planes still need a discrete solver.
 - Repair note: `conformal_log` used Λ = sup|D inverse| without the z-direction norm. It now uses max(1, sup). The shipped preset has Λ = 1.6, so its output is unchanged.
+
+## Discrete harmonic map, rectangle to disk (C1, general parameter plane)
+`{ "op": "harmonic_disk", "radius": R, "box": {"min": [x0, y0], "max": [x1, y1]}, "n": n }` (n optional, default 24, integer 3..80). The source rectangle (xy) is split into an n × n grid of 2n² triangles. Boundary vertices are placed on the circle of radius R by perimeter arc length. Interior vertices satisfy the uniform (Tutte) harmonic condition, solved by Gauss-Seidel. `src/graph/harmonic.ts`.
+- Embedding: with a convex boundary and uniform weights the map is an embedding (Tutte / Floater). Checked: every world triangle has positive area (`minOrientation`).
+- Exact Lipschitz constant: the map is piecewise affine, so λ = max(1, largest singular value of the inverse affine map over all triangles). No sampling. The field is divided by λ.
+- Clip: the field is max(v, |p| − R), where v is the normalised inverse field and points outside the disk are projected onto it. This is 1-Lipschitz and continuous across the circle. The structure ends on the disk as a cut face, the same convention as the box clip.
+- The map is harmonic in the discrete sense, not conformal in general.
+- Accuracy: round trip inverse(forward(s)) = s to 1e-13. Residual of the harmonic condition ~7e-13. Boundary vertices on the circle to 4e-15.
+- Lipschitz constant grows with n: λ = 6.6 (n 8), 19.7 (n 24), 39.3 (n 48) for the box [0,20]². The square corners are singular for any map to a disk, so the inverse stretches strongly there. λ only scales the field, so the zero set and the mesh topology are unchanged.
+- Tests: `tests/harmonic.test.ts` (8): boundary and harmonic residual, embedding for n = 8, 16, 24, round trip, λ against finite-difference Jacobians at 200 points, zero set of a sphere source, 1-Lipschitz inside and outside the disk, continuity at the circle, bounds, validation.
+- Preset `presets/sc_harmonic_disk.json`: SC (cell 4, 5 cells, r 0.4) with source box [−6, 26]² (larger than the lattice, so the singular square corners carry no material), disk radius 14, n = 24. λ = 31.5.
+- Volume (MC over the disk, z ∈ [0, 20]): 430.5 mm³. Mesh: 417.3 mm³ at res 160 (res_transformed 224); 430.4 mm³ at res 320 (res_transformed 448), which agrees with MC to 0.03 %. The earlier 3 % gap was resolution, because the map compresses the lattice in places.
+- Source-box choice: box [0, 20]² (lattice fills the disk) gave 980.6 mm³ at res_transformed 224 against MC 1015.7, about 3.5 % low, the same kind of gap as the larger box at that resolution. It was not run at high resolution, so it is not verified. The preset uses the larger box, which was verified at res_transformed 448.
+- Render: `examples/graph_presets/sc_harmonic_disk_{iso,top}.png` at res 448 (2.13 M triangles). Field-based (non-exact). The visible outline is the image of the lattice's own [0, 20]² cut faces, not the disk: the lattice does not reach the circle, so the disk clip is not visible in this preset.
 
 ## Hierarchical (multi-scale) SC source (C2, partial)
 `{ "type": "hierarchical_sc", cellSize, cells, radius, levels (1..4), divisor (2 or 3) }`.
