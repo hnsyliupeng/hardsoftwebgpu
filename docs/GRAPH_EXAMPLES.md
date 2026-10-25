@@ -104,3 +104,10 @@ so the source spacing is kept; `res` is the source resolution.
 - Numbers: 430.4 mm³ at res_transformed 448 vs Monte Carlo 430.5 mm³.
 - Render: `sc_harmonic_disk_{iso,top}.png` at res 448. Field-based (non-exact). The visible outline is the lattice's [0, 20]² cut faces mapped by the harmonic map; the disk itself is not visible.
 - Tests: `tests/harmonic.test.ts`.
+
+## 13. `sc_harmonic_ellipse` — lattice under a discrete harmonic map of an ellipse onto a disk
+- Chain: SC lattice (cell 4 mm, 5 cells, r 0.4, source [0, 20]³) → harmonic map of the ellipse centred (10, 10) with semi-axes (12, 8) onto a disk of radius 14 mm (n = 16 rings). Clipped to the disk.
+- Shows: the smooth (corner-free) parameter domain of C1. λ stays bounded (2.77) where the rectangle version grows with n (the square corners are singular for any map to a disk).
+- Numbers: 908.9 mm³ at res_transformed 336 vs Monte Carlo 911.6 mm³ (−0.30 %), 0 components removed.
+- Render: `sc_harmonic_ellipse_{iso,top}.png` at res 240. Field-based (non-exact). The top view shows a swirl with cut faces at the disk edge.
+- Tests: `tests/harmonic.test.ts`.

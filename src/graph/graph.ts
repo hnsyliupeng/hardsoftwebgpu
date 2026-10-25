@@ -45,9 +45,10 @@ export type TransformSpec =
   // Möbius map of the xy plane (C1, closed form): s = x + i y -> w = (a s + b) / (c s + d); z unchanged.
   // Conformal. Coefficients are complex numbers [re, im]. The source box must not contain the pole -d/c.
   | { op: "mobius"; a: [number, number]; b: [number, number]; c: [number, number]; d: [number, number] }
-  // Discrete harmonic map of the source rectangle `box` (xy) onto the disk of radius `radius` (C1, general
-  // parameter plane, piecewise linear with n x n cells). Points outside the disk are clipped (max with |p| - R).
-  | { op: "harmonic_disk"; radius: number; box: { min: [number, number]; max: [number, number] }; n?: number }
+  // Discrete harmonic map of a source parameter domain (xy) onto the disk of radius `radius` (C1, piecewise linear).
+  // The domain is a rectangle `box` (n x n cells) or an ellipse `ellipse` (n rings; a disk when the semi-axes are equal).
+  // Points outside the disk are clipped (max with |p| - R).
+  | { op: "harmonic_disk"; radius: number; box?: { min: [number, number]; max: [number, number] }; ellipse?: { centre: [number, number]; semi: [number, number] }; n?: number }
   | { op: "shear"; a: number; b: number; c: number }
   | { op: "gradient"; axis: "x" | "y" | "z"; slope: number; centre: number }
   // Offset-type density functions (B3): f' = f - g(x). g is a scalar field of the point.
@@ -145,12 +146,21 @@ function checkTransform(n: GraphNode & { kind: "transform" }, issues: GraphIssue
       break;
     case "harmonic_disk": {
       need(isNum(t.radius) && (t.radius as number) > 0, "harmonic_disk: radius must be > 0");
-      const bx = t.box as { min?: unknown; max?: unknown } | undefined;
       const okPt = (q: unknown) => Array.isArray(q) && q.length === 2 && q.every((v) => isNum(v));
-      need(!!bx && okPt(bx.min) && okPt(bx.max), "harmonic_disk: box must have min and max as [x, y]");
-      if (bx && okPt(bx.min) && okPt(bx.max)) {
-        const mn = bx.min as number[], mx = bx.max as number[];
-        need(mx[0] > mn[0] && mx[1] > mn[1], "harmonic_disk: box max must exceed min on both axes");
+      const hasBox = t.box !== undefined, hasEll = t.ellipse !== undefined;
+      need(hasBox !== hasEll, "harmonic_disk: give exactly one of box or ellipse");
+      if (hasBox) {
+        const bx = t.box as { min?: unknown; max?: unknown };
+        need(okPt(bx.min) && okPt(bx.max), "harmonic_disk: box must have min and max as [x, y]");
+        if (okPt(bx.min) && okPt(bx.max)) {
+          const mn = bx.min as number[], mx = bx.max as number[];
+          need(mx[0] > mn[0] && mx[1] > mn[1], "harmonic_disk: box max must exceed min on both axes");
+        }
+      }
+      if (hasEll) {
+        const el = t.ellipse as { centre?: unknown; semi?: unknown };
+        need(okPt(el.centre) && okPt(el.semi), "harmonic_disk: ellipse must have centre and semi as [x, y]");
+        if (okPt(el.semi)) need((el.semi as number[]).every((v) => v > 0), "harmonic_disk: semi-axes must be > 0");
       }
       need(t.n === undefined || (Number.isInteger(t.n) && (t.n as number) >= 3 && (t.n as number) <= 80), "harmonic_disk: n must be an integer 3..80");
       break;
@@ -516,12 +526,12 @@ export function conformalLog(t: { r0: number; scale: number }): { forward: (p: V
 
 const harmonicCache = new Map<string, HarmonicDisk>();
 /** The discrete harmonic map for a transform spec (cached by its parameters). */
-function harmonicOf(t: { radius: number; box: { min: [number, number]; max: [number, number] }; n?: number }): HarmonicDisk {
+function harmonicOf(t: { radius: number; box?: { min: [number, number]; max: [number, number] }; ellipse?: { centre: [number, number]; semi: [number, number] }; n?: number }): HarmonicDisk {
   const n = t.n ?? 24;
-  const key = JSON.stringify([t.radius, t.box.min, t.box.max, n]);
+  const key = JSON.stringify([t.radius, t.box ?? null, t.ellipse ?? null, n]);
   let h = harmonicCache.get(key);
   if (!h) {
-    h = buildHarmonicDisk({ radius: t.radius, box: t.box, n });
+    h = buildHarmonicDisk({ radius: t.radius, box: t.box, ellipse: t.ellipse, n });
     harmonicCache.set(key, h);
   }
   return h;

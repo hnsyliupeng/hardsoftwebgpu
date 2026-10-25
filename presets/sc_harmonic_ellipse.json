@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "nodes": [
+    { "id": "lat", "kind": "field", "source": { "type": "sc", "cellSize": 4, "cells": 5, "radius": 0.4 } },
+    { "id": "harm", "kind": "transform", "transform": { "op": "harmonic_disk", "radius": 14, "ellipse": { "centre": [10, 10], "semi": [12, 8] }, "n": 16 } },
+    { "id": "out", "kind": "structure", "name": "sc_harmonic_ellipse" }
+  ],
+  "edges": [
+    { "from": "lat", "to": "harm" },
+    { "from": "harm", "to": "out" }
+  ]
+}

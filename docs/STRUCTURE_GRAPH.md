@@ -34,7 +34,7 @@ Not yet implemented from B3: user expression nodes (needs a safe, sandboxed expr
 - Not volume preserving: the Jacobian is (R+t)/R, so outer material is stretched tangentially and struts thicken with radius. This is a property of wrapping, not an error; a constant strut diameter would need a per-strut radius correction (not done).
 - Tests: the source sphere's zero set maps onto the cylinder (forward/inverse consistency); 1-Lipschitz inside the domain (R = 20, sphere radius 5).
 - Preset `presets/sc_cylinder_wrap.json`: SC lattice (cell 4, 5 cells, r 0.4) wrapped on R = 6, a curved sector of about 190°. At graph_check res 96 (spacing-matched to 250): volume 1547.3 mm³ vs flat source 609.0 mm³ (ratio 2.54, close to the mean Jacobian 2.67 over t ∈ [0, 20]), 0 floating components. Render: `examples/graph_presets/sc_cylinder_wrap_iso.png`.
-- Not done from C1: general surface projection. Implemented conformal and harmonic maps: log-polar (below), Möbius (next section), and the discrete harmonic map of a rectangle onto a disk (section after that).
+- Not done from C1: general surface projection. Implemented conformal and harmonic maps: log-polar (below), Möbius (next section), and the discrete harmonic map of a rectangle or an ellipse onto a disk (section after that).
 - Render: `examples/graph_presets/sc_cylinder_wrap_{iso,top}.png` (res 96, 57,696 triangles). Thin struts show some aliasing where they are narrow relative to the grid spacing.
 
 ## Conformal log-polar map (C1, second op)
@@ -60,12 +60,17 @@ Not yet implemented from B3: user expression nodes (needs a safe, sandboxed expr
 - Not done: the Möbius map is only the closed-form subset of conformal maps. General harmonic maps on arbitrary parameter planes still need a discrete solver.
 - Repair note: `conformal_log` used Λ = sup|D inverse| without the z-direction norm. It now uses max(1, sup). The shipped preset has Λ = 1.6, so its output is unchanged.
 
-## Discrete harmonic map, rectangle to disk (C1, general parameter plane)
+## Discrete harmonic map, rectangle or ellipse to disk (C1, general parameter plane)
 `{ "op": "harmonic_disk", "radius": R, "box": {"min": [x0, y0], "max": [x1, y1]}, "n": n }` (n optional, default 24, integer 3..80). The source rectangle (xy) is split into an n × n grid of 2n² triangles. Boundary vertices are placed on the circle of radius R by perimeter arc length. Interior vertices satisfy the uniform (Tutte) harmonic condition, solved by Gauss-Seidel. `src/graph/harmonic.ts`.
 - Embedding: with a convex boundary and uniform weights the map is an embedding (Tutte / Floater). Checked: every world triangle has positive area (`minOrientation`).
 - Exact Lipschitz constant: the map is piecewise affine, so λ = max(1, largest singular value of the inverse affine map over all triangles). No sampling. The field is divided by λ.
 - Clip: the field is max(v, |p| − R), where v is the normalised inverse field and points outside the disk are projected onto it. This is 1-Lipschitz and continuous across the circle. The structure ends on the disk as a cut face, the same convention as the box clip.
 - The map is harmonic in the discrete sense, not conformal in general.
+- Elliptical parameter domain: `"ellipse": {"centre": [cx, cy], "semi": [a, b]}` instead of `box` (exactly one of the two). The mesh is polar: centre, then n rings of 2n points, mapped affinely from the unit disk. A disk is the case a = b. The ellipse has no corners, so λ stays bounded: λ = 2.73 (n 8), 2.79 (n 12), 2.77 (n 16), 2.72 (n 24), 2.68 (n 32) for centre (10, 10), semi (12, 8), R = 14. Compare the rectangle (λ grows from 6.6 to 39.3 for n 8 to 48). `minOrientation` stays positive but becomes small at large n (about 1e-5 at n 32), which is a mesh-quality note, not a failure.
+- Preset `presets/sc_harmonic_ellipse.json`: SC (cell 4, 5 cells, r 0.4) mapped from the ellipse centred (10, 10) with semi-axes (12, 8) onto the disk of radius 14, n = 16. The lattice outside the ellipse is not in the image, so the ellipse boundary becomes the disk edge as a cut face. λ = 2.7738.
+- Volume: Monte Carlo over the disk (z ∈ [0, 20]) gives 911.6 mm³. Mesh at res 240 (res_transformed 336) gives 908.9 mm³ (−0.30 %), 0 components removed.
+- Render: `examples/graph_presets/sc_harmonic_ellipse_{iso,top}.png` at res 240 (res_transformed 336, 0.87 M triangles). Field-based (non-exact). The top view shows a swirl: the ellipse-to-disk map bends the lattice, and the struts end in cut faces at the disk edge.
+- Tests: `tests/harmonic.test.ts` now has 15 tests (8 rectangle, 7 ellipse, including λ bounded in n, λ against finite differences, Lipschitz, validation of the domain choice, preset).
 - Accuracy: round trip inverse(forward(s)) = s to 1e-13. Residual of the harmonic condition ~7e-13. Boundary vertices on the circle to 4e-15.
 - Lipschitz constant grows with n: λ = 6.6 (n 8), 19.7 (n 24), 39.3 (n 48) for the box [0,20]². The square corners are singular for any map to a disk, so the inverse stretches strongly there. λ only scales the field, so the zero set and the mesh topology are unchanged.
 - Tests: `tests/harmonic.test.ts` (8): boundary and harmonic residual, embedding for n = 8, 16, 24, round trip, λ against finite-difference Jacobians at 200 points, zero set of a sphere source, 1-Lipschitz inside and outside the disk, continuity at the circle, bounds, validation.

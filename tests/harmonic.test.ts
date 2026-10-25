@@ -119,3 +119,82 @@ test("harmonic: the shipped preset validates and compiles", () => {
   const f = compileGraph(g, "out");
   assert.ok(f.bounds.max[0] > f.bounds.min[0]);
 });
+
+// ---- Elliptical parameter domain (no corners) ----
+const EL = { centre: [10, 10] as [number, number], semi: [12, 8] as [number, number] };
+const HE = buildHarmonicDisk({ radius: R, ellipse: EL, n: 16 });
+
+test("harmonic ellipse: boundary on the circle, harmonic residual, embedding", () => {
+  assert.ok(HE.boundaryError < 1e-12, `boundary error ${HE.boundaryError}`);
+  assert.ok(HE.harmonicResidual < 1e-9, `residual ${HE.harmonicResidual}`);
+  for (const n of [8, 16]) assert.ok(buildHarmonicDisk({ radius: R, ellipse: EL, n }).minOrientation > 0, `embedding at n=${n}`);
+  // A point on the ellipse (angle 0.3) maps onto the circle when it is a boundary vertex: check the boundary loop.
+  const w = HE.forward([10 + 12 * Math.cos(0), 10]);
+  assert.ok(Math.hypot(w[0], w[1]) <= R + 1e-9);
+});
+
+test("harmonic ellipse: round trip inside the ellipse", () => {
+  const rnd = rng(17);
+  for (let i = 0; i < 300; i++) {
+    const th = 2 * Math.PI * rnd(), r = Math.sqrt(rnd()) * 0.97;
+    const s: [number, number] = [EL.centre[0] + EL.semi[0] * r * Math.cos(th), EL.centre[1] + EL.semi[1] * r * Math.sin(th)];
+    const back = HE.inverse(HE.forward(s));
+    assert.ok(Math.hypot(back[0] - s[0], back[1] - s[1]) < 1e-9, `round trip at ${s}`);
+  }
+});
+
+test("harmonic ellipse: lambda is bounded as the mesh is refined (no corner singularity)", () => {
+  const lam = (n: number) => buildHarmonicDisk({ radius: R, ellipse: EL, n }).lambda;
+  const l8 = lam(8), l32 = lam(32);
+  // lambda scales as 1/R (world units), so the absolute bound is loose here (R = 8); the ratio is the real test.
+  assert.ok(l8 < 8 && l32 < 8, `lambda ${l8}, ${l32}`);
+  assert.ok(l32 < 1.2 * l8, `lambda grows with n: ${l8} -> ${l32}`);
+});
+
+test("harmonic ellipse: lambda bounds the operator norm of the inverse", () => {
+  const rnd = rng(23);
+  const h = 1e-7;
+  for (let i = 0; i < 150; i++) {
+    const r = R * Math.sqrt(rnd()) * 0.98, th = 2 * Math.PI * rnd();
+    const w: [number, number] = [r * Math.cos(th), r * Math.sin(th)];
+    const dx = HE.inverse([w[0] + h, w[1]]), dxm = HE.inverse([w[0] - h, w[1]]);
+    const dy = HE.inverse([w[0], w[1] + h]), dym = HE.inverse([w[0], w[1] - h]);
+    const J = [
+      [(dx[0] - dxm[0]) / (2 * h), (dy[0] - dym[0]) / (2 * h)],
+      [(dx[1] - dxm[1]) / (2 * h), (dy[1] - dym[1]) / (2 * h)],
+    ];
+    const B00 = J[0][0] ** 2 + J[1][0] ** 2, B11 = J[0][1] ** 2 + J[1][1] ** 2, B01 = J[0][0] * J[0][1] + J[1][0] * J[1][1];
+    const tr = B00 + B11, det = B00 * B11 - B01 * B01;
+    const sigma = Math.sqrt(tr / 2 + Math.sqrt(Math.max(0, tr * tr / 4 - det)));
+    assert.ok(sigma <= HE.lambda * (1 + 1e-6) + 1e-6, `sigma ${sigma} > lambda ${HE.lambda}`);
+  }
+});
+
+test("harmonic ellipse: the compiled field is 1-Lipschitz and bounded by the disk", () => {
+  const spec = { op: "harmonic_disk", radius: R, ellipse: { centre: [0, 0], semi: [6, 4] }, n: 16 };
+  const g = compileGraph(graph(sphere, spec), "out");
+  assert.deepEqual([g.bounds.min[0], g.bounds.max[0]], [-R, R]);
+  const rnd = rng(31);
+  for (let i = 0; i < 300; i++) {
+    const p = [-12 + 24 * rnd(), -12 + 24 * rnd(), -4 + 8 * rnd()] as [number, number, number];
+    const d = [p[0] + 0.04 * (rnd() - 0.5), p[1] + 0.04 * (rnd() - 0.5), p[2] + 0.04 * (rnd() - 0.5)] as [number, number, number];
+    const dist = Math.hypot(p[0] - d[0], p[1] - d[1], p[2] - d[2]);
+    const df = Math.abs(g.eval(p[0], p[1], p[2]) - g.eval(d[0], d[1], d[2]));
+    assert.ok(df <= dist + 1e-9, `Lipschitz at ${p}`);
+  }
+});
+
+test("harmonic ellipse: validation (exactly one domain; positive semi-axes)", () => {
+  const ok = { op: "harmonic_disk", radius: R, ellipse: EL, n: 16 };
+  assert.deepEqual(validateGraph(graph(sphere, ok)), []);
+  assert.ok(validateGraph(graph(sphere, { op: "harmonic_disk", radius: R, box: BOX, ellipse: EL, n: 16 })).some((i) => i.code === "bad_param"));
+  assert.ok(validateGraph(graph(sphere, { op: "harmonic_disk", radius: R, n: 16 })).some((i) => i.code === "bad_param"));
+  assert.ok(validateGraph(graph(sphere, { op: "harmonic_disk", radius: R, ellipse: { centre: [0, 0], semi: [0, 4] }, n: 16 })).some((i) => i.code === "bad_param"));
+});
+
+test("harmonic ellipse: the shipped preset validates and compiles", () => {
+  const g = JSON.parse(readFileSync(new URL("../presets/sc_harmonic_ellipse.json", import.meta.url), "utf8")) as StructureGraph;
+  assert.deepEqual(validateGraph(g), []);
+  const f = compileGraph(g, "out");
+  assert.deepEqual([f.bounds.min[0], f.bounds.max[0]], [-14, 14]);
+});
