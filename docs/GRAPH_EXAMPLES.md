@@ -161,3 +161,10 @@ so the source spacing is kept; `res` is the source resolution.
 - Numbers: 716.5 mm³ after removing 18 floating fragments (148.4 mm³). Before removal the mesh gives 864.9 mm³ against Monte Carlo 860.7 ± 1.8 mm³ (+0.5 %). The fragment loss is a property of the source region, not a mapping error.
 - Render: `sc_polygon_star_{iso,top}.png` at res 240. Field-based (non-exact). The top view is a pinwheel of the connected struts; the disk is not filled because the isolated islands are removed.
 - Tests: `tests/polygon.test.ts`.
+
+## 21. `sc_polygon_c` — lattice under a harmonic map of a C-shaped (not star-shaped) polygon
+- Chain: SC lattice (cell 4 mm, 5 cells, r 0.4, source [0, 20]³) → discrete harmonic map of the C-shaped polygon (0,0), (20,0), (20,4), (4,4), (4,16), (20,16), (20,20), (0,20) onto the disk of radius 14 mm, n = 24, clipped. No centre is given.
+- Shows: the general path for a polygon that no single point sees entirely. It is ear-clipped into triangles, each meshed radially, with shared diagonal samples and Floater's mean-value weights. λ = 9.83.
+- Numbers: 1183.6 mm³ mesh (res_transformed 336) against Monte Carlo 1187.3 ± 2.1 mm³ (−0.31 %), 0 components removed. At res 160 the gap is −2.4 %.
+- Render: `sc_polygon_c_{iso,top}.png` at res 240. Field-based (non-exact).
+- Tests: `tests/polygon.test.ts` (embedding, boundary, round trip inside the C-shape, rejection of an explicit non-kernel centre).

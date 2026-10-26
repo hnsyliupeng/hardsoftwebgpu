@@ -81,8 +81,41 @@ test("polygon: a centre at a reflex vertex is rejected (the vertex has no angula
   assert.throws(() => buildHarmonicDisk({ radius: R, polygon: { vertices: L, centre: [10, 10] }, n: 8 }), /not star-shaped/);
 });
 
-test("polygon: a domain that is not star-shaped about its centre is rejected", () => {
-  assert.throws(() => buildHarmonicDisk({ radius: R, polygon: { vertices: C }, n: 8 }), /not star-shaped/);
+test("polygon: an explicit centre must be a star-shaped kernel point (C-shape with its default centre is triangulated instead)", () => {
+  assert.throws(() => buildHarmonicDisk({ radius: R, polygon: { vertices: C, centre: [11, 10] }, n: 8 }), /not star-shaped/);
+});
+
+test("polygon: C-shape (not star-shaped) is mapped by ear-clipping triangulation: embedding, boundary, round trip", () => {
+  const H = buildHarmonicDisk({ radius: R, polygon: { vertices: C }, n: 16 });
+  assert.ok(H.boundaryError < 1e-12, `boundary error ${H.boundaryError}`);
+  assert.ok(H.harmonicResidual < 1e-9, `residual ${H.harmonicResidual}`);
+  assert.ok(H.minOrientation > 0, `min orientation ${H.minOrientation}`);
+  assert.ok(Number.isFinite(H.lambda) && H.lambda >= 1, `lambda ${H.lambda}`);
+  for (const v of C) {
+    const w = H.forward(v);
+    assert.ok(Math.abs(Math.hypot(w[0], w[1]) - R) < 1e-9, `vertex ${v} not on circle`);
+  }
+  const rnd = rng(13);
+  let checked = 0;
+  while (checked < 200) {
+    const s: P = [20 * rnd(), 20 * rnd()];
+    if (!inside(C, s) || Math.min(...C.map((_, i) => distToSeg(s, C[i], C[(i + 1) % C.length]))) < 0.2) continue;
+    checked++;
+    const w = H.forward(s);
+    assert.ok(Math.hypot(w[0], w[1]) <= R + 1e-9, `image of ${s} outside the disk`);
+    const back = H.inverse(w);
+    assert.ok(Math.hypot(back[0] - s[0], back[1] - s[1]) < 1e-9, `round trip at ${s}`);
+    assert.ok(inside(C, back), `inverse of ${w} is outside the C-shape`);
+  }
+});
+
+test("polygon: the L-shape without a centre (triangulated path) gives the same kind of embedding", () => {
+  const H = buildHarmonicDisk({ radius: R, polygon: { vertices: L }, n: 12 });
+  assert.ok(H.minOrientation > 0 && H.boundaryError < 1e-12);
+  for (const s of lPoints(21, 60)) {
+    const back = H.inverse(H.forward(s));
+    assert.ok(Math.hypot(back[0] - s[0], back[1] - s[1]) < 1e-9, `round trip at ${s}`);
+  }
 });
 
 test("polygon: degenerate inputs are rejected", () => {

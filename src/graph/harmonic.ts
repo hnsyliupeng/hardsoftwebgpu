@@ -159,12 +159,29 @@ function buildSuperellipse(R: number, centre: Pt2, semi: Pt2, p: number, n: numb
   return buildMesh(R, src, tris, boundary, n);
 }
 
+/** Why the polygon (counter-clockwise vertices V0) is not star-shaped about c, or null if it is. */
+function starReason(V0: Pt2[], c: Pt2): string | null {
+  const m = V0.length;
+  const at = `(${c[0]}, ${c[1]})`;
+  let total = 0;
+  for (let i = 0; i < m; i++) {
+    const p = V0[i], q = V0[(i + 1) % m];
+    if (!(Math.hypot(p[0] - c[0], p[1] - c[1]) > 0)) return `polygon is not star-shaped about ${at}: the centre coincides with a polygon vertex`;
+    let d = Math.atan2(q[1] - c[1], q[0] - c[0]) - Math.atan2(p[1] - c[1], p[0] - c[0]);
+    while (d <= -Math.PI) d += 2 * Math.PI;
+    while (d > Math.PI) d -= 2 * Math.PI;
+    if (!(d > 0 && d < Math.PI)) return `polygon is not star-shaped about ${at} (edge ${i} angle step ${d})`;
+    total += d;
+  }
+  if (Math.abs(total - 2 * Math.PI) > 1e-9) return `polygon is not star-shaped about ${at}`;
+  return null;
+}
+
 /**
- * Simple polygon that is star-shaped about a centre c (any concave or convex outline that every ray from c meets once).
- * Outer ring: the boundary sampled at uniform arc length (spacing L / 2n) with every polygon vertex included, so corners
- * are mesh vertices and straight edges are exact. Ring k (1..n) is c + (k/n)(B_j - c): the same radial construction as
- * the superellipse. Star-shapedness is checked exactly: the angles of the vertices about c must increase by an amount in
- * (0, pi) at each edge and sum to 2 pi.
+ * Simple polygon (any outline, concave allowed). If `centre` is given the polygon must be star-shaped about it and the
+ * radial mesh is used. Otherwise the vertex average is tried, and a polygon that is not star-shaped about it is
+ * triangulated by ear clipping (general path, see buildPolygonGeneral). Vertices are counter-clockwise after
+ * normalisation, and repeated or collinear-degenerate input is rejected.
  */
 export function buildPolygon(R: number, vertices: Pt2[], centreIn: Pt2 | undefined, n: number): HarmonicDisk {
   if (!(R > 0) || !Number.isInteger(n) || n < 3) throw new Error("harmonic_disk: bad polygon spec (radius > 0, n integer >= 3)");
@@ -186,26 +203,29 @@ export function buildPolygon(R: number, vertices: Pt2[], centreIn: Pt2 | undefin
   if (lens.some((l) => !(l > 0))) throw new Error("harmonic_disk: polygon has a repeated vertex");
   const L = lens.reduce((x, y) => x + y, 0);
 
-  const c: Pt2 = centreIn ?? [V0.reduce((x, p) => x + p[0], 0) / m, V0.reduce((x, p) => x + p[1], 0) / m];
-  // Star-shapedness: vertex angles about c increase by (0, pi) per edge and wind once.
-  let total = 0;
-  for (let i = 0; i < m; i++) {
-    const p = V0[i], q = V0[(i + 1) % m];
-    if (!(Math.hypot(p[0] - c[0], p[1] - c[1]) > 0)) throw new Error("harmonic_disk: the centre coincides with a polygon vertex");
-    let d = Math.atan2(q[1] - c[1], q[0] - c[0]) - Math.atan2(p[1] - c[1], p[0] - c[0]);
-    while (d <= -Math.PI) d += 2 * Math.PI;
-    while (d > Math.PI) d -= 2 * Math.PI;
-    if (!(d > 0 && d < Math.PI)) throw new Error(`harmonic_disk: polygon is not star-shaped about (${c[0]}, ${c[1]}) (edge ${i} angle step ${d})`);
-    total += d;
+  if (centreIn !== undefined) {
+    const reason = starReason(V0, centreIn);
+    if (reason) throw new Error(`harmonic_disk: ${reason}`);
+    return buildPolygonRadial(R, V0, centreIn, L, n);
   }
-  if (Math.abs(total - 2 * Math.PI) > 1e-9) throw new Error(`harmonic_disk: polygon is not star-shaped about (${c[0]}, ${c[1]})`);
+  const c0: Pt2 = [V0.reduce((x, p) => x + p[0], 0) / m, V0.reduce((x, p) => x + p[1], 0) / m];
+  if (starReason(V0, c0) === null) return buildPolygonRadial(R, V0, c0, L, n);
+  return buildPolygonGeneral(R, V0, L, n);
+}
 
-  // Boundary samples: every vertex, and uniform arc-length points on each edge (spacing L / 2n).
+/**
+ * Star-shaped polygon about c. Outer ring: the boundary sampled at uniform arc length (spacing L / 2n) with every polygon
+ * vertex included, so corners are mesh vertices and straight edges are exact. Ring k (1..n) is c + (k/n)(B_j - c), the
+ * same radial construction as the superellipse.
+ */
+function buildPolygonRadial(R: number, V0: Pt2[], c: Pt2, L: number, n: number): HarmonicDisk {
+  const m = V0.length;
   const h = L / (2 * n);
   const B: Pt2[] = [];
   for (let i = 0; i < m; i++) {
     const p = V0[i], q = V0[(i + 1) % m];
-    const mi = Math.max(1, Math.round(lens[i] / h));
+    const len = Math.hypot(q[0] - p[0], q[1] - p[1]);
+    const mi = Math.max(1, Math.round(len / h));
     for (let k = 0; k < mi; k++) B.push([p[0] + (k / mi) * (q[0] - p[0]), p[1] + (k / mi) * (q[1] - p[1])]);
   }
   const M = B.length;
@@ -235,8 +255,110 @@ export function buildPolygon(R: number, vertices: Pt2[], centreIn: Pt2 | undefin
   return buildMesh(R, src, tris, boundary, n);
 }
 
+/**
+ * Ear clipping of a simple counter-clockwise polygon into triangles (no interior points). A vertex that lies on or inside
+ * a candidate ear blocks it. Throws if no ear exists (self-intersection or collinear degeneracy).
+ */
+function earClip(P: Pt2[]): number[][] {
+  const cross = (a: Pt2, b: Pt2, c: Pt2) => (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
+  let scale = 0;
+  for (const p of P) scale = Math.max(scale, Math.abs(p[0]), Math.abs(p[1]));
+  const eps = 1e-12 * scale * scale;
+  const idx = P.map((_, i) => i);
+  const out: number[][] = [];
+  while (idx.length > 3) {
+    const len = idx.length;
+    let found = false;
+    for (let k = 0; k < len && !found; k++) {
+      const i0 = idx[(k + len - 1) % len], i1 = idx[k], i2 = idx[(k + 1) % len];
+      const a = P[i0], b = P[i1], c = P[i2];
+      if (!(cross(a, b, c) > eps)) continue;
+      let blocked = false;
+      for (const j of idx) {
+        if (j === i0 || j === i1 || j === i2) continue;
+        const p = P[j];
+        if (cross(a, b, p) >= -eps && cross(b, c, p) >= -eps && cross(c, a, p) >= -eps) {
+          blocked = true;
+          break;
+        }
+      }
+      if (blocked) continue;
+      out.push([i0, i1, i2]);
+      idx.splice(k, 1);
+      found = true;
+    }
+    if (!found) throw new Error("harmonic_disk: polygon could not be triangulated (self-intersecting or degenerate)");
+  }
+  out.push([idx[0], idx[1], idx[2]]);
+  return out;
+}
+
+/**
+ * General simple polygon: ear-clipped into triangles. Each triangle is a convex piece, meshed radially from its centroid.
+ * Edges shared by two triangles (the diagonals of the clipping) carry one set of sample points, so the union is a conforming
+ * triangulation of the polygon. The outer boundary is sampled at spacing L / 2n, as in the radial mesh. Corners are mesh
+ * vertices; a reflex corner is the apex of the two triangles that meet there.
+ */
+function buildPolygonGeneral(R: number, V0: Pt2[], L: number, n: number): HarmonicDisk {
+  const m = V0.length;
+  const h = L / (2 * n);
+  const pos: number[] = [];
+  const addPt = (x: number, y: number) => {
+    pos.push(x, y);
+    return pos.length / 2 - 1;
+  };
+  for (const p of V0) addPt(p[0], p[1]); // ids 0..m-1 are the polygon vertices
+  // Edge samples keyed by the sorted vertex pair: ids [lo, s_1, ..., s_{k-1}, hi].
+  const edges = new Map<string, number[]>();
+  /** Sample ids from p to q, excluding q (so consecutive edges of a loop share no id). */
+  const edgeIds = (p: number, q: number): number[] => {
+    const lo = Math.min(p, q), hi = Math.max(p, q);
+    const key = `${lo},${hi}`;
+    let ids = edges.get(key);
+    if (!ids) {
+      const a = V0[lo], b = V0[hi];
+      const mE = Math.max(1, Math.round(Math.hypot(b[0] - a[0], b[1] - a[1]) / h));
+      ids = [lo];
+      for (let k = 1; k < mE; k++) ids.push(addPt(a[0] + (k / mE) * (b[0] - a[0]), a[1] + (k / mE) * (b[1] - a[1])));
+      ids.push(hi);
+      edges.set(key, ids);
+    }
+    return p === lo ? ids.slice(0, -1) : ids.slice(1).reverse();
+  };
+
+  const tris: number[][] = [];
+  for (const [a, b, c] of earClip(V0)) {
+    const outer = [...edgeIds(a, b), ...edgeIds(b, c), ...edgeIds(c, a)];
+    const M = outer.length;
+    const cx = (V0[a][0] + V0[b][0] + V0[c][0]) / 3, cy = (V0[a][1] + V0[b][1] + V0[c][1]) / 3;
+    const core = addPt(cx, cy);
+    const ring: number[][] = [];
+    for (let k = 1; k < n; k++) {
+      const r: number[] = [];
+      for (let j = 0; j < M; j++) {
+        const bx = pos[2 * outer[j]], by = pos[2 * outer[j] + 1];
+        r.push(addPt(cx + (k / n) * (bx - cx), cy + (k / n) * (by - cy)));
+      }
+      ring.push(r);
+    }
+    ring.push(outer); // ring n: the boundary samples of this triangle (shared ids)
+    for (let j = 0; j < M; j++) tris.push([core, ring[0][j], ring[0][(j + 1) % M]]);
+    for (let k = 1; k < n; k++) {
+      const inner = ring[k - 1], outerR = ring[k];
+      for (let j = 0; j < M; j++) {
+        const A = inner[j], Bq = inner[(j + 1) % M], D = outerR[(j + 1) % M], C = outerR[j];
+        tris.push([A, C, D]);
+        tris.push([A, D, Bq]);
+      }
+    }
+  }
+  const boundary: number[] = [];
+  for (let i = 0; i < m; i++) boundary.push(...edgeIds(i, (i + 1) % m));
+  return buildMesh(R, Float64Array.from(pos), tris, boundary, n, true);
+}
+
 /** Generic core: solve the Tutte-harmonic map of a triangle mesh with the given ccw boundary loop. */
-function buildMesh(R: number, src: Float64Array, tris: number[][], boundary: number[], n: number): HarmonicDisk {
+function buildMesh(R: number, src: Float64Array, tris: number[][], boundary: number[], n: number, mvc = false): HarmonicDisk {
   const V = src.length / 2;
   const cross = (ax: number, ay: number, bx: number, by: number) => ax * by - ay * bx;
 
@@ -267,15 +389,42 @@ function buildMesh(R: number, src: Float64Array, tris: number[][], boundary: num
   for (let v = 0; v < V; v++) if (!isBoundary[v]) interior.push(v);
   const nbrs: number[][] = interior.map((k) => [...nbSet[k]]);
 
-  // Gauss-Seidel on the uniform Laplacian.
+  // Neighbour weights. Uniform (Tutte) by default. With mvc, Floater's mean-value weights from the source triangulation:
+  // w_ij = (sum over the two triangles on edge ij of tan(theta_i / 2)) / |s_j - s_i|, theta_i the angle at i in that
+  // triangle. They are positive and reflect the source geometry, so irregular triangulations (ear clipping) distort less.
+  const wts: number[][] = interior.map((_, q) => nbrs[q].map(() => 1));
+  if (mvc) {
+    const W: Array<Map<number, number>> = Array.from({ length: V }, () => new Map<number, number>());
+    for (const [a, b, c] of tris)
+      for (const [i, j, k] of [[a, b, c], [b, c, a], [c, a, b]]) {
+        if (isBoundary[i]) continue;
+        const ux = src[2 * j] - src[2 * i], uy = src[2 * j + 1] - src[2 * i + 1];
+        const vx = src[2 * k] - src[2 * i], vy = src[2 * k + 1] - src[2 * i + 1];
+        const t = Math.tan(Math.atan2(Math.abs(ux * vy - uy * vx), ux * vx + uy * vy) / 2);
+        W[i].set(j, (W[i].get(j) ?? 0) + t);
+        W[i].set(k, (W[i].get(k) ?? 0) + t);
+      }
+    for (let q = 0; q < interior.length; q++) {
+      const i = interior[q];
+      nbrs[q].forEach((j, s) => {
+        const d = Math.hypot(src[2 * j] - src[2 * i], src[2 * j + 1] - src[2 * i + 1]);
+        wts[q][s] = (W[i].get(j) ?? 0) / d;
+      });
+    }
+  }
+
+  // Gauss-Seidel on the weighted Laplacian (weights 1 give the uniform Laplacian).
   let change = Infinity, it = 0;
   for (; it < MAX_ITER && change > 1e-13 * R; it++) {
     change = 0;
     for (let q = 0; q < interior.length; q++) {
-      const k = interior[q], nb = nbrs[q];
-      let sx = 0, sy = 0;
-      for (const u of nb) { sx += world[2 * u]; sy += world[2 * u + 1]; }
-      const nx = sx / nb.length, ny = sy / nb.length;
+      const k = interior[q], nb = nbrs[q], w = wts[q];
+      let sx = 0, sy = 0, sw = 0;
+      for (let s = 0; s < nb.length; s++) {
+        const u = nb[s];
+        sx += w[s] * world[2 * u]; sy += w[s] * world[2 * u + 1]; sw += w[s];
+      }
+      const nx = sx / sw, ny = sy / sw;
       change = Math.max(change, Math.abs(nx - world[2 * k]), Math.abs(ny - world[2 * k + 1]));
       world[2 * k] = nx;
       world[2 * k + 1] = ny;
@@ -285,10 +434,13 @@ function buildMesh(R: number, src: Float64Array, tris: number[][], boundary: num
 
   let harmonicResidual = 0;
   for (let q = 0; q < interior.length; q++) {
-    const k = interior[q], nb = nbrs[q];
-    let sx = 0, sy = 0;
-    for (const u of nb) { sx += world[2 * u]; sy += world[2 * u + 1]; }
-    harmonicResidual = Math.max(harmonicResidual, Math.abs(sx / nb.length - world[2 * k]), Math.abs(sy / nb.length - world[2 * k + 1]));
+    const k = interior[q], nb = nbrs[q], w = wts[q];
+    let sx = 0, sy = 0, sw = 0;
+    for (let s = 0; s < nb.length; s++) {
+      const u = nb[s];
+      sx += w[s] * world[2 * u]; sy += w[s] * world[2 * u + 1]; sw += w[s];
+    }
+    harmonicResidual = Math.max(harmonicResidual, Math.abs(sx / sw - world[2 * k]), Math.abs(sy / sw - world[2 * k + 1]));
   }
   let boundaryError = 0;
   for (const k of boundary) boundaryError = Math.max(boundaryError, Math.abs(Math.hypot(world[2 * k], world[2 * k + 1]) - R));
