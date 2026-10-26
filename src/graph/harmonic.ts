@@ -20,6 +20,8 @@ export type HarmonicDiskSpec = {
   ellipse?: { centre: Pt2; semi: Pt2 };
   /** Superellipse |x/a|^p + |y/b|^p <= 1 with p > 2 (convex, C^1 boundary, no corners). Exactly one of the three. */
   superellipse?: { centre: Pt2; semi: Pt2; power: number };
+  /** Simple polygon, star-shaped about `centre` (default: the vertex average). Exactly one of the four domains. */
+  polygon?: { vertices: Pt2[]; centre?: Pt2 };
   /** Resolution: grid cells per side (rectangle) or rings (ellipse; 2n points per ring). Default 24. */
   n: number;
 };
@@ -45,14 +47,15 @@ const MAX_ITER = 400000;
 
 /** Build the discrete harmonic map. Throws if the domain is invalid or the mesh is not an embedding. */
 export function buildHarmonicDisk(spec: HarmonicDiskSpec): HarmonicDisk {
-  const given = [spec.box, spec.ellipse, spec.superellipse].filter((x) => x !== undefined).length;
-  if (given > 1) throw new Error("harmonic_disk: give exactly one of box, ellipse or superellipse");
+  const given = [spec.box, spec.ellipse, spec.superellipse, spec.polygon].filter((x) => x !== undefined).length;
+  if (given > 1) throw new Error("harmonic_disk: give exactly one of box, ellipse, superellipse or polygon");
   if (spec.superellipse) {
     const s = spec.superellipse;
     return buildSuperellipse(spec.radius, s.centre, s.semi, s.power, spec.n);
   }
   if (spec.ellipse) return buildEllipse(spec.radius, spec.ellipse.centre, spec.ellipse.semi, spec.n);
-  if (!spec.box) throw new Error("harmonic_disk: no parameter domain (box or ellipse)");
+  if (spec.polygon) return buildPolygon(spec.radius, spec.polygon.vertices, spec.polygon.centre, spec.n);
+  if (!spec.box) throw new Error("harmonic_disk: no parameter domain (box, ellipse, superellipse or polygon)");
   return buildRect(spec.radius, spec.box.min, spec.box.max, spec.n);
 }
 
@@ -150,6 +153,82 @@ function buildSuperellipse(R: number, centre: Pt2, semi: Pt2, p: number, n: numb
       const A = ringId(k, j), B = ringId(k, j + 1), D = ringId(k + 1, j + 1), C = ringId(k + 1, j);
       tris.push([A, C, D]);
       tris.push([A, D, B]);
+    }
+  const boundary: number[] = [];
+  for (let j = 0; j < M; j++) boundary.push(ringId(n, j));
+  return buildMesh(R, src, tris, boundary, n);
+}
+
+/**
+ * Simple polygon that is star-shaped about a centre c (any concave or convex outline that every ray from c meets once).
+ * Outer ring: the boundary sampled at uniform arc length (spacing L / 2n) with every polygon vertex included, so corners
+ * are mesh vertices and straight edges are exact. Ring k (1..n) is c + (k/n)(B_j - c): the same radial construction as
+ * the superellipse. Star-shapedness is checked exactly: the angles of the vertices about c must increase by an amount in
+ * (0, pi) at each edge and sum to 2 pi.
+ */
+export function buildPolygon(R: number, vertices: Pt2[], centreIn: Pt2 | undefined, n: number): HarmonicDisk {
+  if (!(R > 0) || !Number.isInteger(n) || n < 3) throw new Error("harmonic_disk: bad polygon spec (radius > 0, n integer >= 3)");
+  if (vertices.length < 3) throw new Error("harmonic_disk: a polygon needs at least 3 vertices");
+  if (!vertices.every((v) => Number.isFinite(v[0]) && Number.isFinite(v[1]))) throw new Error("harmonic_disk: polygon vertices must be finite [x, y]");
+  let a2 = 0;
+  for (let i = 0; i < vertices.length; i++) {
+    const p = vertices[i], q = vertices[(i + 1) % vertices.length];
+    a2 += p[0] * q[1] - q[0] * p[1];
+  }
+  if (!(Math.abs(a2) > 1e-12)) throw new Error("harmonic_disk: polygon has zero area");
+  const V0 = a2 > 0 ? vertices : [...vertices].reverse();
+  const m = V0.length;
+  const lens: number[] = [];
+  for (let i = 0; i < m; i++) {
+    const p = V0[i], q = V0[(i + 1) % m];
+    lens.push(Math.hypot(q[0] - p[0], q[1] - p[1]));
+  }
+  if (lens.some((l) => !(l > 0))) throw new Error("harmonic_disk: polygon has a repeated vertex");
+  const L = lens.reduce((x, y) => x + y, 0);
+
+  const c: Pt2 = centreIn ?? [V0.reduce((x, p) => x + p[0], 0) / m, V0.reduce((x, p) => x + p[1], 0) / m];
+  // Star-shapedness: vertex angles about c increase by (0, pi) per edge and wind once.
+  let total = 0;
+  for (let i = 0; i < m; i++) {
+    const p = V0[i], q = V0[(i + 1) % m];
+    if (!(Math.hypot(p[0] - c[0], p[1] - c[1]) > 0)) throw new Error("harmonic_disk: the centre coincides with a polygon vertex");
+    let d = Math.atan2(q[1] - c[1], q[0] - c[0]) - Math.atan2(p[1] - c[1], p[0] - c[0]);
+    while (d <= -Math.PI) d += 2 * Math.PI;
+    while (d > Math.PI) d -= 2 * Math.PI;
+    if (!(d > 0 && d < Math.PI)) throw new Error(`harmonic_disk: polygon is not star-shaped about (${c[0]}, ${c[1]}) (edge ${i} angle step ${d})`);
+    total += d;
+  }
+  if (Math.abs(total - 2 * Math.PI) > 1e-9) throw new Error(`harmonic_disk: polygon is not star-shaped about (${c[0]}, ${c[1]})`);
+
+  // Boundary samples: every vertex, and uniform arc-length points on each edge (spacing L / 2n).
+  const h = L / (2 * n);
+  const B: Pt2[] = [];
+  for (let i = 0; i < m; i++) {
+    const p = V0[i], q = V0[(i + 1) % m];
+    const mi = Math.max(1, Math.round(lens[i] / h));
+    for (let k = 0; k < mi; k++) B.push([p[0] + (k / mi) * (q[0] - p[0]), p[1] + (k / mi) * (q[1] - p[1])]);
+  }
+  const M = B.length;
+  if (M < 3) throw new Error("harmonic_disk: polygon boundary has too few samples");
+
+  const V = 1 + n * M;
+  const ringId = (k: number, j: number) => 1 + (k - 1) * M + (((j % M) + M) % M);
+  const src = new Float64Array(2 * V);
+  src[0] = c[0];
+  src[1] = c[1];
+  for (let k = 1; k <= n; k++)
+    for (let j = 0; j < M; j++) {
+      const id = ringId(k, j);
+      src[2 * id] = c[0] + (k / n) * (B[j][0] - c[0]);
+      src[2 * id + 1] = c[1] + (k / n) * (B[j][1] - c[1]);
+    }
+  const tris: number[][] = [];
+  for (let j = 0; j < M; j++) tris.push([0, ringId(1, j), ringId(1, j + 1)]);
+  for (let k = 1; k < n; k++)
+    for (let j = 0; j < M; j++) {
+      const A = ringId(k, j), Bq = ringId(k, j + 1), D = ringId(k + 1, j + 1), C = ringId(k + 1, j);
+      tris.push([A, C, D]);
+      tris.push([A, D, Bq]);
     }
   const boundary: number[] = [];
   for (let j = 0; j < M; j++) boundary.push(ringId(n, j));

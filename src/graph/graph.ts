@@ -51,8 +51,10 @@ export type TransformSpec =
   // Discrete harmonic map of a source parameter domain (xy) onto the disk of radius `radius` (C1, piecewise linear).
   // The domain is a rectangle `box` (n x n cells) or an ellipse `ellipse` (n rings; a disk when the semi-axes are equal).
   // Points outside the disk are clipped (max with |p| - R).
-  // superellipse: |x/a|^p + |y/b|^p <= 1 with p > 2 (corner-free, convex). Give exactly one of box, ellipse, superellipse.
-  | { op: "harmonic_disk"; radius: number; box?: { min: [number, number]; max: [number, number] }; ellipse?: { centre: [number, number]; semi: [number, number] }; superellipse?: { centre: [number, number]; semi: [number, number]; power: number }; n?: number }
+  // superellipse: |x/a|^p + |y/b|^p <= 1 with p > 2 (corner-free, convex).
+  // polygon: simple polygon star-shaped about `centre` (default: vertex average); corners give large lambda (see harmonic.ts).
+  // Give exactly one of box, ellipse, superellipse, polygon.
+  | { op: "harmonic_disk"; radius: number; box?: { min: [number, number]; max: [number, number] }; ellipse?: { centre: [number, number]; semi: [number, number] }; superellipse?: { centre: [number, number]; semi: [number, number]; power: number }; polygon?: { vertices: [number, number][]; centre?: [number, number] }; n?: number }
   // Projection of the source volume onto a parametric surface (C1, closed form). x, y are arc lengths on the surface,
   // z is the offset along the normal. See surface.ts for the formulas and the Lipschitz bound.
   | { op: "surface_project"; surface: "sphere"; radius: number; phi0?: number; theta0: number }
@@ -170,8 +172,13 @@ function checkTransform(n: GraphNode & { kind: "transform" }, issues: GraphIssue
     case "harmonic_disk": {
       need(isNum(t.radius) && (t.radius as number) > 0, "harmonic_disk: radius must be > 0");
       const okPt = (q: unknown) => Array.isArray(q) && q.length === 2 && q.every((v) => isNum(v));
-      const hasBox = t.box !== undefined, hasEll = t.ellipse !== undefined, hasSup = t.superellipse !== undefined;
-      need([hasBox, hasEll, hasSup].filter(Boolean).length === 1, "harmonic_disk: give exactly one of box, ellipse or superellipse");
+      const hasBox = t.box !== undefined, hasEll = t.ellipse !== undefined, hasSup = t.superellipse !== undefined, hasPoly = t.polygon !== undefined;
+      need([hasBox, hasEll, hasSup, hasPoly].filter(Boolean).length === 1, "harmonic_disk: give exactly one of box, ellipse, superellipse or polygon");
+      if (hasPoly) {
+        const pg = t.polygon as { vertices?: unknown; centre?: unknown };
+        need(Array.isArray(pg.vertices) && pg.vertices.length >= 3 && pg.vertices.every((v) => okPt(v)), "harmonic_disk: polygon.vertices must be at least 3 points [x, y]");
+        need(pg.centre === undefined || okPt(pg.centre), "harmonic_disk: polygon.centre must be [x, y]");
+      }
       if (hasBox) {
         const bx = t.box as { min?: unknown; max?: unknown };
         need(okPt(bx.min) && okPt(bx.max), "harmonic_disk: box must have min and max as [x, y]");
@@ -567,12 +574,12 @@ export function conformalLog(t: { r0: number; scale: number }): { forward: (p: V
 
 const harmonicCache = new Map<string, HarmonicDisk>();
 /** The discrete harmonic map for a transform spec (cached by its parameters). */
-function harmonicOf(t: { radius: number; box?: { min: [number, number]; max: [number, number] }; ellipse?: { centre: [number, number]; semi: [number, number] }; superellipse?: { centre: [number, number]; semi: [number, number]; power: number }; n?: number }): HarmonicDisk {
+function harmonicOf(t: { radius: number; box?: { min: [number, number]; max: [number, number] }; ellipse?: { centre: [number, number]; semi: [number, number] }; superellipse?: { centre: [number, number]; semi: [number, number]; power: number }; polygon?: { vertices: [number, number][]; centre?: [number, number] }; n?: number }): HarmonicDisk {
   const n = t.n ?? 24;
-  const key = JSON.stringify([t.radius, t.box ?? null, t.ellipse ?? null, t.superellipse ?? null, n]);
+  const key = JSON.stringify([t.radius, t.box ?? null, t.ellipse ?? null, t.superellipse ?? null, t.polygon ?? null, n]);
   let h = harmonicCache.get(key);
   if (!h) {
-    h = buildHarmonicDisk({ radius: t.radius, box: t.box, ellipse: t.ellipse, superellipse: t.superellipse, n });
+    h = buildHarmonicDisk({ radius: t.radius, box: t.box, ellipse: t.ellipse, superellipse: t.superellipse, polygon: t.polygon, n });
     harmonicCache.set(key, h);
   }
   return h;

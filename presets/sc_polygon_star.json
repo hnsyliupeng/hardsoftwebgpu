@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": "lat",
+      "kind": "field",
+      "source": {
+        "type": "sc",
+        "cellSize": 4,
+        "cells": 5,
+        "radius": 0.4
+      }
+    },
+    {
+      "id": "harm",
+      "kind": "transform",
+      "transform": {
+        "op": "harmonic_disk",
+        "radius": 14,
+        "polygon": {
+          "vertices": [
+            [
+              19,
+              10
+            ],
+            [
+              13.2361,
+              12.3511
+            ],
+            [
+              12.7812,
+              18.5595
+            ],
+            [
+              8.7639,
+              13.8042
+            ],
+            [
+              2.7188,
+              15.2901
+            ],
+            [
+              6,
+              10
+            ],
+            [
+              2.7188,
+              4.7099
+            ],
+            [
+              8.7639,
+              6.1958
+            ],
+            [
+              12.7812,
+              1.4405
+            ],
+            [
+              13.2361,
+              7.6489
+            ]
+          ],
+          "centre": [
+            10,
+            10
+          ]
+        },
+        "n": 24
+      }
+    },
+    {
+      "id": "out",
+      "kind": "structure",
+      "name": "sc_polygon_star"
+    }
+  ],
+  "edges": [
+    {
+      "from": "lat",
+      "to": "harm"
+    },
+    {
+      "from": "harm",
+      "to": "out"
+    }
+  ]
+}

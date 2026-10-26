@@ -146,3 +146,18 @@ so the source spacing is kept; `res` is the source resolution.
 - Numbers: 810.2 mm³ mesh (res_transformed 336) vs Jacobian-weighted Monte Carlo 801.2 ± 6.1 mm³ (+1.1 %), 0 components removed.
 - Render: `sc_superellipse_disk_{iso,top}.png` at res 240 (839 k triangles). Field-based (non-exact). The top view shows a swirl whose outline follows the squarer domain; the iso view is the swirl extruded over z ∈ [0, 20], with cut faces at the disk edge.
 - Tests: `tests/superellipse.test.ts`.
+
+## 19. `sc_polygon_l` — lattice under a harmonic map of an L-shaped (concave) polygon
+- Chain: SC lattice (cell 4 mm, 5 cells, r 0.4, source [0, 20]³) → discrete harmonic map of the L-shaped polygon (0,0), (20,0), (20,10), (10,10), (10,20), (0,20), with centre (5, 5), onto the disk of radius 14 mm, n = 24, clipped to the disk.
+- Shows: a concave parameter domain with a reflex corner at (10, 10). The reflex corner is a mesh vertex and lies on the circle. λ = 4.070.
+- Numbers: 1191.5 mm³ mesh (res_transformed 336) vs Monte Carlo 1188.8 ± 2.1 mm³ (+0.2 %), 0 components removed.
+- Cost: graph_check at res 240 takes about 12 minutes, because the lattice evaluation costs about 23 µs per voxel here (about 12 µs for the superellipse).
+- Render: `sc_polygon_l_{iso,top}.png` at res 240 (1.14 M triangles). Field-based (non-exact). The top view is the disk swirl, with a visible kink where the reflex corner maps to the circle.
+- Tests: `tests/polygon.test.ts`.
+
+## 20. `sc_polygon_star` — lattice under a harmonic map of a ten-point star
+- Chain: SC lattice (cell 4 mm, 5 cells, r 0.4) → discrete harmonic map of a ten-point star (outer radius 9, inner radius 4, centre (10, 10)), n = 24, disk radius 14 mm, clipped.
+- Shows: sharp convex tips and reflex notches. The λ is erratic in n (see docs/STRUCTURE_GRAPH.md), and the notches cut the lattice into islands. λ = 2.483.
+- Numbers: 716.5 mm³ after removing 18 floating fragments (148.4 mm³). Before removal the mesh gives 864.9 mm³ against Monte Carlo 860.7 ± 1.8 mm³ (+0.5 %). The fragment loss is a property of the source region, not a mapping error.
+- Render: `sc_polygon_star_{iso,top}.png` at res 240. Field-based (non-exact). The top view is a pinwheel of the connected struts; the disk is not filled because the isolated islands are removed.
+- Tests: `tests/polygon.test.ts`.
