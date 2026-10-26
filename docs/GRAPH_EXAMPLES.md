@@ -75,7 +75,7 @@ so the source spacing is kept; `res` is the source resolution.
 ## 9. `fractal_tiled_d2` — fractal cubes tiled 2×2×2
 - Chain: fractal cube (size 24 mm, divisor 2, depth 2, r0 0.8, ratio 0.7) with `tiles` = 2 → 48 mm extent.
 - Shows: C2 tiling. Each tile is the recursive corner-substitution skeleton; shared faces are drawn twice (harmless).
-- Volume is not converged to 1 % at the resolutions run (4476.8 at 240, 4533.1 at 320). Field-based (non-exact).
+- Volume: 4564.4 mm³ at res 400, −0.83 % against a Monte Carlo reference of 4602.5 ± 5 mm³ (the mesh converges from below: 4476.8 at 240, 4533.1 at 320). Within the 1 % target; not converged to 0.5 %. Field-based (non-exact).
 - Render: `fractal_tiled_d2_{iso,top}.png` at res 240.
 
 ## 10. `sc_conformal_log` — lattice under an angle-preserving log-polar map
