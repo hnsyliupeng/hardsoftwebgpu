@@ -139,3 +139,10 @@ so the source spacing is kept; `res` is the source resolution.
 - Numbers: 578.02 mm³ mesh (res_transformed 427) vs Jacobian-weighted Monte Carlo 569.4 ± 3.1 mm³ (+1.5 %), 0 components removed.
 - Render: `sc_saddle_sheet_{iso,top}.png` at res 240. Field-based (non-exact). The top view is a cut-away of the upper half (z ≥ 9.3 mm), whose footprint is about 2.5 : 1; this matches the picture (see docs/STRUCTURE_GRAPH.md). The iso view looks like a curved lattice sheet.
 - Tests: `tests/parametric.test.ts`.
+
+## 18. `sc_superellipse_disk` — lattice under a harmonic map of a superellipse onto a disk
+- Chain: SC lattice (cell 4 mm, 5 cells, r 0.4, source [0, 20]³) → discrete harmonic map of the superellipse |x−10|/12|⁴ + |y−10|/8|⁴ ≤ 1 onto the disk of radius 14 mm, n = 16, clipped to the disk.
+- Shows: a corner-free parameter domain that is squarer than the ellipse of example 13. λ = 3.0754 (exact, piecewise affine), which converges in n; the domain is inscribed 2n-gon.
+- Numbers: 810.2 mm³ mesh (res_transformed 336) vs Jacobian-weighted Monte Carlo 801.2 ± 6.1 mm³ (+1.1 %), 0 components removed.
+- Render: `sc_superellipse_disk_{iso,top}.png` at res 240 (839 k triangles). Field-based (non-exact). The top view shows a swirl whose outline follows the squarer domain; the iso view is the swirl extruded over z ∈ [0, 20], with cut faces at the disk edge.
+- Tests: `tests/superellipse.test.ts`.

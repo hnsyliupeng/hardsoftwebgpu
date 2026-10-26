@@ -18,6 +18,8 @@ export type HarmonicDiskSpec = {
   box?: { min: Pt2; max: Pt2 };
   /** Elliptical source domain (centre, semi-axes). A disk is the case of equal semi-axes. */
   ellipse?: { centre: Pt2; semi: Pt2 };
+  /** Superellipse |x/a|^p + |y/b|^p <= 1 with p > 2 (convex, C^1 boundary, no corners). Exactly one of the three. */
+  superellipse?: { centre: Pt2; semi: Pt2; power: number };
   /** Resolution: grid cells per side (rectangle) or rings (ellipse; 2n points per ring). Default 24. */
   n: number;
 };
@@ -43,7 +45,12 @@ const MAX_ITER = 400000;
 
 /** Build the discrete harmonic map. Throws if the domain is invalid or the mesh is not an embedding. */
 export function buildHarmonicDisk(spec: HarmonicDiskSpec): HarmonicDisk {
-  if (spec.box && spec.ellipse) throw new Error("harmonic_disk: give either box or ellipse, not both");
+  const given = [spec.box, spec.ellipse, spec.superellipse].filter((x) => x !== undefined).length;
+  if (given > 1) throw new Error("harmonic_disk: give exactly one of box, ellipse or superellipse");
+  if (spec.superellipse) {
+    const s = spec.superellipse;
+    return buildSuperellipse(spec.radius, s.centre, s.semi, s.power, spec.n);
+  }
   if (spec.ellipse) return buildEllipse(spec.radius, spec.ellipse.centre, spec.ellipse.semi, spec.n);
   if (!spec.box) throw new Error("harmonic_disk: no parameter domain (box or ellipse)");
   return buildRect(spec.radius, spec.box.min, spec.box.max, spec.n);
@@ -103,6 +110,43 @@ function buildEllipse(R: number, centre: Pt2, semi: Pt2, n: number): HarmonicDis
   for (let k = 1; k < n; k++)
     for (let j = 0; j < M; j++) {
       // Quad A (inner, j), B (inner, j+1), D (outer, j+1), C (outer, j) is counter-clockwise: A, C, D, B.
+      const A = ringId(k, j), B = ringId(k, j + 1), D = ringId(k + 1, j + 1), C = ringId(k + 1, j);
+      tris.push([A, C, D]);
+      tris.push([A, D, B]);
+    }
+  const boundary: number[] = [];
+  for (let j = 0; j < M; j++) boundary.push(ringId(n, j));
+  return buildMesh(R, src, tris, boundary, n);
+}
+
+/**
+ * Superellipse |x/a|^p + |y/b|^p = 1 (p > 2). Polar mesh as for the ellipse, but ring k lies at the fraction k/n of the
+ * boundary distance along each ray: rho(theta) = (|cos/a|^p + |sin/b|^p)^(-1/p). The boundary is C^1 and convex, so the
+ * map has no corner singularities (the same reason the ellipse is corner-free).
+ */
+function buildSuperellipse(R: number, centre: Pt2, semi: Pt2, p: number, n: number): HarmonicDisk {
+  const [cx, cy] = centre, [a, b] = semi;
+  if (!(R > 0) || !(a > 0) || !(b > 0) || !(p > 2) || !Number.isFinite(p) || !Number.isInteger(n) || n < 3)
+    throw new Error("harmonic_disk: bad superellipse spec (semi-axes > 0, power > 2, n integer >= 3)");
+  const M = 2 * n;
+  const V = 1 + n * M;
+  const ringId = (k: number, j: number) => 1 + (k - 1) * M + (((j % M) + M) % M);
+  const src = new Float64Array(2 * V);
+  src[0] = cx;
+  src[1] = cy;
+  for (let k = 1; k <= n; k++)
+    for (let j = 0; j < M; j++) {
+      const th = (2 * Math.PI * j) / M;
+      const c = Math.cos(th), s = Math.sin(th);
+      const rho = Math.pow(Math.pow(Math.abs(c) / a, p) + Math.pow(Math.abs(s) / b, p), -1 / p);
+      const id = ringId(k, j);
+      src[2 * id] = cx + (k / n) * rho * c;
+      src[2 * id + 1] = cy + (k / n) * rho * s;
+    }
+  const tris: number[][] = [];
+  for (let j = 0; j < M; j++) tris.push([0, ringId(1, j), ringId(1, j + 1)]);
+  for (let k = 1; k < n; k++)
+    for (let j = 0; j < M; j++) {
       const A = ringId(k, j), B = ringId(k, j + 1), D = ringId(k + 1, j + 1), C = ringId(k + 1, j);
       tris.push([A, C, D]);
       tris.push([A, D, B]);
