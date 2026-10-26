@@ -19,6 +19,7 @@ import { compileExpr, checkExpr } from "./expr.ts";
 import { fractalField } from "./fractal.ts";
 import { buildHarmonicDisk, type HarmonicDisk } from "./harmonic.ts";
 import { surfaceMap, surfaceError, type SurfaceSpec } from "./surface.ts";
+import { paramMap, paramError, type ParamSpec } from "./parametric.ts";
 type V3 = [number, number, number];
 
 export type Vec3 = [number, number, number];
@@ -55,6 +56,11 @@ export type TransformSpec =
   // z is the offset along the normal. See surface.ts for the formulas and the Lipschitz bound.
   | { op: "surface_project"; surface: "sphere"; radius: number; phi0?: number; theta0: number }
   | { op: "surface_project"; surface: "torus"; major: number; minor: number; u0?: number; v0: number }
+  // Projection onto a general parametric surface (C1, numerical inverse by Newton, sampled Lipschitz bound).
+  // kind "ellipsoid": X = (a cos u sin v, b sin u sin v, c cos v), u = u0 + du x, v = v0 + dv y.
+  // kind "saddle":    X = (u, v, k (u^2 - v^2)), u = u0 + du x, v = v0 + dv y.  See parametric.ts.
+  | { op: "parametric_project"; kind: "ellipsoid"; a: number; b: number; c: number; u0?: number; v0: number; du: number; dv: number }
+  | { op: "parametric_project"; kind: "saddle"; k: number; u0?: number; v0?: number; du: number; dv: number }
   | { op: "shear"; a: number; b: number; c: number }
   | { op: "gradient"; axis: "x" | "y" | "z"; slope: number; centre: number }
   // Offset-type density functions (B3): f' = f - g(x). g is a scalar field of the point.
@@ -153,6 +159,11 @@ function checkTransform(n: GraphNode & { kind: "transform" }, issues: GraphIssue
     case "surface_project": {
       const e = surfaceError(t as unknown as SurfaceSpec);
       need(e === null, `surface_project: ${e}`);
+      break;
+    }
+    case "parametric_project": {
+      const e = paramError(t as unknown as ParamSpec);
+      need(e === null, `parametric_project: ${e}`);
       break;
     }
     case "harmonic_disk": {
@@ -369,6 +380,8 @@ function inverseMap(t: TransformSpec): ((p: Vec3) => Vec3) | null {
     }
     case "surface_project":
       return surfaceMap(t as unknown as SurfaceSpec).inverse;
+    case "parametric_project":
+      return paramMap(t as unknown as ParamSpec).inverse;
     case "harmonic_disk": {
       // Points outside the disk are projected onto it (the compiled field clips them away).
       const H = harmonicOf(t);
@@ -491,6 +504,10 @@ function transformBounds(b: Bounds, t: TransformSpec): Bounds {
   }
   if (t.op === "surface_project") {
     const sb = surfaceMap(t as unknown as SurfaceSpec).bounds({ min: b.min as V3, max: b.max as V3 });
+    return { min: sb.min, max: sb.max } as Bounds;
+  }
+  if (t.op === "parametric_project") {
+    const sb = paramMap(t as unknown as ParamSpec).bounds({ min: b.min as V3, max: b.max as V3 });
     return { min: sb.min, max: sb.max } as Bounds;
   }
   if (t.op === "mobius") {
@@ -660,6 +677,8 @@ function forwardMap(t: TransformSpec, p: Vec3): Vec3 {
       return mobiusMaps(t).forward(p);
     case "surface_project":
       return surfaceMap(t as unknown as SurfaceSpec).forward(p);
+    case "parametric_project":
+      return paramMap(t as unknown as ParamSpec).forward(p);
     case "harmonic_disk": {
       const q = harmonicOf(t).forward([p[0], p[1]]);
       return [q[0], q[1], p[2]];
@@ -791,6 +810,20 @@ export function compileGraph(g: StructureGraph, structureId: string): Field {
           return inner.eval(q[0], q[1], q[2]) / lambda;
         },
         expr: `(${inner.expr}) o surface_project(${t.surface}) / ${lambda.toFixed(4)}`,
+      };
+      continue;
+    }
+    if (t.op === "parametric_project") {
+      // lambda = max(1, 1.02 * sampled sup of the inverse Jacobian) over the source box (sampled bound, see parametric.ts).
+      const m = paramMap(t as unknown as ParamSpec);
+      const lambda = m.lambda({ min: inner.bounds.min as V3, max: inner.bounds.max as V3 });
+      field = {
+        bounds: b,
+        eval: (x, y, z) => {
+          const q = inv([x, y, z]);
+          return inner.eval(q[0], q[1], q[2]) / lambda;
+        },
+        expr: `(${inner.expr}) o parametric_project(${t.kind}) / ${lambda.toFixed(4)}`,
       };
       continue;
     }

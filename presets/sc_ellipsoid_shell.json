@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "nodes": [
+    { "id": "lat", "kind": "field", "source": { "type": "sc", "cellSize": 4, "cells": 5, "radius": 0.4 } },
+    { "id": "surf", "kind": "transform", "transform": { "op": "parametric_project", "kind": "ellipsoid", "a": 24, "b": 18, "c": 14, "u0": -0.4, "v0": 0.9, "du": 0.04, "dv": 0.04 } },
+    { "id": "out", "kind": "structure", "name": "sc_ellipsoid_shell" }
+  ],
+  "edges": [
+    { "from": "lat", "to": "surf" },
+    { "from": "surf", "to": "out" }
+  ]
+}

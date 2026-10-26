@@ -126,3 +126,16 @@ so the source spacing is kept; `res` is the source resolution.
 - Render: `sc_torus_shell_{iso,top}.png` at res 240. Field-based (non-exact).
 - Tests: `tests/surface.test.ts`.
 
+## 16. `sc_ellipsoid_shell` — lattice projected onto an ellipsoid patch
+- Chain: SC lattice (cell 4 mm, 5 cells, r 0.4, source [0, 20]³) → parametric projection onto the ellipsoid a = 24, b = 18, c = 14 mm (u0 = −0.4, v0 = 0.9, du = dv = 0.04; z = normal offset, 20 mm thick).
+- Shows: the first general parametric surface (Newton inverse, sampled λ = 1.8213, no closed form for the inverse).
+- Numbers: 961.95 mm³ mesh (res_transformed 412) vs Jacobian-weighted Monte Carlo 944.8 ± 5.7 mm³ (+1.8 %), 0 components removed.
+- Render: `sc_ellipsoid_shell_{iso,top}.png` at res 240. Field-based (non-exact).
+- Tests: `tests/parametric.test.ts`.
+
+## 17. `sc_saddle_sheet` — lattice projected onto a saddle sheet
+- Chain: SC lattice → parametric projection onto the saddle z = 0.02 (u² − v²), u, v in [−10, 10] mm (z = normal offset).
+- Shows: the saddle case. The sampled λ = 5.10 is conservative (finite differences give 3.88), so the map is compressive near the sheet's steep edges.
+- Numbers: 578.02 mm³ mesh (res_transformed 427) vs Jacobian-weighted Monte Carlo 569.4 ± 3.1 mm³ (+1.5 %), 0 components removed.
+- Render: `sc_saddle_sheet_{iso,top}.png` at res 240. Field-based (non-exact). The top view has not been checked against the material footprint (see the note in docs/STRUCTURE_GRAPH.md); the iso view looks like a curved lattice sheet.
+- Tests: `tests/parametric.test.ts`.

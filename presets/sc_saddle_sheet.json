@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "nodes": [
+    { "id": "lat", "kind": "field", "source": { "type": "sc", "cellSize": 4, "cells": 5, "radius": 0.4 } },
+    { "id": "surf", "kind": "transform", "transform": { "op": "parametric_project", "kind": "saddle", "k": 0.02, "u0": -10, "v0": -10, "du": 1, "dv": 1 } },
+    { "id": "out", "kind": "structure", "name": "sc_saddle_sheet" }
+  ],
+  "edges": [
+    { "from": "lat", "to": "surf" },
+    { "from": "surf", "to": "out" }
+  ]
+}

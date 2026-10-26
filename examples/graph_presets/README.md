@@ -26,6 +26,8 @@ with `scripts/render_graph.ts <preset> <res> examples/graph_presets`.
 | `sc_harmonic_ellipse` | SC, cell 4 mm, r 0.4, 5 cells, source box [0,20]³ | discrete harmonic map of the ellipse centred (10,10), semi-axes (12,8), onto a disk, R = 14, n = 16, clipped to the disk | 240 (graph_check 240 → 336) | 908.9 (MC 911.6) | 0 | Not conformal. Corner-free domain: λ = 2.77 (bounded in n). Swirl; struts end in cut faces at the disk edge. Field-based |
 | `sc_sphere_shell` | SC, cell 4 mm, r 0.4, 5 cells, box [0,20]³ | surface projection onto a sphere, R = 16, θ0 = 1.0 (z = shell offset) | 240 (graph_check 240 → 515) | 1724.2 (weighted MC 1720.0) | 0 | Shell patch about 72° by 72°. λ = 1.2852 (exact). Field-based |
 | `sc_torus_shell` | SC, cell 4 mm, r 0.4, 5 cells, box [0,20]³ | surface projection onto a torus, Rm = 40, Rt = 10, v0 = −1.0 | 240 (graph_check 240 → 618) | 1935.3 (weighted MC 1932.5) | 0 | Tube patch, outer side, λ = 1 (exact). Field-based |
+| `sc_ellipsoid_shell` | SC, cell 4 mm, r 0.4, 5 cells, box [0,20]³ | parametric projection onto an ellipsoid, a = 24, b = 18, c = 14, u0 = −0.4, v0 = 0.9 | 240 (graph_check 240 → 412) | 961.95 (weighted MC 944.8 ± 5.7) | 0 | Numerical inverse; λ = 1.8213 (sampled). Field-based |
+| `sc_saddle_sheet` | SC, cell 4 mm, r 0.4, 5 cells, box [0,20]³ | parametric projection onto the saddle z = 0.02(u² − v²), u, v in [−10, 10] | 240 (graph_check 240 → 427) | 578.02 (weighted MC 569.4 ± 3.1) | 0 | λ = 5.10 (sampled, FD 3.88). Field-based. Top view not yet verified |
 
 ## Resolution and convergence
 - `res` is the number of grid cells over the largest bounding dimension. Transforms that enlarge the
