@@ -41,7 +41,8 @@ const RE = {
   lattice: /lattice|点阵|晶格|\bbcc\b|\bfcc\b|\bfbcc\b|\bbccz\b|kelvin|tetrakaidecahedr|simple[- ]cubic|\bsc\b|金刚石/,  // 'strut' alone is not a lattice cue: bio prompts say 'struts' (rectangular / thick struts)
   helical: /helic|bouligand|螺旋|twist|\bply\b|\bplies\b/,
   cellular: /cellular|foam|voronoi|honeycomb|蜂窝|泡沫|sandwich|夹层|三明治/,
-  tubular: /tubul|\btubes?\b|\bholes?\b|\bpores?\b|channel|管|孔/,
+  // 'hole' / 'pore' / '孔' are not tubular cues: 'three mounting holes' is a mechanical part, not a tubule lattice.
+  tubular: /tubul|\btubes?\b|channel|管/,
   hetero: /heterogen|graded|gradient|gradually|varying|variable|non-?uniform|渐变|梯度|异构|变化/,
 };
 

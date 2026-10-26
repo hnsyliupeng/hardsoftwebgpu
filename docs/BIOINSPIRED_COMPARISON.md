@@ -25,6 +25,6 @@ Before the fix, 266/270 were correct. The 4 misses were prompts about "struts" (
 
 ## Not covered
 
-- Keyword collisions: "holes" (for example "three mounting holes") is a tubular cue, so a mechanical prompt can route to the tubular family at confidence 0.7. The routing rules are not context-aware.
+- Keyword collisions: "channel" is still a tubular cue, so a mechanical prompt that says "cooling channel" can route to the tubular family at confidence 0.7. "holes", "pores" and "孔" were removed from the tubular cues (they routed mounting holes to tubular); the benchmark routing report is unchanged after that removal. The routing rules are not context-aware.
 - Cross-domain prompts are not turned into fusions. The upstream wording is ambiguous ("with cellular sandwich layers on top and bottom" versus "each ply is cellular"), so this needs an explicit spec, which the gallery already provides.
 - Geometric agreement: measured for all 12 base codes by running the upstream code in headless Blender (`bpy` 5.0.1, Fracture Cell add-on for the cellular codes). Matched for the tubular and plain-plate cases. The helical families differ from upstream by documented conventions. The cellular codes run, but the repo's cellular designs are 3–10× the upstream volume. They are a repo-specific Voronoi wall model, labelled as such in the gallery (decision 2026-10-22), and do not reproduce the upstream cellular geometry. Details: `docs/BIOINSPIRED_VALIDATION.md` and `docs/BIOINSPIRED_GEOMETRY.md`.

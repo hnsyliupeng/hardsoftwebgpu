@@ -59,3 +59,12 @@ test("intent: bioinspired and lattice prompts still report ok with their family"
   assert.equal(lat.ok, true);
   assert.equal(lat.data.topology, "lattice");
 });
+
+test("intent: mounting holes are not a tubular cue; tubular prompts with holes still route to tubular", () => {
+  const mech = parseIntent("Design a bracket with three mounting holes and fillets.");
+  assert.equal(mech.ok, false, "mechanical holes must not be routed to a bio family");
+  assert.notEqual(mech.data.topology, "tubular");
+  const tub = parseIntent("Make a tubular structure with 16 holes and radius 0.05.");
+  assert.equal(tub.ok, true);
+  assert.equal(tub.data.topology, "tubular");
+});

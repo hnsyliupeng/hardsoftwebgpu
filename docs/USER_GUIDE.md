@@ -112,7 +112,7 @@ The benchmark checks routing to the expected bio family, not geometry quality.
 - **Closed skins are not produced.** Clip and trimming leave open edges (by design).
 - **Fusion is deep only in the field path.** Several shallow fusion entries are still boolean unions.
 - **Prompt routing.** Cross-domain prompts produce one family, not a fusion. General non-bio prompts are
-  flagged as unrecognised (ok = false). They get a default BCC lattice placeholder at confidence 0.1 and are not forced into a bio family. The word "holes" still routes to tubular.
+  flagged as unrecognised (ok = false). They get a default BCC lattice placeholder at confidence 0.1 and are not forced into a bio family. "holes" and "pores" no longer route to tubular on their own; "channel" still does.
 - **Helical plate.** The plate notches are documented, not removed.
 - **Conformal mapping (C1) and fractal tiling (C2)** are partial. See `docs/TASK_PLAN.md` for the status of each item.
 - **Browser click-through of the graph panel** has not been run in this environment.
