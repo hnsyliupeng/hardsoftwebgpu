@@ -137,5 +137,5 @@ so the source spacing is kept; `res` is the source resolution.
 - Chain: SC lattice → parametric projection onto the saddle z = 0.02 (u² − v²), u, v in [−10, 10] mm (z = normal offset).
 - Shows: the saddle case. The sampled λ = 5.10 is conservative (finite differences give 3.88), so the map is compressive near the sheet's steep edges.
 - Numbers: 578.02 mm³ mesh (res_transformed 427) vs Jacobian-weighted Monte Carlo 569.4 ± 3.1 mm³ (+1.5 %), 0 components removed.
-- Render: `sc_saddle_sheet_{iso,top}.png` at res 240. Field-based (non-exact). The top view has not been checked against the material footprint (see the note in docs/STRUCTURE_GRAPH.md); the iso view looks like a curved lattice sheet.
+- Render: `sc_saddle_sheet_{iso,top}.png` at res 240. Field-based (non-exact). The top view is a cut-away of the upper half (z ≥ 9.3 mm), whose footprint is about 2.5 : 1; this matches the picture (see docs/STRUCTURE_GRAPH.md). The iso view looks like a curved lattice sheet.
 - Tests: `tests/parametric.test.ts`.
