@@ -16,31 +16,11 @@
       "resolution": 256
     },
     "retrieval": {
-      "base_id": "cellular_generic",
-      "top_k": [
-        {
-          "id": "cellular_generic",
-          "score": 4.345
-        },
-        {
-          "id": "cellular_sandwich",
-          "score": 1.854
-        },
-        {
-          "id": "cellular_voronoi",
-          "score": 1.854
-        }
-      ]
+      "base_id": "none",
+      "top_k": []
     },
-    "confidence": 0.6,
-    "unknowns": [
-      "Lattice type not stated; defaulting to BCC for the hybrid.",
-      "Build edge length not given; 20 mm cube assumed.",
-      "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-      "Parameter thickness not stated; default 0.2 used.",
-      "Unit cell size not given; 4 mm assumed.",
-      "Strut radius not given; 10% of the cell size assumed."
-    ],
+    "confidence": 1,
+    "unknowns": [],
     "notes": [],
     "deep": {
       "kind": "foam_lattice",
@@ -54,7 +34,7 @@
   "metrics": {
     "volume": 3195.4193682128766,
     "surface_area": 11076.558866209245,
-    "min_wall_thickness": 0.5000000014895598,
+    "min_wall_thickness": 0.500000001489635,
     "connectivity": true,
     "genus": 2774
   },
@@ -62,7 +42,7 @@
   "repair_history": [],
   "limitations": [
     "Interior lattice fragments that do not touch a wall are kept; the single-solid check decides whether they count.",
-    "Fused designs use manifold dual contouring; a few pinches narrower than one voxel can still give non-manifold edges (under 0.1 % of the edges at 96 cells, see docs/NONMANIFOLD.md).",
+    "Fused designs use manifold dual contouring with vertex splitting at pinches; at the measured resolutions (96, 128) no non-manifold edges remain (docs/NONMANIFOLD.md). Other resolutions are not guaranteed to be free of pinches.",
     "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
     "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
     "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
@@ -72,12 +52,6 @@
     "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
   ],
   "unknowns": [
-    "Lattice type not stated; defaulting to BCC for the hybrid.",
-    "Build edge length not given; 20 mm cube assumed.",
-    "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-    "Parameter thickness not stated; default 0.2 used.",
-    "Unit cell size not given; 4 mm assumed.",
-    "Strut radius not given; 10% of the cell size assumed.",
     "Resolution above 160 per axis may exceed browser memory budgets."
   ],
   "validation": {
@@ -167,7 +141,7 @@
     "repair_history": [],
     "limitations": [
       "Interior lattice fragments that do not touch a wall are kept; the single-solid check decides whether they count.",
-      "Fused designs use manifold dual contouring; a few pinches narrower than one voxel can still give non-manifold edges (under 0.1 % of the edges at 96 cells, see docs/NONMANIFOLD.md).",
+      "Fused designs use manifold dual contouring with vertex splitting at pinches; at the measured resolutions (96, 128) no non-manifold edges remain (docs/NONMANIFOLD.md). Other resolutions are not guaranteed to be free of pinches.",
       "No exact B-Rep for this design: STL/glTF come from surface nets of the SDF; STEP export is unavailable.",
       "SDF surface resolution is limited to h = 0.0781 mm (constraints.resolution = 256); features below ~2h are not resolved.",
       "Genus is the first Betti number of the voxel solid (independent handles); it depends on the grid resolution.",
@@ -177,12 +151,6 @@
       "Repairs act on the SDF/B-Rep parameters; they do not change the code structure (priority 3 is not automated)."
     ],
     "unknowns": [
-      "Lattice type not stated; defaulting to BCC for the hybrid.",
-      "Build edge length not given; 20 mm cube assumed.",
-      "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-      "Parameter thickness not stated; default 0.2 used.",
-      "Unit cell size not given; 4 mm assumed.",
-      "Strut radius not given; 10% of the cell size assumed.",
       "Resolution above 160 per axis may exceed browser memory budgets."
     ],
     "design_spec": {
@@ -201,31 +169,11 @@
         "resolution": 256
       },
       "retrieval": {
-        "base_id": "cellular_generic",
-        "top_k": [
-          {
-            "id": "cellular_generic",
-            "score": 4.345
-          },
-          {
-            "id": "cellular_sandwich",
-            "score": 1.854
-          },
-          {
-            "id": "cellular_voronoi",
-            "score": 1.854
-          }
-        ]
+        "base_id": "none",
+        "top_k": []
       },
-      "confidence": 0.6,
-      "unknowns": [
-        "Lattice type not stated; defaulting to BCC for the hybrid.",
-        "Build edge length not given; 20 mm cube assumed.",
-        "Printability floor not given; 0.4 mm assumed for the RepairHarness.",
-        "Parameter thickness not stated; default 0.2 used.",
-        "Unit cell size not given; 4 mm assumed.",
-        "Strut radius not given; 10% of the cell size assumed."
-      ],
+      "confidence": 1,
+      "unknowns": [],
       "notes": [],
       "deep": {
         "kind": "foam_lattice",
@@ -236,6 +184,6 @@
         "lattice_radius_mm": 0.25
       }
     },
-    "timing_s": 268.4
+    "timing_s": 399.7
   }
 }

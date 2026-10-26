@@ -27,8 +27,8 @@ const spec: DesignSpec = {
   heterogeneity_field,
   target_metrics: {"connectivity":true},
   constraints: { size_mm, resolution, min_printable_wall_mm },
-  retrieval: {"base_id":"cellular_generic","top_k":[{"id":"cellular_generic","score":4.345},{"id":"cellular_sandwich","score":1.854},{"id":"cellular_voronoi","score":1.854}]},
-  confidence: 0.6,
+  retrieval: {"base_id":"none","top_k":[]},
+  confidence: 1,
   unknowns: [],
   notes: [],
 };

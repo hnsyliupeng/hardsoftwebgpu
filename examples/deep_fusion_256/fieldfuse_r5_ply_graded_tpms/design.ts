@@ -12,7 +12,7 @@ const size_mm = 20;
 const resolution = 256;
 const min_printable_wall_mm = 0.4;
 const parameters = {} as const;
-const heterogeneity_field = null;
+const heterogeneity_field = {"rule":"linear","direction":"z","min":0.24,"max":0.5599999999999999};
 
 // ---- Design specification (IntentHarness output, with the constants above applied) ----------
 const spec: DesignSpec = {
@@ -27,8 +27,8 @@ const spec: DesignSpec = {
   heterogeneity_field,
   target_metrics: {"connectivity":true},
   constraints: { size_mm, resolution, min_printable_wall_mm },
-  retrieval: {"base_id":"helical_generic","top_k":[{"id":"helical_generic","score":2.421},{"id":"helical_cylinfibers","score":0},{"id":"helical_noise","score":0}]},
-  confidence: 0.25,
+  retrieval: {"base_id":"none","top_k":[]},
+  confidence: 1,
   unknowns: [],
   notes: [],
 };

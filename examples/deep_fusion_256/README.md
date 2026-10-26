@@ -1,7 +1,7 @@
 # Deep fusion gallery, 256 cells (field-level coupling, open)
 
 Five deep-fusion designs, each one implicit field with the parts coupled inside it (`src/topology/deep.ts`, topology `deep`).
-Open: no closed skin. All five pass (5/5) in the last run (2026-10-19). Meshed with manifold dual contouring (topology `deep`); the earlier surface-nets volumes differed by up to 0.7 % (R4 3173.664 → 3195.419); the MC check and 256 vs 320 columns are from the same run.
+Open: no closed skin. All five pass (5/5) in the last run (2026-10-26). That run regenerated `design.json`, `design.ts` and `gallery.json`; volumes, coupling effects and MC checks are unchanged from the 2026-10-19 run. The metadata changed: the earlier files carried an intent-parse artefact ("No structure keyword recognised", confidence 0.1) from the placeholder prompt `deep fusion <kind>`. Those specs are author-supplied, so `unknowns` is now empty, `retrieval` is `none` and confidence is 1 (`scripts/structure_gallery.ts`, `deepSpec` and `coupledSpec`). Meshed with manifold dual contouring (topology `deep`); the earlier surface-nets volumes differed by up to 0.7 % (R4 3173.664 → 3195.419); the MC check and 256 vs 320 columns are from the same run.
 
 Run: `GALLERY_OUT=examples/deep_fusion_256 node --experimental-strip-types --no-warnings scripts/structure_gallery.ts 256 fieldfuse_r1_channel_lattice fieldfuse_r2_ply_tpms fieldfuse_r3_graded_tpms fieldfuse_r4_foam_lattice fieldfuse_r5_ply_graded_tpms`
 

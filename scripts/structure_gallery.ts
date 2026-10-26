@@ -55,6 +55,11 @@ function deepSpec(kind: DeepKind, extra: Partial<DeepSpec> = {}): DesignSpec {
   s.parameters = {};
   s.fusion = undefined;
   s.deep = { kind, skin_mm: 0, ...extra };
+  // The intent parse of the placeholder prompt is not meaningful for a spec built here: clear its
+  // unknowns and retrieval, and state confidence 1 (author-supplied). Geometry is unchanged.
+  s.unknowns = [];
+  s.retrieval = { base_id: "none", top_k: [] };
+  s.confidence = 1;
   return s;
 }
 
@@ -185,7 +190,11 @@ function coupledSpec(round: "R1" | "R2" | "R3" | "R4" | "R5" | "R6" | "R7" | "R8
   s.parameters = {};
   s.coupled = { round, params: { skin_mm: SKIN, ...params } };
   s.fusion = undefined;
+  // The intent parse of the placeholder prompt is not meaningful for a spec built here: clear its
+  // unknowns and retrieval, and state confidence 1 (author-supplied). Geometry is unchanged.
   s.unknowns = [];
+  s.retrieval = { base_id: "none", top_k: [] };
+  s.confidence = 1;
   return s;
 }
 

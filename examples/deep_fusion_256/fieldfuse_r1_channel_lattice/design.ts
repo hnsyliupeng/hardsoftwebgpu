@@ -27,8 +27,8 @@ const spec: DesignSpec = {
   heterogeneity_field,
   target_metrics: {"connectivity":true},
   constraints: { size_mm, resolution, min_printable_wall_mm },
-  retrieval: {"base_id":"tubular_generic","top_k":[{"id":"tubular_generic","score":2.49},{"id":"tubular_layers","score":0},{"id":"tubular_noise","score":0}]},
-  confidence: 0.6,
+  retrieval: {"base_id":"none","top_k":[]},
+  confidence: 1,
   unknowns: [],
   notes: [],
 };

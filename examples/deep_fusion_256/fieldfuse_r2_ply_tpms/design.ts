@@ -27,8 +27,8 @@ const spec: DesignSpec = {
   heterogeneity_field,
   target_metrics: {"connectivity":true},
   constraints: { size_mm, resolution, min_printable_wall_mm },
-  retrieval: {"base_id":"helical_generic","top_k":[{"id":"helical_generic","score":2.421},{"id":"helical_cylinfibers","score":0},{"id":"helical_noise","score":0}]},
-  confidence: 0.25,
+  retrieval: {"base_id":"none","top_k":[]},
+  confidence: 1,
   unknowns: [],
   notes: [],
 };
