@@ -66,7 +66,7 @@ for (const r of bench) {
     single.push({ expected: FAMILY_OF[r.subcategory], predicted: family, variant, prompt: r.prompt });
   } else if (r.subcategory === "general" || r.subcategory === "general_bio" || r.category.startsWith("general")) {
     // A prompt with no bio/lattice/TPMS cue is not a failure of routing if the router flags it as unrecognised.
-    const flagged = (d.unknowns ?? []).some((u: string) => u.startsWith("No topology keyword recognised"));
+    const flagged = (d.unknowns ?? []).some((u: string) => u.startsWith("No structure keyword recognised"));
     general.push({ subcategory: r.subcategory, predicted: family, topology: d.topology, confidence: d.confidence, flagged, prompt: r.prompt });
   } else {
     cross.push({ subcategory: r.subcategory, predicted: family, variant, topology: d.topology, prompt: r.prompt });

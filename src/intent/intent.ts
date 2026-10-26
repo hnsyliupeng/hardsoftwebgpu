@@ -135,6 +135,7 @@ export function parseIntent(prompt: string): HarnessResult<DesignSpec> {
   let bioCategory: Family | null = bioFamilies[0]?.f ?? null;
   let bioMotif = "";
   let confidence = 0.3;
+  let notRecognised = false;
 
   if (hasTpms && !(hasLattice && bioFamilies.length)) {
     topology = "tpms";
@@ -165,13 +166,13 @@ export function parseIntent(prompt: string): HarnessResult<DesignSpec> {
     }
     bioMotif = variantFor(bioFamilies[0].f, text);
   } else {
-    // No family keyword: fall back to retrieval over the whole catalogue.
-    const top = retrieve(prompt)[0];
-    topology = getBase(top.id).category;
-    bioCategory = topology as Family;
-    bioMotif = top.id;
-    confidence = 0.25;
-    unknowns.push("No topology keyword recognised; the closest base structure was chosen by retrieval.");
+    // No structure keyword (bioinspired family, lattice or TPMS). Do not force a biological family: the nearest
+    // catalogue entry is only reported as evidence. A default BCC lattice is the placeholder, and ok is false.
+    notRecognised = true;
+    topology = "lattice";
+    variant = "bcc";
+    confidence = 0.1;
+    unknowns.push("No structure keyword recognised (bioinspired family, lattice or TPMS). A default BCC lattice placeholder is shown; describe the structure to get a real design.");
   }
 
   // ---- retrieval -----------------------------------------------------------------------------
@@ -329,7 +330,7 @@ export function parseIntent(prompt: string): HarnessResult<DesignSpec> {
       min_printable_wall_mm: printable,
       resolution: DEFAULT_RESOLUTION,
     },
-    retrieval: { base_id: top_k[0]?.id ?? bioMotif, top_k },
+    retrieval: { base_id: notRecognised ? "none" : top_k[0]?.id ?? bioMotif, top_k },
     confidence: Math.min(0.95, Math.round(confidence * 100) / 100),
     unknowns: [...new Set(unknowns)],
     notes,
@@ -337,7 +338,7 @@ export function parseIntent(prompt: string): HarnessResult<DesignSpec> {
   observations.unshift(`Topology ${topology}${variant ? ` / ${variant}` : ""} (confidence ${spec.confidence}).`);
   return {
     harness: "IntentHarness",
-    ok: true,
+    ok: !notRecognised,
     data: spec,
     observations,
     limitations,

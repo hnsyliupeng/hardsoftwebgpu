@@ -19,11 +19,12 @@ Missing: none. Extra: none.
 |---|---|---|
 | Single family (helical / cellular / tubular) | 270 | 270/270 correct (100 %) |
 | Cross-domain (`bio_helicalxcellular`, `bio_cellularxtubular`, `bio_helicalxtubular`, `bio_all`) | 36 | routed to one family; no fusion produced |
-| General non-bio (torus, cones, prisms) | 14 | flagged "No topology keyword recognised", confidence 0.25 |
+| General non-bio (torus, cones, prisms) | 14 | flagged "No structure keyword recognised", ok = false, confidence 0.1, default BCC placeholder (before the routing fix: forced into bio families at 0.25) |
 
 Before the fix, 266/270 were correct. The 4 misses were prompts about "struts" (e.g. "flat rectangular struts"), which the lattice keyword `strut` captured. That keyword was removed; the lattice cues `lattice`, BCC/FCC/Kelvin and similar still match.
 
 ## Not covered
 
+- Keyword collisions: "holes" (for example "three mounting holes") is a tubular cue, so a mechanical prompt can route to the tubular family at confidence 0.7. The routing rules are not context-aware.
 - Cross-domain prompts are not turned into fusions. The upstream wording is ambiguous ("with cellular sandwich layers on top and bottom" versus "each ply is cellular"), so this needs an explicit spec, which the gallery already provides.
 - Geometric agreement: measured for all 12 base codes by running the upstream code in headless Blender (`bpy` 5.0.1, Fracture Cell add-on for the cellular codes). Matched for the tubular and plain-plate cases. The helical families differ from upstream by documented conventions. The cellular codes run, but the repo's cellular designs are 3–10× the upstream volume. They are a repo-specific Voronoi wall model, labelled as such in the gallery (decision 2026-10-22), and do not reproduce the upstream cellular geometry. Details: `docs/BIOINSPIRED_VALIDATION.md` and `docs/BIOINSPIRED_GEOMETRY.md`.

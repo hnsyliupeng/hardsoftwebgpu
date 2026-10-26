@@ -45,8 +45,8 @@ within the stated tolerance, and the wall p5 at or above 0.4 mm. The record:
 - MC vs field and convergence agreement (0.00–0.7 %) show that the field and the mesh agree with each other. They do not show
   that the geometry is the intended structure.
 - The only external comparison is routing against Bioinspired123D (`docs/BIOINSPIRED_COMPARISON.md`): 270/270 single-family prompts
-  route correctly, 36 cross-domain prompts collapse to one family (no fusion is produced), and 14 general non-bio prompts are
-  forced into bio families at confidence 0.25. That is a classification check, not a geometry comparison.
+  route correctly, 36 cross-domain prompts collapse to one family (no fusion is produced), and 14 general non-bio prompts were
+  forced into bio families at confidence 0.25 before the routing fix; they are now flagged unrecognised (confidence 0.1). That is a classification check, not a geometry comparison.
 - Slice tests (faces open, 0.49–0.51 solid fraction on the face planes) were done for R10 at 96 cells only. The 192/256
   statements rest on the field.
 

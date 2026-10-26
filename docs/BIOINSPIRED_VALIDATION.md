@@ -35,7 +35,7 @@ Reference: `lamm-mit/Bioinspired123D`, base codes in `data/raw/biodataset_baseco
 
 ## Routing
 
-Routing is a separate check, in `docs/BIOINSPIRED_COMPARISON.md`: 270 of 270 single-family prompts route to the correct family. Cross-domain prompts (36) route to one family and are not fused. General non-bio prompts (14) are flagged with confidence 0.25.
+Routing is a separate check, in `docs/BIOINSPIRED_COMPARISON.md`: 270 of 270 single-family prompts route to the correct family. Cross-domain prompts (36) route to one family and are not fused. General non-bio prompts (14) are flagged as unrecognised (ok = false, confidence 0.1, default BCC placeholder). They are no longer forced into a bio family.
 
 ## Open items
 

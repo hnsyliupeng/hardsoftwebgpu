@@ -21,7 +21,7 @@ the licence files were read where the API result was ambiguous. This is an engin
 
 ### Bioinspired123D
 - 12 base-code families (helical, cellular, tubular); benchmark `eval/benchmark.csv` = 270 single-family, 36 cross-domain, 14 general non-bio prompts.
-- Our comparison (`docs/bioinspired_comparison.json`): 12/12 base codes; 270/270 single-family routing; cross-domain prompts route to a single family (no fusion); general non-bio prompts are forced into bio families at confidence 0.25.
+- Our comparison (`docs/bioinspired_comparison.json`): 12/12 base codes; 270/270 single-family routing; cross-domain prompts route to a single family (no fusion); general non-bio prompts were forced into bio families at confidence 0.25 before the routing fix; they are now flagged unrecognised (confidence 0.1).
 - Licence: Apache-2.0. The licence file is in `eval/`. Attribution is kept.
 
 ### SolidCraft

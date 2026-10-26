@@ -92,3 +92,5 @@ A first version with one cone per sub-segment lost lattice silently (two pieces,
 ### Not attempted: R3 (twisted BCC)
 R3 is a point map of the lattice by a z-dependent rotation, so its struts are curved tubes, not straight cylinders. An exact model needs
 ~1,700 swept tubes along curved paths. That is a different build from the straight-strut route and is not started.
+
+Feasibility check (not built). A constant-radius circular sweep along each strut's curved path is not accurate enough. The twist is a shear: the map R(-phi(z)) with phi = 90 deg * z / 20 mm has shear about 1.1 per mm of z-travel near 14 mm off-axis, so the cross-section of a far strut is elliptical. The volume error of a circular sweep is about 10 % for those struts. An exact build needs B-spline sections of the deformed cross-sections on about 1,000 or more struts. The R3 volume reference is vol(S intersect M^-1(box)), a Monte Carlo of the field indicator, not the untwisted exact BCC volume (1427.713 mm^3), because the envelope is the untwisted box.

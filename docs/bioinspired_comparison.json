@@ -50,11 +50,9 @@
   "general": {
     "n": 14,
     "flagged_unrecognised": 14,
-    "max_confidence": 0.25,
+    "max_confidence": 0.1,
     "predicted_family_counts": {
-      "tubular": 10,
-      "helical": 2,
-      "cellular": 2
+      "lattice": 14
     }
   }
 }

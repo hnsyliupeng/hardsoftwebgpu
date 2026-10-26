@@ -33,3 +33,29 @@ test("intent: unstated values are recorded as unknowns", () => {
   assert.ok(spec.unknowns.some((u) => /Unit cell size/.test(u)));
   assert.ok(spec.unknowns.some((u) => /Printability floor/.test(u)));
 });
+
+test("intent: a prompt with no structure keyword is not forced into a bioinspired family", () => {
+  const general = [
+    "Make a 30 mm phone stand that holds the phone at 60 degrees.",
+    "A small gear with 20 teeth and a 5 mm bore.",
+    "Build a shelf bracket that carries 5 kg.",
+    "Create a hollow cylinder with a thread for a bottle cap.",
+  ];
+  for (const p of general) {
+    const r = parseIntent(p);
+    assert.equal(r.ok, false, `ok must be false for: ${p}`);
+    assert.equal(r.data.topology, "lattice", p);
+    assert.equal(r.data.confidence, 0.1, p);
+    assert.ok(!["helical", "tubular", "cellular"].includes(r.data.topology), p);
+    assert.ok(r.unknowns.some((u) => /No structure keyword recognised/.test(u)), p);
+  }
+});
+
+test("intent: bioinspired and lattice prompts still report ok with their family", () => {
+  const bio = parseIntent("Make a helical Bouligand structure with 5 plies, 10 degrees rotation.");
+  assert.equal(bio.ok, true);
+  assert.equal(bio.data.topology, "helical");
+  const lat = parseIntent("Make a BCC lattice with a 4 mm cell and 0.4 mm struts.");
+  assert.equal(lat.ok, true);
+  assert.equal(lat.data.topology, "lattice");
+});
